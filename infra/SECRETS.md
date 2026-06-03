@@ -39,16 +39,27 @@
 
 | Variable | Environment | Description |
 |----------|------------|-------------|
-| `DATABASE_URL` | All | Postgres connection string (Railway managed) |
+| `DATABASE_URL` | All | Postgres connection string (Railway managed — auto-injected when Postgres add-on is linked) |
 | `JWT_SECRET` | All | Medusa JWT signing secret (generate: `openssl rand -base64 32`) |
 | `COOKIE_SECRET` | All | Medusa cookie secret (generate: `openssl rand -base64 32`) |
-| `STRIPE_SECRET_KEY` | Production, Staging | Stripe secret key |
-| `STRIPE_WEBHOOK_SECRET` | Production, Staging | Stripe webhook endpoint secret |
+| `STRIPE_SECRET_KEY` | All | Stripe secret key (`sk_test_…` for sandbox, `sk_live_…` for prod) |
+| `STRIPE_WEBHOOK_SECRET` | All | Stripe webhook endpoint secret (`whsec_…`) |
+| `PAYPAL_CLIENT_ID` | All | PayPal app client ID (sandbox: from developer.paypal.com sandbox app) |
+| `PAYPAL_CLIENT_SECRET` | All | PayPal app client secret (sandbox: from developer.paypal.com sandbox app) |
+| `PAYPAL_AUTH_WEBHOOK_ID` | All | PayPal webhook ID (create via PayPal developer dashboard after first deploy) |
 | `SENTRY_DSN` | All | Sentry DSN for backend error tracking |
-| `STORE_CORS` | All | Allowed CORS origins (storefront URL) |
-| `ADMIN_CORS` | All | Allowed CORS origins (admin UI URL) |
+| `STORE_CORS` | All | Allowed CORS origins — storefront URL (Vercel preview URL for staging) |
+| `ADMIN_CORS` | All | Allowed CORS origins — admin UI URL |
 | `AUTH_CORS` | All | Allowed CORS origins for auth endpoints |
-| `MEDUSA_WORKER_MODE` | Production | `worker` for async jobs (set on worker instance) |
+| `MEDUSA_BACKEND_URL` | All | Public URL of this Railway service (used by admin panel) |
+| `MEDUSA_WORKER_MODE` | Production | `worker` for async jobs (set on worker instance only) |
+
+**How to obtain PayPal sandbox credentials:**
+1. Sign in or create account at https://developer.paypal.com
+2. Go to **Apps & Credentials** → **Create App** (sandbox mode)
+3. Copy `Client ID` → `PAYPAL_CLIENT_ID`
+4. Copy `Secret` → `PAYPAL_CLIENT_SECRET`
+5. After first deploy, create a webhook in the PayPal dashboard pointing to `https://[railway-url]/hooks/payment/paypal_pp` and copy the Webhook ID → `PAYPAL_AUTH_WEBHOOK_ID`
 
 ---
 
