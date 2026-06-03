@@ -1,0 +1,8 @@
+node_modules/
+.medusa/
+dist/
+uploads/
+.env
+.env.local
+.env.production
+.env.template
