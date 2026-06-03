@@ -1,18 +1,21 @@
-name: Deploy to Staging
+name: Staging CI (auto-deploy via integrations)
+
+# Vercel auto-deploys the storefront to production/staging on push to main via GitHub App.
+# Railway auto-deploys the backend on push to main via GitHub integration.
+# This workflow just verifies the build passes before those auto-deploys pick it up.
 
 on:
   push:
     branches: [main]
 
 concurrency:
-  group: staging-deploy
+  group: staging-ci
   cancel-in-progress: false
 
 jobs:
-  deploy-storefront-staging:
-    name: Deploy Storefront → Staging (Vercel)
+  build-verify:
+    name: Build verification before auto-deploy
     runs-on: ubuntu-latest
-    environment: staging
     steps:
       - uses: actions/checkout@v4
 
@@ -25,64 +28,16 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: Install Vercel CLI
-        run: pnpm add -g vercel@latest
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Pull Vercel environment (production branch = staging alias)
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/storefront
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Lint & typecheck
+        run: pnpm lint && pnpm typecheck
 
       - name: Build storefront
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/storefront
+        run: pnpm --filter storefront build
         env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ vars.STAGING_BACKEND_URL || 'http://localhost:9000' }}
 
-      - name: Deploy to Vercel (staging alias)
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/storefront
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-  deploy-backend-staging:
-    name: Deploy Backend → Staging (Railway)
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy backend to Railway staging
-        # Build context = repo root so Dockerfile can access pnpm-workspace.yaml + lock file.
-        # railway.toml in apps/backend sets dockerfilePath = apps/backend/Dockerfile.
-        run: railway up --service backend-staging --detach
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-      - name: Verify backend healthcheck
-        run: |
-          echo "Waiting 60s for Railway deployment to stabilise..."
-          sleep 60
-          BACKEND_URL="${{ vars.RAILWAY_BACKEND_URL }}"
-          if [ -z "$BACKEND_URL" ]; then
-            echo "RAILWAY_BACKEND_URL not set in environment — skipping live healthcheck"
-            exit 0
-          fi
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL/health")
-            if [ "$STATUS" = "200" ]; then
-              echo "✓ Healthcheck passed ($BACKEND_URL/health → 200)"
-              exit 0
-            fi
-            echo "Attempt $i: got $STATUS, retrying in 15s..."
-            sleep 15
-          done
-          echo "✗ Healthcheck failed after 5 attempts"
-          exit 1
+      - name: Build backend
+        run: pnpm --filter backend build

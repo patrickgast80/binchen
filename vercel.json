@@ -1,0 +1,9 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "cd ../.. && pnpm --filter storefront build",
+  "outputDirectory": "apps/storefront/.next",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "devCommand": "pnpm dev",
+  "rootDirectory": "apps/storefront",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- apps/storefront/ package.json pnpm-workspace.yaml pnpm-lock.yaml"
+}

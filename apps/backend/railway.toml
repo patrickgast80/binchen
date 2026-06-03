@@ -1,6 +1,8 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "apps/backend/Dockerfile"
+# watchPatterns tells Railway to redeploy only when backend or root manifests change
+watchPatterns = ["apps/backend/**", "package.json", "pnpm-workspace.yaml", "pnpm-lock.yaml"]
 
 [deploy]
 healthcheckPath = "/health"

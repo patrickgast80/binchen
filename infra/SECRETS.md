@@ -14,17 +14,28 @@
 
 ---
 
+## Deployment approach: GitHub App integrations (no CI tokens)
+
+Vercel and Railway both integrate directly with GitHub via OAuth Apps. Deployments are triggered automatically on push — no `VERCEL_TOKEN` or `RAILWAY_TOKEN` are needed in GitHub Actions. CI workflows only run lint/typecheck/build checks.
+
+- **Vercel GitHub App**: auto-creates preview URLs on every PR, auto-deploys to production on merge to `main`
+- **Railway GitHub App**: auto-deploys backend on push to `main` (configured via `apps/backend/railway.toml`)
+
+To add CLI-based deploys later (e.g. for rollback scripts), tokens can be added as GitHub Secrets — but this is optional.
+
+---
+
 ## Secrets Inventory
 
 ### GitHub Actions Secrets (`Settings > Secrets and variables > Actions`)
 
+None required for auto-deploys. Optional tokens if CLI-based deploy scripts are added later:
+
 | Secret name | Description | Owner | Rotates |
 |-------------|-------------|-------|---------|
-| `VERCEL_TOKEN` | Vercel API token for deploy | DevOps | Annually or on compromise |
-| `VERCEL_ORG_ID` | Vercel org/team ID | DevOps | Rarely |
-| `VERCEL_PROJECT_ID` | Vercel project ID (storefront) | DevOps | Rarely |
-| `RAILWAY_TOKEN` | Railway API token for backend deploy | DevOps | Annually or on compromise |
-| `SENTRY_AUTH_TOKEN` | Sentry release upload token | DevOps | Annually |
+| `SENTRY_AUTH_TOKEN` | Sentry release upload (source maps) | DevOps | Annually |
+| `VERCEL_TOKEN` | Vercel CLI deploys (optional) | DevOps | Annually or on compromise |
+| `RAILWAY_TOKEN` | Railway CLI deploys (optional) | DevOps | Annually or on compromise |
 
 ### Vercel Environment Variables (`apps/storefront`)
 

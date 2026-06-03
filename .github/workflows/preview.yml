@@ -1,4 +1,7 @@
-name: Preview Deploy
+name: Preview checks (CI only)
+
+# Vercel deploys previews automatically via the Vercel GitHub App — no tokens needed.
+# This workflow just runs CI checks so the PR shows a green status before Vercel finishes.
 
 on:
   pull_request:
@@ -9,12 +12,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy-preview:
-    name: Deploy Vercel Preview
+  ci:
+    name: Lint, typecheck & build
     runs-on: ubuntu-latest
-    environment: preview
-    permissions:
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -27,34 +27,16 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: Install Vercel CLI
-        run: pnpm add -g vercel@latest
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Pull Vercel environment (preview)
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/storefront
+      - name: Lint & typecheck storefront
+        run: pnpm --filter storefront lint && pnpm --filter storefront typecheck
 
-      - name: Build storefront for Vercel
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/storefront
+      - name: Lint & typecheck backend
+        run: pnpm --filter backend typecheck
 
-      - name: Deploy to Vercel preview
-        id: deploy
-        run: |
-          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-        working-directory: apps/storefront
+      - name: Build storefront
+        run: pnpm --filter storefront build
         env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Comment preview URL on PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Vercel Preview\n\n🔗 **Storefront preview**: ${{ steps.deploy.outputs.url }}\n\nDeployed from commit \`${{ github.sha }}\`.`
-            })
+          NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ vars.STAGING_BACKEND_URL || 'http://localhost:9000' }}

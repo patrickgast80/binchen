@@ -1,34 +1,36 @@
-name: Deploy to Production
+name: Production deploy gate
+
+# Production deploys are triggered manually via:
+# - Vercel dashboard: Promotions → Promote to Production
+# - Railway dashboard: Deployments → Promote staging to production
+#
+# This workflow runs final checks before a manual production promotion.
+# No tokens required — deploys happen through the platform dashboards.
 
 on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: 'Type "deploy" to confirm production deployment'
+        description: 'Type "deploy" to confirm production checks are requested'
         required: true
-
-concurrency:
-  group: production-deploy
-  cancel-in-progress: false
 
 jobs:
   guard:
-    name: Confirm deployment
+    name: Confirm
     runs-on: ubuntu-latest
     steps:
       - name: Check confirmation
         run: |
           if [ "${{ github.event.inputs.confirm }}" != "deploy" ]; then
-            echo "Confirmation failed. Type 'deploy' to proceed."
+            echo "Type 'deploy' to proceed."
             exit 1
           fi
-          echo "Production deployment confirmed by ${{ github.actor }}"
+          echo "Production deploy checks requested by ${{ github.actor }}"
 
-  deploy-storefront-production:
-    name: Deploy Storefront → Production (Vercel)
+  final-checks:
+    name: Final build checks
     runs-on: ubuntu-latest
     needs: guard
-    environment: production
     steps:
       - uses: actions/checkout@v4
 
@@ -41,51 +43,19 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: Install Vercel CLI
-        run: pnpm add -g vercel@latest
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Pull Vercel environment (production)
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/storefront
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Lint & typecheck all
+        run: pnpm lint && pnpm typecheck
 
-      - name: Build storefront
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/storefront
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Build all
+        run: pnpm build
 
-      - name: Deploy to Vercel production
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/storefront
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-  deploy-backend-production:
-    name: Deploy Backend → Production (Railway)
-    runs-on: ubuntu-latest
-    needs: guard
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy backend to Railway production
-        run: railway up --service backend-production --detach
-        working-directory: apps/backend
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-      - name: Verify backend healthcheck
+      - name: Remind operator to promote via platform dashboards
         run: |
-          echo "Sleeping 45s for Railway boot..."
-          sleep 45
-          curl -f "${BACKEND_PRODUCTION_URL}/health" || (echo "Healthcheck failed!" && exit 1)
-        env:
-          BACKEND_PRODUCTION_URL: ${{ vars.BACKEND_PRODUCTION_URL }}
+          echo "====================================================="
+          echo "Checks passed. To deploy to production:"
+          echo "  Storefront: Vercel dashboard → Deployments → Promote"
+          echo "  Backend:    Railway dashboard → Deployments → Promote"
+          echo "====================================================="
