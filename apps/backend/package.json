@@ -1,0 +1,31 @@
+{
+  "name": "@binchen/backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "medusa build",
+    "dev": "medusa develop",
+    "start": "medusa start",
+    "seed": "medusa exec ./src/scripts/seed.ts",
+    "migrate": "medusa db:migrate",
+    "lint": "tsc --noEmit --pretty",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@medusajs/medusa": "^2.8.0",
+    "@medusajs/payment-stripe": "^2.0.0",
+    "@medusajs/payment-paypal": "^2.0.0",
+    "@medusajs/fulfillment-manual": "^2.0.0",
+    "@medusajs/file-local": "^2.0.0",
+    "@medusajs/notification-local": "^2.0.0",
+    "pg": "^8.13.1",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

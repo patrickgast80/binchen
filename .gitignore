@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+dist/
+build/
+.medusa/
+
+# Environment files — NEVER commit real .env files
+.env
+.env.local
+.env.production
+.env.staging
+.env.*.local
+
+# Vercel
+.vercel/
+
+# Railway
+.railway/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Postgres
+*.sql.gz
+postgres-data/
+
+# Test artifacts
+coverage/
+.nyc_output/

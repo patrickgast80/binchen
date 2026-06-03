@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap");
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+    --background: #faf7f2;
+    --foreground: #2c2417;
+    --card: #f0ebe1;
+    --card-foreground: #2c2417;
+    --border: #e5ddd4;
+    --input: #e5ddd4;
+    --ring: #7a9e7e;
+    --primary: #7a9e7e;
+    --primary-foreground: #faf7f2;
+    --secondary: #f0ebe1;
+    --secondary-foreground: #2c2417;
+    --muted: #f0ebe1;
+    --muted-foreground: #6b5e4e;
+    --accent: #c4704a;
+    --accent-foreground: #faf7f2;
+    --destructive: #dc2626;
+    --destructive-foreground: #faf7f2;
+  }
+
+  * {
+    @apply border-binchen-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-binchen-cream font-body text-binchen-ink antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .focus-ring {
+    @apply outline-none ring-2 ring-binchen-sage ring-offset-2 ring-offset-binchen-cream;
+  }
+}

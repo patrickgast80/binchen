@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-typecheck:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint storefront
+        run: pnpm --filter storefront lint
+
+      - name: Lint backend
+        run: pnpm --filter backend lint
+
+      - name: Typecheck storefront
+        run: pnpm --filter storefront typecheck
+
+      - name: Typecheck backend
+        run: pnpm --filter backend typecheck
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint-typecheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build storefront
+        run: pnpm --filter storefront build
+        env:
+          NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ vars.STAGING_BACKEND_URL || 'http://localhost:9000' }}
+
+      - name: Build backend
+        run: pnpm --filter backend build
