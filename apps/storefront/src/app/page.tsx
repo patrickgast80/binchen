@@ -1,0 +1,233 @@
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+const placeholderProducts = [
+  {
+    id: 1,
+    name: "Strampler aus Bio-Musselin",
+    description: "Weicher Musselin, ideal für empfindliche Babyhaut. Größen: 50–74.",
+    price: "32,00 €",
+    image: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600&h=600&fit=crop&q=80",
+    alt: "Hellblauer Baby-Strampler aus weichem Musselin auf einem Holztisch",
+    badge: "Neuheit",
+  },
+  {
+    id: 2,
+    name: "Sommerjacke für Kleinkinder",
+    description: "Luftige Jacke aus 100 % Baumwolle. Für aktive Kleine von 1–3 Jahren.",
+    price: "48,00 €",
+    image: "https://images.unsplash.com/photo-1518831959646-742c3a14ebf6?w=600&h=600&fit=crop&q=80",
+    alt: "Pastellgelbe Kinderjacke, handgenäht, auf einem hellen Holzboden",
+    badge: "Bestseller",
+  },
+  {
+    id: 3,
+    name: "Geschenkset Neugeborene",
+    description: "Mütze, Fäustlinge und Söckchen im Set. Perfektes Babygeschenk.",
+    price: "28,00 €",
+    image: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=600&h=600&fit=crop&q=80",
+    alt: "Liebevoll verpacktes Neugeborenen-Geschenkset in Cremeweiß und Salbeigrün",
+    badge: "Geschenktipp",
+  },
+];
+
+export default function HomePage() {
+  return (
+    <>
+      {/* Hero section */}
+      <section
+        aria-labelledby="hero-heading"
+        className="relative overflow-hidden bg-binchen-cream-dark"
+      >
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+            {/* Text */}
+            <div>
+              <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta">
+                Handgemacht mit Liebe
+              </p>
+              <h1
+                id="hero-heading"
+                className="mt-3 font-display text-4xl font-semibold leading-tight text-binchen-ink sm:text-5xl lg:text-6xl"
+              >
+                Kleidung, die{" "}
+                <em className="font-display not-italic text-binchen-terracotta">Geschichten</em>{" "}
+                erzählt
+              </h1>
+              <p className="mt-6 font-body text-lg leading-relaxed text-binchen-ink-muted">
+                Jedes Stück bei Binchen wird von Hand gefertigt — aus natürlichen Materialien, mit
+                Liebe zum Detail und Respekt vor den Kleinsten.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Button asChild variant="accent" size="lg">
+                  <Link href="/catalog">Kollektion entdecken</Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/about">Unsere Geschichte</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Hero image */}
+            <div className="relative aspect-square overflow-hidden rounded-2xl bg-binchen-border">
+              <Image
+                src="https://images.unsplash.com/photo-1522771930-78848d9293e8?w=800&h=800&fit=crop&q=80"
+                alt="Handgefertigte Baby-Kleidungsstücke auf einem hellen Holztisch, liebevoll drapiert"
+                fill
+                priority
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Product grid — placeholder */}
+      <section
+        aria-labelledby="products-heading"
+        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+      >
+        <div className="text-center">
+          <h2
+            id="products-heading"
+            className="font-display text-3xl font-semibold text-binchen-ink sm:text-4xl"
+          >
+            Unsere Lieblinge
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl font-body text-base text-binchen-ink-muted">
+            Handverlesene Stücke aus der aktuellen Kollektion — jedes Unikat oder in kleiner Serie
+            gefertigt.
+          </p>
+        </div>
+
+        <ul
+          className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          role="list"
+          aria-label="Produkte"
+        >
+          {placeholderProducts.map((product) => (
+            <li key={product.id}>
+              <Card className="group overflow-hidden transition-shadow hover:shadow-md">
+                {/* Product image */}
+                <div className="relative aspect-square overflow-hidden bg-binchen-border">
+                  <Image
+                    src={product.image}
+                    alt={product.alt}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                  {product.badge && (
+                    <span className="absolute left-3 top-3 rounded-full bg-binchen-terracotta px-3 py-1 font-body text-xs font-medium text-binchen-cream">
+                      {product.badge}
+                    </span>
+                  )}
+                </div>
+
+                <CardContent className="p-5">
+                  <h3 className="font-display text-lg font-semibold text-binchen-ink">
+                    {product.name}
+                  </h3>
+                  <p className="mt-1 font-body text-sm leading-relaxed text-binchen-ink-muted">
+                    {product.description}
+                  </p>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="font-body text-base font-semibold text-binchen-ink">
+                      {product.price}
+                    </span>
+                    <Button asChild variant="default" size="sm">
+                      <Link href={`/product/${product.id}`} aria-label={`${product.name} ansehen`}>
+                        Ansehen
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-10 text-center">
+          <Button asChild variant="outline" size="lg">
+            <Link href="/catalog">Alle Produkte ansehen</Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* About Us teaser */}
+      <section
+        aria-labelledby="about-heading"
+        className="bg-binchen-cream-dark"
+      >
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+            {/* Image */}
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-binchen-border lg:order-2">
+              <Image
+                src="https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=800&h=600&fit=crop&q=80"
+                alt="Schneiderin näht liebevoll ein kleines Kleidungsstück an der Nähmaschine"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
+
+            {/* Text */}
+            <div className="lg:order-1">
+              <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta">
+                Über Binchen
+              </p>
+              <h2
+                id="about-heading"
+                className="mt-3 font-display text-3xl font-semibold text-binchen-ink sm:text-4xl"
+              >
+                Jeder Stich mit Sorgfalt
+              </h2>
+              <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted">
+                Binchen entstand aus der Überzeugung, dass Kinderkleidung mehr sein kann als eine
+                Ware. Wir verarbeiten ausschließlich natürliche Materialien, achten auf
+                umweltbewusste Produktion und stecken viel Liebe in jedes einzelne Stück.
+              </p>
+              <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted">
+                Jedes Stück ist ein Unikat — oder in kleiner Serie gefertigt — und wird sorgfältig
+                kontrolliert, bevor es zu euch kommt.
+              </p>
+              <div className="mt-6">
+                <Button asChild variant="default">
+                  <Link href="/about">Mehr über uns</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust badges / values strip */}
+      <section aria-label="Unsere Werte" className="border-t border-binchen-border">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <ul
+            className="grid grid-cols-2 gap-6 text-center sm:grid-cols-4"
+            role="list"
+          >
+            {[
+              { icon: "🌿", label: "Natürliche Materialien" },
+              { icon: "✂️", label: "Handgefertigt" },
+              { icon: "🇩🇪", label: "Made in Germany" },
+              { icon: "📦", label: "Nachhaltige Verpackung" },
+            ].map((item) => (
+              <li key={item.label} className="flex flex-col items-center gap-2">
+                <span className="text-3xl" role="img" aria-hidden="true">
+                  {item.icon}
+                </span>
+                <p className="font-body text-sm font-medium text-binchen-ink">{item.label}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    </>
+  );
+}
