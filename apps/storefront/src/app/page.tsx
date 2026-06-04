@@ -45,7 +45,7 @@ export default function HomePage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
             {/* Text */}
             <div>
-              <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta">
+              <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta-text">
                 Handgemacht mit Liebe
               </p>
               <h1
@@ -53,7 +53,7 @@ export default function HomePage() {
                 className="mt-3 font-display text-4xl font-semibold leading-tight text-binchen-ink sm:text-5xl lg:text-6xl"
               >
                 Kleidung, die{" "}
-                <em className="font-display not-italic text-binchen-terracotta">Geschichten</em>{" "}
+                <em className="font-display not-italic text-binchen-terracotta-text">Geschichten</em>{" "}
                 erzählt
               </h1>
               <p className="mt-6 font-body text-lg leading-relaxed text-binchen-ink-muted">
@@ -121,7 +121,7 @@ export default function HomePage() {
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                   {product.badge && (
-                    <span className="absolute left-3 top-3 rounded-full bg-binchen-terracotta px-3 py-1 font-body text-xs font-medium text-binchen-cream">
+                    <span className="absolute left-3 top-3 rounded-full bg-binchen-terracotta-text px-3 py-1 font-body text-xs font-semibold text-binchen-cream">
                       {product.badge}
                     </span>
                   )}
@@ -177,7 +177,7 @@ export default function HomePage() {
 
             {/* Text */}
             <div className="lg:order-1">
-              <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta">
+              <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta-text">
                 Über Binchen
               </p>
               <h2

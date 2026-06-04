@@ -22,7 +22,7 @@ export function Header() {
           className="font-display text-xl font-semibold text-binchen-ink transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage focus-visible:ring-offset-2 rounded"
           aria-label="Binchen – zurück zur Startseite"
         >
-          <span className="text-binchen-terracotta">Binchen</span>
+          <span className="text-binchen-terracotta-text">Binchen</span>
           <span className="hidden text-binchen-ink-muted sm:inline"> Handmade</span>
         </Link>
 
@@ -69,7 +69,7 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="right" aria-label="Navigationsmenü">
               <SheetHeader>
-                <SheetTitle className="font-display text-binchen-terracotta">Binchen</SheetTitle>
+                <SheetTitle className="font-display text-binchen-terracotta-text">Binchen</SheetTitle>
               </SheetHeader>
               <nav
                 aria-label="Mobilnavigation"

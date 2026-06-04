@@ -8,8 +8,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-binchen-sage text-binchen-cream hover:bg-binchen-sage-dark",
-        accent: "bg-binchen-terracotta text-binchen-cream hover:bg-binchen-terracotta-light",
+        default: "bg-binchen-sage-btn text-binchen-cream hover:opacity-90",
+        accent: "bg-binchen-terracotta-text text-binchen-cream hover:opacity-90",
         outline:
           "border border-binchen-border bg-transparent text-binchen-ink hover:bg-binchen-cream-dark",
         ghost: "text-binchen-ink hover:bg-binchen-cream-dark",

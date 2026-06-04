@@ -24,7 +24,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           {/* Brand */}
           <div>
-            <p className="font-display text-xl font-semibold text-binchen-terracotta">Binchen</p>
+            <p className="font-display text-xl font-semibold text-binchen-terracotta-text">Binchen</p>
             <p className="mt-2 font-body text-sm text-binchen-ink-muted">
               Handgefertigte Baby- & Kinderkleidung mit Liebe gemacht.
             </p>
