@@ -43,3 +43,5 @@ postgres-data/
 # Test artifacts
 coverage/
 .nyc_output/
+
+.vercel
