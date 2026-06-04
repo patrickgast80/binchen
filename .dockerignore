@@ -5,8 +5,4 @@ node_modules
 **/dist
 .git
 .github
-apps/e2e
-apps/storefront/.env*
-apps/backend/.env*
-infra/
 *.log
