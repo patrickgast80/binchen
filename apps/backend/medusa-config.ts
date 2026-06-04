@@ -27,15 +27,6 @@ export default defineConfig({
       },
     },
     {
-      resolve: "@medusajs/payment-paypal",
-      options: {
-        sandbox: process.env.NODE_ENV !== "production",
-        clientId: process.env.PAYPAL_CLIENT_ID,
-        clientSecret: process.env.PAYPAL_CLIENT_SECRET,
-        authWebhookId: process.env.PAYPAL_AUTH_WEBHOOK_ID,
-      },
-    },
-    {
       resolve: "@medusajs/fulfillment-manual",
     },
     {
