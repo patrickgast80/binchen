@@ -36,8 +36,6 @@ export default defineConfig({
         backend_url: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
       },
     },
-    {
-      resolve: "./src/modules/catalog",
-    },
+    // catalog module is auto-discovered from src/modules/catalog by Medusa v2
   ],
 })
