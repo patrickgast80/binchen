@@ -1,7 +1,8 @@
 {
   "ts-node": {
     "transpileOnly": true,
-    "esm": false
+    "esm": false,
+    "ignore": ["(?:^|/)node_modules/"]
   },
   "compilerOptions": {
     "target": "ES2021",
