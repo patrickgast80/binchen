@@ -1,7 +1,7 @@
 name: Staging CI (auto-deploy via integrations)
 
 # Vercel auto-deploys the storefront to production/staging on push to main via GitHub App.
-# Railway auto-deploys the backend on push to main via GitHub integration.
+# Render auto-deploys the backend on push to main via GitHub integration.
 # This workflow just verifies the build passes before those auto-deploys pick it up.
 
 on:

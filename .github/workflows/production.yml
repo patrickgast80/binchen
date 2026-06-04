@@ -2,7 +2,7 @@ name: Production deploy gate
 
 # Production deploys are triggered manually via:
 # - Vercel dashboard: Promotions → Promote to Production
-# - Railway dashboard: Deployments → Promote staging to production
+# - Render dashboard: binchen-backend → Deploys → Rollback/promote as needed
 #
 # This workflow runs final checks before a manual production promotion.
 # No tokens required — deploys happen through the platform dashboards.
@@ -57,5 +57,5 @@ jobs:
           echo "====================================================="
           echo "Checks passed. To deploy to production:"
           echo "  Storefront: Vercel dashboard → Deployments → Promote"
-          echo "  Backend:    Railway dashboard → Deployments → Promote"
+          echo "  Backend:    Render dashboard → binchen-backend → Deploys"
           echo "====================================================="
