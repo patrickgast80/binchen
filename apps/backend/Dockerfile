@@ -11,10 +11,16 @@ COPY apps/storefront/package.json apps/storefront/
 COPY apps/e2e/package.json apps/e2e/
 RUN pnpm install --filter @binchen/backend --shamefully-hoist
 COPY apps/backend/ apps/backend/
-# Pre-compile medusa-config.ts so medusa build loads plain JS (avoids ts-node/jiti issues)
-RUN node_modules/.bin/esbuild apps/backend/medusa-config.ts \
+# Pre-compile medusa-config.ts + src/ to JS so Medusa can inspect modules without ts-node
+RUN node_modules/.bin/esbuild \
+    apps/backend/medusa-config.ts \
+    apps/backend/src/modules/catalog/index.ts \
+    apps/backend/src/modules/catalog/service.ts \
+    apps/backend/src/modules/catalog/models/product-metadata.ts \
+    apps/backend/src/api/store/products/route.ts \
+    apps/backend/src/scripts/seed.ts \
     --bundle=false --platform=node --format=cjs \
-    --outfile=apps/backend/medusa-config.js
+    --outdir=apps/backend --outbase=apps/backend
 RUN pnpm --filter @binchen/backend build
 
 FROM node:20-alpine AS runner
