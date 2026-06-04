@@ -5,16 +5,19 @@ RUN npm install -g pnpm@9
 
 FROM base AS deps
 WORKDIR /app
-# Copy workspace manifests from repo root (pnpm-lock.yaml optional until first commit)
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY apps/backend/package.json apps/backend/
-RUN pnpm install --filter @binchen/backend --prod
+COPY apps/storefront/package.json apps/storefront/
+COPY apps/e2e/package.json apps/e2e/
+RUN pnpm install --filter @binchen/backend --prod --ignore-scripts
 
 FROM base AS builder
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY apps/backend/package.json apps/backend/
-RUN pnpm install --filter @binchen/backend
+COPY apps/storefront/package.json apps/storefront/
+COPY apps/e2e/package.json apps/e2e/
+RUN pnpm install --filter @binchen/backend --ignore-scripts
 COPY apps/backend/ apps/backend/
 RUN pnpm --filter @binchen/backend build
 
@@ -22,12 +25,12 @@ FROM base AS runner
 WORKDIR /app/apps/backend
 ENV NODE_ENV=production
 
-# Copy pnpm virtual store + hoisted modules
+# Copy workspace manifests needed for module resolution
 COPY --from=deps /app/node_modules /app/node_modules
+COPY --from=deps /app/apps/backend/node_modules ./node_modules
 COPY --from=builder /app/apps/backend/.medusa ./.medusa
 COPY --from=builder /app/apps/backend/package.json ./
 
 EXPOSE 9000
 
-# Run migrations then start (migrate is idempotent)
-CMD ["sh", "-c", "node .medusa/server/src/main.js migrate && node .medusa/server/src/main.js"]
+CMD ["node", ".medusa/server/src/main.js"]

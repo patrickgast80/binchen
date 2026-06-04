@@ -5,6 +5,8 @@ dockerfilePath = "apps/backend/Dockerfile"
 watchPatterns = ["apps/backend/**", "package.json", "pnpm-workspace.yaml", "pnpm-lock.yaml"]
 
 [deploy]
+# Run DB migrations before the new container takes traffic
+preDeployCommand = "node .medusa/server/src/main.js db:migrate"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
