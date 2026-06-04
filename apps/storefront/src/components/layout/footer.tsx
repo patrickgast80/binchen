@@ -70,7 +70,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t border-binchen-border pt-8 text-center">
-          <p className="font-body text-xs text-binchen-ink-subtle">
+          <p className="font-body text-xs text-binchen-ink-muted">
             &copy; {new Date().getFullYear()} Binchen Handmade. Alle Rechte vorbehalten.
           </p>
         </div>
