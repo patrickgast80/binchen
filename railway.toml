@@ -8,5 +8,4 @@ healthcheckPath = "/health"
 healthcheckTimeout = 600
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-# Railway runs this before the first replica starts — ensures schema is up to date
 releaseCommand = "node /app/node_modules/.bin/medusa db:migrate"
