@@ -1,19 +1,35 @@
-# Build context: apps/backend/ (Railway rootDirectory = apps/backend)
-# dockerfilePath in railway.toml is apps/backend/Dockerfile (root-relative).
+# Build context: repo root
+# dockerfilePath: ./apps/backend/Dockerfile  (used by both Railway and Render)
 FROM node:20-alpine AS builder
 WORKDIR /app
 RUN npm install -g pnpm@9.0.0
-COPY package.json ./
-RUN pnpm install --no-frozen-lockfile --node-linker=hoisted
-COPY . .
-RUN node_modules/.bin/medusa build
+# Copy workspace manifests first for better layer caching
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY apps/backend/package.json apps/backend/
+COPY apps/storefront/package.json apps/storefront/
+COPY apps/e2e/package.json apps/e2e/
+# Install backend deps with hoisted node_modules (Medusa requires flat dep tree)
+RUN pnpm install --filter @binchen/backend --frozen-lockfile --shamefully-hoist
+# Copy backend source only (keeps build context cache-friendly)
+COPY apps/backend/ apps/backend/
+# Build Medusa — compiles TS and generates .medusa/server artifact
+RUN pnpm --filter @binchen/backend build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
 RUN npm install -g pnpm@9.0.0
-COPY package.json ./
-RUN pnpm install --prod --no-frozen-lockfile --node-linker=hoisted
-COPY --from=builder /app/.medusa .medusa/
+# Copy workspace manifests
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY apps/backend/package.json apps/backend/
+COPY apps/storefront/package.json apps/storefront/
+COPY apps/e2e/package.json apps/e2e/
+# Production deps only
+RUN pnpm install --filter @binchen/backend --prod --frozen-lockfile --shamefully-hoist
+# Copy compiled Medusa app from builder
+COPY --from=builder /app/apps/backend/.medusa apps/backend/.medusa
+
+WORKDIR /app/apps/backend
 ENV NODE_ENV=production
 EXPOSE 9000
-CMD ["node", ".medusa/server/src/main.js"]
+# Runs db:migrate before starting (idempotent — safe on every boot)
+CMD ["sh", "-c", "/app/node_modules/.bin/medusa db:migrate && node .medusa/server/src/main.js"]
