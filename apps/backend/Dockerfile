@@ -18,7 +18,7 @@ RUN node_modules/.bin/esbuild \
     src/scripts/seed.ts \
     --bundle=false --platform=node --format=cjs \
     --outdir=. --outbase=.
-RUN pnpm build
+RUN node_modules/.bin/medusa build
 
 FROM node:20-alpine AS runner
 RUN npm install -g pnpm@9.0.0
