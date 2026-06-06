@@ -1,6 +1,6 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "apps/backend/Dockerfile"
+dockerfilePath = "Dockerfile"
 watchPatterns = ["apps/backend/**", "package.json", "pnpm-workspace.yaml", "pnpm-lock.yaml", ".dockerignore"]
 
 [deploy]
