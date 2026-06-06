@@ -16,6 +16,10 @@ export default defineConfig({
     },
   },
   admin: {
+    // Disabled for free-tier Docker builds: Vite processes 3800+ dashboard chunks and
+    // hits EMFILE/OOM on Render 512 MB. Re-enable on a paid tier or via a separate
+    // admin-only build. Store API is fully operational without the admin UI.
+    disable: true,
     backendUrl: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
   },
   modules: [
