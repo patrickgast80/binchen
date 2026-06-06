@@ -16,6 +16,39 @@ export default async function seed({ container }: ExecArgs) {
 
   logger.info("Seeding Binchen catalog...")
 
+  // Bootstrap publishable API key — runs every startup, idempotent
+  // The raw token is only returned on createApiKeys(); store it in Store metadata
+  // so GET /app/config can return it for one-time Vercel env var setup.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const apiKeyModule = container.resolve(Modules.API_KEY) as any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const storeModule = container.resolve(Modules.STORE) as any
+    const existingKeys = await apiKeyModule.listApiKeys({ title: "Storefront" })
+    if (!existingKeys || existingKeys.length === 0) {
+      const newKey = await apiKeyModule.createApiKeys({
+        title: "Storefront",
+        type: "publishable",
+        created_by: "seed",
+      })
+      const rawToken: string = newKey.token ?? (Array.isArray(newKey) ? newKey[0]?.token : undefined)
+      if (rawToken) {
+        const [store] = await storeModule.listStores({})
+        if (store) {
+          await storeModule.updateStores([{
+            id: store.id,
+            metadata: { ...((store.metadata as Record<string, unknown>) ?? {}), _pub_key: rawToken },
+          }])
+        }
+        logger.info(`=== BINCHEN PUBLISHABLE KEY: ${rawToken} ===`)
+      }
+    } else {
+      logger.info("Publishable API key already exists — skipping key creation.")
+    }
+  } catch (err) {
+    logger.warn(`Publishable key bootstrap error (non-fatal): ${err}`)
+  }
+
   // Idempotency guard — skip if products already exist
   const [existingProducts] = await productModule.listAndCountProducts({}, { take: 1 })
   if (existingProducts.length > 0) {
