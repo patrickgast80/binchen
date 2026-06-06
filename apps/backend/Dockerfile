@@ -29,8 +29,10 @@ COPY apps/storefront/package.json apps/storefront/
 COPY apps/e2e/package.json apps/e2e/
 # Production deps only
 RUN pnpm install --filter @binchen/backend --prod --frozen-lockfile --shamefully-hoist
-# Copy compiled Medusa app from builder
+# Copy compiled Medusa app and pre-transpiled config from builder
+# medusa-config.js is needed by both db:migrate and main.js at runtime
 COPY --from=builder /app/apps/backend/.medusa apps/backend/.medusa
+COPY --from=builder /app/apps/backend/medusa-config.js apps/backend/medusa-config.js
 
 WORKDIR /app/apps/backend
 ENV NODE_ENV=production
