@@ -9,7 +9,8 @@ export default async function seed({ container }: ExecArgs) {
   const productModule = container.resolve(Modules.PRODUCT)
   const inventoryModule = container.resolve(Modules.INVENTORY)
   const stockLocationModule = container.resolve(Modules.STOCK_LOCATION)
-  const catalogModule = container.resolve(CATALOG_MODULE)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const catalogModule = container.resolve(CATALOG_MODULE) as any
   const salesChannelModule = container.resolve(Modules.SALES_CHANNEL)
   const pricingModule = container.resolve(Modules.PRICING)
 
@@ -123,7 +124,6 @@ export default async function seed({ container }: ExecArgs) {
         title: p.title,
         description: p.description,
         status: "draft",
-        sales_channels: [{ id: salesChannel.id }],
         variants: p.variants.map((v) => ({
           title: v.title,
           sku: v.sku,

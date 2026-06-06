@@ -17,7 +17,8 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   } = req.query as Record<string, string>
 
   const productModule = req.scope.resolve(Modules.PRODUCT)
-  const catalogModule = req.scope.resolve(CATALOG_MODULE)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const catalogModule = req.scope.resolve(CATALOG_MODULE) as any
 
   // Build metadata filter
   const metaFilter: Record<string, unknown> = {}
@@ -68,7 +69,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       id: v.id,
       title: v.title,
       sku: v.sku,
-      inventory_quantity: v.inventory_quantity ?? 1,
+      inventory_quantity: (v as any).inventory_quantity ?? 1,
     })),
     metadata: metaByProductId[product.id] ?? null,
   }))
