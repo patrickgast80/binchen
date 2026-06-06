@@ -1,4 +1,5 @@
 const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? "";
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "";
 
 export interface MedusaProduct {
   id: string;
@@ -41,7 +42,10 @@ export async function getProducts(params: {
   url.searchParams.set("limit", String(params.limit ?? 20));
   url.searchParams.set("offset", String(params.offset ?? 0));
 
-  const res = await fetch(url.toString(), { next: { revalidate: 60 } });
+  const headers: Record<string, string> = {};
+  if (PUBLISHABLE_KEY) headers["x-publishable-api-key"] = PUBLISHABLE_KEY;
+
+  const res = await fetch(url.toString(), { headers, next: { revalidate: 60 } });
   if (!res.ok) throw new Error(`Backend error: ${res.status}`);
   return res.json();
 }
