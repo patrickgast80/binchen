@@ -38,4 +38,6 @@ WORKDIR /app/apps/backend
 ENV NODE_ENV=production
 EXPOSE 9000
 # Runs db:migrate before starting (idempotent — safe on every boot)
-CMD ["sh", "-c", "/app/node_modules/.bin/medusa db:migrate && node .medusa/server/src/main.js"]
+# medusa build only compiles TS to .medusa/server/ — there is no generated main.js;
+# use `medusa start` which loads routes from the compiled .medusa/server/ artifact.
+CMD ["sh", "-c", "/app/node_modules/.bin/medusa db:migrate && /app/node_modules/.bin/medusa start"]
