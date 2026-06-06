@@ -10,6 +10,10 @@ COPY apps/storefront/package.json apps/storefront/
 COPY apps/e2e/package.json apps/e2e/
 # Install backend deps with hoisted node_modules (Medusa requires flat dep tree)
 RUN pnpm install --filter @binchen/backend --frozen-lockfile --shamefully-hoist
+# ts-node is not in pnpm-lock.yaml but @medusajs/cli/cli.js requires it at build time
+# to register TypeScript so medusa-config.ts can be loaded. Install outside pnpm to
+# avoid touching package.json/pnpm-lock.yaml.
+RUN npm install --prefix /app --no-save ts-node@10 tsconfig-paths@4
 # Copy backend source only (keeps build context cache-friendly)
 COPY apps/backend/ apps/backend/
 # Build Medusa — compiles TS and generates .medusa/server artifact
