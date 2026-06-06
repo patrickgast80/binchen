@@ -44,4 +44,7 @@ postgres-data/
 coverage/
 .nyc_output/
 
+# DevOps local vault — secrets NEVER committed
+infra/.vault/
+
 .vercel
