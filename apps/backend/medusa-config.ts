@@ -19,24 +19,40 @@ export default defineConfig({
     backendUrl: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
   },
   modules: [
+    // Stripe is a payment provider — must live inside the payment module, not as a top-level module
     {
-      resolve: "@medusajs/payment-stripe",
+      resolve: "@medusajs/medusa/payment",
       options: {
-        apiKey: process.env.STRIPE_SECRET_KEY,
-        webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-        capture: false,
+        providers: [
+          {
+            resolve: "@medusajs/payment-stripe",
+            id: "stripe",
+            options: {
+              apiKey: process.env.STRIPE_SECRET_KEY,
+              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+              capture: false,
+            },
+          },
+        ],
       },
     },
+    // file-local is a file provider — override to pass custom upload_dir and backend_url
     {
-      resolve: "@medusajs/fulfillment-manual",
-    },
-    {
-      resolve: "@medusajs/file-local",
+      resolve: "@medusajs/medusa/file",
       options: {
-        upload_dir: "uploads",
-        backend_url: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
+        providers: [
+          {
+            resolve: "@medusajs/medusa/file-local",
+            id: "local",
+            options: {
+              upload_dir: "uploads",
+              backend_url: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
+            },
+          },
+        ],
       },
     },
+    // fulfillment-manual: removed — already included by default as @medusajs/medusa/fulfillment-manual
     // catalog module is auto-discovered from src/modules/catalog by Medusa v2
   ],
 })
