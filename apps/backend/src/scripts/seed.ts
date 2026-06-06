@@ -16,6 +16,13 @@ export default async function seed({ container }: ExecArgs) {
 
   logger.info("Seeding Binchen catalog...")
 
+  // Idempotency guard — skip if products already exist
+  const [existingProducts] = await productModule.listAndCountProducts({}, { take: 1 })
+  if (existingProducts.length > 0) {
+    logger.info("Catalog already seeded — skipping.")
+    return
+  }
+
   // Create default sales channel
   const [salesChannel] = await salesChannelModule.createSalesChannels([
     { name: "Online Store" },

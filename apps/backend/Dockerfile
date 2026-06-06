@@ -37,7 +37,16 @@ COPY --from=builder /app/apps/backend/medusa-config.js apps/backend/medusa-confi
 WORKDIR /app/apps/backend
 ENV NODE_ENV=production
 EXPOSE 9000
-# Runs db:migrate before starting (idempotent — safe on every boot)
-# medusa build only compiles TS to .medusa/server/ — there is no generated main.js;
-# use `medusa start` which loads routes from the compiled .medusa/server/ artifact.
-CMD ["sh", "-c", "/app/node_modules/.bin/medusa db:migrate && /app/node_modules/.bin/medusa start"]
+# Startup sequence (all steps idempotent — safe on every boot):
+# 1. db:migrate      — apply pending migrations
+# 2. medusa user     — create first admin if MEDUSA_ADMIN_EMAIL is set and no users exist yet
+# 3. medusa exec     — run seed script (exits early if products already exist)
+# 4. medusa start    — serve the app
+CMD ["sh", "-c", "\
+  /app/node_modules/.bin/medusa db:migrate && \
+  if [ -n \"$MEDUSA_ADMIN_EMAIL\" ] && [ -n \"$MEDUSA_ADMIN_PASSWORD\" ]; then \
+    /app/node_modules/.bin/medusa user -e \"$MEDUSA_ADMIN_EMAIL\" -p \"$MEDUSA_ADMIN_PASSWORD\" 2>/dev/null || true; \
+  fi && \
+  /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/seed.js 2>/dev/null || true && \
+  exec /app/node_modules/.bin/medusa start \
+"]
