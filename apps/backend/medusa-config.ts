@@ -22,8 +22,9 @@ export default defineConfig({
     backendUrl: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
   },
   modules: [
-    // Stripe is a payment provider — must live inside the payment module, not as a top-level module
-    {
+    // Only register Stripe when the key is present — server boots fine without it.
+    // Add STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET env vars in Render/Railway to enable payments.
+    ...(process.env.STRIPE_SECRET_KEY ? [{
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
@@ -38,7 +39,7 @@ export default defineConfig({
           },
         ],
       },
-    },
+    }] : []),
     // file-local is a file provider — override to pass custom upload_dir and backend_url
     {
       resolve: "@medusajs/medusa/file",
