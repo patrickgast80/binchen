@@ -8,18 +8,8 @@ WORKDIR /app
 COPY package.json ./
 RUN pnpm install --no-frozen-lockfile --shamefully-hoist
 COPY . .
-# Pre-compile TypeScript so Medusa can inspect modules without ts-node
-RUN node_modules/.bin/esbuild \
-    medusa-config.ts \
-    src/modules/catalog/index.ts \
-    src/modules/catalog/service.ts \
-    src/modules/catalog/models/product-metadata.ts \
-    src/api/store/products/route.ts \
-    src/scripts/seed.ts \
-    --bundle=false --platform=node --format=cjs \
-    --outdir=. --outbase=.
-# NODE_ENV=production tells medusa to use compiled .js config, not ts-node
-RUN NODE_ENV=production node_modules/.bin/medusa build
+# ts-node is available so medusa can load medusa-config.ts directly
+RUN node_modules/.bin/medusa build
 
 FROM node:20-alpine AS runner
 RUN npm install -g pnpm@9.0.0
