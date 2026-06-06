@@ -6,7 +6,7 @@ RUN npm install -g pnpm@9.0.0
 FROM base AS builder
 WORKDIR /app
 COPY package.json ./
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --no-frozen-lockfile --shamefully-hoist
 COPY . .
 # Pre-compile TypeScript so Medusa can inspect modules without ts-node
 RUN node_modules/.bin/esbuild \
