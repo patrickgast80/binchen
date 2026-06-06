@@ -5,6 +5,7 @@ RUN npm install -g pnpm@9.0.0
 
 FROM base AS builder
 WORKDIR /app
+ENV NODE_ENV=production
 COPY package.json ./
 RUN pnpm install --no-frozen-lockfile --shamefully-hoist
 COPY . .
