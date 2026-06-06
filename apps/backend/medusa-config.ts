@@ -7,7 +7,6 @@ export default defineConfig({
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,
     http: {
-      port: process.env.PORT ? Number(process.env.PORT) : 9000,
       storeCors: process.env.STORE_CORS || "http://localhost:3000",
       adminCors: process.env.ADMIN_CORS || "http://localhost:7001",
       authCors: process.env.AUTH_CORS || "http://localhost:3000,http://localhost:7001",
