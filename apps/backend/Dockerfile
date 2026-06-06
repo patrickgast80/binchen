@@ -5,7 +5,6 @@ RUN npm install -g pnpm@9.0.0
 
 FROM base AS builder
 WORKDIR /app
-ENV NODE_ENV=production
 COPY package.json ./
 RUN pnpm install --no-frozen-lockfile --shamefully-hoist
 COPY . .
@@ -19,7 +18,8 @@ RUN node_modules/.bin/esbuild \
     src/scripts/seed.ts \
     --bundle=false --platform=node --format=cjs \
     --outdir=. --outbase=.
-RUN node_modules/.bin/medusa build
+# NODE_ENV=production tells medusa to use compiled .js config, not ts-node
+RUN NODE_ENV=production node_modules/.bin/medusa build
 
 FROM node:20-alpine AS runner
 RUN npm install -g pnpm@9.0.0
