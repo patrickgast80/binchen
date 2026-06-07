@@ -57,6 +57,8 @@ export default defineConfig({
       },
     },
     // fulfillment-manual: removed — already included by default as @medusajs/medusa/fulfillment-manual
-    // catalog module is auto-discovered from src/modules/catalog by Medusa v2
+    {
+      resolve: "./src/modules/catalog",
+    },
   ],
 })

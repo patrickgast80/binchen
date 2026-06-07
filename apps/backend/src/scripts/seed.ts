@@ -9,10 +9,22 @@ export default async function seed({ container }: ExecArgs) {
   const productModule = container.resolve(Modules.PRODUCT)
   const inventoryModule = container.resolve(Modules.INVENTORY)
   const stockLocationModule = container.resolve(Modules.STOCK_LOCATION)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const catalogModule = container.resolve(CATALOG_MODULE) as any
   const salesChannelModule = container.resolve(Modules.SALES_CHANNEL)
   const pricingModule = container.resolve(Modules.PRICING)
+  // remoteLink is the Medusa v2 cross-module link service; required for variant→inventory
+  // and variant→priceSet associations (upsertProductVariants does not accept those fields).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const remoteLink = container.resolve(ContainerRegistrationKeys.LINK) as any
+
+  // CATALOG_MODULE is a custom module — if auto-discovery fails in the compiled bundle
+  // the seed must still create core products.  Resolve it defensively.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let catalogModule: any = null
+  try {
+    catalogModule = container.resolve(CATALOG_MODULE)
+  } catch (err) {
+    logger.warn(`CATALOG_MODULE not available (non-fatal): ${err}`)
+  }
 
   logger.info("Seeding Binchen catalog...")
 
@@ -57,7 +69,7 @@ export default async function seed({ container }: ExecArgs) {
   }
 
   // Create default sales channel
-  const [salesChannel] = await salesChannelModule.createSalesChannels([
+  await salesChannelModule.createSalesChannels([
     { name: "Online Store" },
   ])
 
@@ -172,13 +184,19 @@ export default async function seed({ container }: ExecArgs) {
       },
     ])
 
-    // 2. Attach Binchen catalog metadata
-    await catalogModule.createProductMetadatas([
-      {
-        productId: product.id,
-        ...p.meta,
-      },
-    ])
+    // 2. Attach Binchen catalog metadata (non-fatal if catalog module unavailable)
+    if (catalogModule) {
+      try {
+        await catalogModule.createProductMetadatas([
+          {
+            productId: product.id,
+            ...p.meta,
+          },
+        ])
+      } catch (err) {
+        logger.warn(`Catalog metadata for ${p.title} failed (non-fatal): ${err}`)
+      }
+    }
 
     // 3. Create inventory items and set quantity=1 for each variant
     for (const variant of product.variants ?? []) {
@@ -189,13 +207,11 @@ export default async function seed({ container }: ExecArgs) {
         },
       ])
 
-      // Link variant to inventory item
-      await productModule.upsertProductVariants([
-        {
-          id: variant.id,
-          inventory_items: [{ inventory_item_id: inventoryItem.id }],
-        },
-      ])
+      // Link variant → inventory item via remote link (Medusa v2 cross-module association)
+      await remoteLink.create({
+        [Modules.PRODUCT]: { variant_id: variant.id },
+        [Modules.INVENTORY]: { inventory_item_id: inventoryItem.id },
+      })
 
       // Set stock=1 at the atelier location
       await inventoryModule.createInventoryLevels([
@@ -219,14 +235,12 @@ export default async function seed({ container }: ExecArgs) {
       },
     ])
 
-    // Link price set to variant
+    // Link each variant → price set via remote link (Medusa v2 cross-module association)
     for (const variant of product.variants ?? []) {
-      await productModule.upsertProductVariants([
-        {
-          id: variant.id,
-          price_set_id: priceSet.id,
-        },
-      ])
+      await remoteLink.create({
+        [Modules.PRODUCT]: { variant_id: variant.id },
+        [Modules.PRICING]: { price_set_id: priceSet.id },
+      })
     }
   }
 
