@@ -57,8 +57,9 @@ export default defineConfig({
       },
     },
     // fulfillment-manual: removed — already included by default as @medusajs/medusa/fulfillment-manual
-    {
-      resolve: "./src/modules/catalog",
-    },
+    // catalog module NOT registered: no migrations exist yet for the product_metadata
+    // table, which causes db:migrate to fail at boot. Defensive seed (seed.ts) handles
+    // the missing module gracefully — products get created without Binchen metadata.
+    // TODO: generate migrations via `medusa db:generate catalog` and re-enable.
   ],
 })
