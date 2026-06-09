@@ -91,24 +91,17 @@ test.describe('BIL-16 — catalog page real-product verification', () => {
     // If no products at all (empty DB), this test is vacuously valid
   });
 
-  test('empty state — ?size=999 shows Keine Produkte gefunden or error fallback', async ({ page }) => {
-    // Documented behavior: Medusa's /store/products returns a non-2xx for an unmatched
-    // filter value (e.g. size=999), which the catalog page renders as the generic error
-    // fallback rather than the empty-results state. Tracked as a follow-up issue.
-    // This test asserts that the response is at least one of those two known surfaces.
+  test('empty state — ?size=999 shows Keine Produkte gefunden', async ({ page }) => {
+    // BIL-44: an unmatched custom-metadata filter (e.g. size=999) must render the
+    // empty-state, not the generic backend-error fallback. getProducts() translates
+    // Medusa's 400/404 for unmatched filters into an empty products array.
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${CATALOG_URL}?size=999`, { waitUntil: 'networkidle', timeout: 30000 });
 
     await page.screenshot({ path: 'screenshots/catalog-empty-state.png', fullPage: false });
 
-    const emptyText = page.getByText(/Keine Produkte gefunden/i);
-    const errorText = page.getByText(/Die Produkte konnten nicht geladen werden/i);
-    const emptyVisible = await emptyText.isVisible().catch(() => false);
-    const errorVisible = await errorText.isVisible().catch(() => false);
-    expect(
-      emptyVisible || errorVisible,
-      'Expected empty-state or error-state to be shown for unmatched filter'
-    ).toBe(true);
+    await expect(page.getByText(/Keine Produkte gefunden/i)).toBeVisible();
+    await expect(page.getByText(/Die Produkte konnten nicht geladen werden/i)).toHaveCount(0);
   });
 
   test('publishable API key is never sent from the browser', async ({ page }) => {
