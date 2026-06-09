@@ -17,9 +17,18 @@
     "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@medusajs/framework/utils": ["../../node_modules/@medusajs/framework/dist/utils/index"],
-      "@medusajs/framework/http": ["../../node_modules/@medusajs/framework/dist/http/index"],
-      "@medusajs/framework/types": ["../../node_modules/@medusajs/framework/dist/types/index"]
+      "@medusajs/framework/utils": [
+        "./node_modules/@medusajs/framework/dist/utils/index",
+        "../../node_modules/@medusajs/framework/dist/utils/index"
+      ],
+      "@medusajs/framework/http": [
+        "./node_modules/@medusajs/framework/dist/http/index",
+        "../../node_modules/@medusajs/framework/dist/http/index"
+      ],
+      "@medusajs/framework/types": [
+        "./node_modules/@medusajs/framework/dist/types/index",
+        "../../node_modules/@medusajs/framework/dist/types/index"
+      ]
     }
   },
   "include": ["src", "medusa-config.ts"],
