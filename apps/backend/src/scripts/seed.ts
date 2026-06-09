@@ -66,7 +66,34 @@ export default async function seed({ container }: ExecArgs) {
         }
       } else {
         publishableKeyId = existingKeys[0]?.id ?? null
-        logger.info("Publishable API key already exists — skipping key creation.")
+        // If _pub_key is missing from store metadata (deployed before this seed
+        // was updated), revoke the stale key and create a fresh one to capture
+        // the raw token, then write it to metadata.
+        if (storeModule) {
+          const [store] = await storeModule.listStores({})
+          const meta = (store?.metadata as Record<string, unknown> | null) ?? {}
+          if (store && !meta._pub_key && publishableKeyId) {
+            logger.info("_pub_key missing from store metadata — revoking stale key and recreating.")
+            await apiKeyModule.revokeApiKeys([publishableKeyId])
+            const newKey = await apiKeyModule.createApiKeys({
+              title: "Storefront",
+              type: "publishable",
+              created_by: "seed",
+            })
+            const created = Array.isArray(newKey) ? newKey[0] : newKey
+            publishableKeyId = created?.id ?? null
+            const rawToken: string | undefined = created?.token
+            if (rawToken) {
+              await storeModule.updateStores([{
+                id: store.id,
+                metadata: { ...meta, _pub_key: rawToken },
+              }])
+              logger.info(`=== BINCHEN PUBLISHABLE KEY: ${rawToken} ===`)
+            }
+          } else {
+            logger.info("Publishable API key already exists with _pub_key in metadata — skipping.")
+          }
+        }
       }
     }
   } catch (err) {
