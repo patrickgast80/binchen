@@ -1,6 +1,12 @@
 const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? "";
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "";
 
+function authHeaders(): Record<string, string> {
+  const h: Record<string, string> = { "content-type": "application/json" };
+  if (PUBLISHABLE_KEY) h["x-publishable-api-key"] = PUBLISHABLE_KEY;
+  return h;
+}
+
 export interface MedusaProduct {
   id: string;
   title: string;
@@ -42,10 +48,227 @@ export async function getProducts(params: {
   url.searchParams.set("limit", String(params.limit ?? 20));
   url.searchParams.set("offset", String(params.offset ?? 0));
 
-  const headers: Record<string, string> = {};
-  if (PUBLISHABLE_KEY) headers["x-publishable-api-key"] = PUBLISHABLE_KEY;
-
-  const res = await fetch(url.toString(), { headers, next: { revalidate: 60 } });
+  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
   if (!res.ok) throw new Error(`Backend error: ${res.status}`);
   return res.json();
+}
+
+// ─── Cart ──────────────────────────────────────────────────────────────
+
+export interface CartAddress {
+  first_name?: string;
+  last_name?: string;
+  company?: string | null;
+  address_1?: string;
+  address_2?: string | null;
+  city?: string;
+  postal_code?: string;
+  country_code?: string;
+  phone?: string;
+}
+
+export interface CartLineItem {
+  id: string;
+  product_id: string;
+  variant_id: string;
+  title: string;
+  subtitle?: string | null;
+  thumbnail?: string | null;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  total: number;
+}
+
+export interface CartShippingMethod {
+  id: string;
+  shipping_option_id: string;
+  name?: string;
+  amount: number;
+}
+
+export interface Cart {
+  id: string;
+  email?: string | null;
+  currency_code: string;
+  region_id: string | null;
+  items: CartLineItem[];
+  shipping_address?: CartAddress | null;
+  billing_address?: CartAddress | null;
+  shipping_methods?: CartShippingMethod[];
+  subtotal: number;
+  shipping_total: number;
+  tax_total: number;
+  total: number;
+}
+
+export interface ShippingOption {
+  id: string;
+  name: string;
+  amount: number;
+  price_type?: string;
+}
+
+interface Region {
+  id: string;
+  currency_code: string;
+  countries?: { iso_2: string }[];
+}
+
+let cachedRegionId: string | null = null;
+
+export async function getDefaultRegionId(): Promise<string | null> {
+  if (cachedRegionId) return cachedRegionId;
+  if (!BACKEND_URL) return null;
+  const res = await fetch(`${BACKEND_URL}/store/regions`, {
+    headers: authHeaders(),
+    next: { revalidate: 300 },
+  });
+  if (!res.ok) return null;
+  const { regions } = (await res.json()) as { regions: Region[] };
+  const de = regions.find((r) => r.countries?.some((c) => c.iso_2.toLowerCase() === "de"));
+  cachedRegionId = de?.id ?? regions[0]?.id ?? null;
+  return cachedRegionId;
+}
+
+export async function createCart(): Promise<Cart | null> {
+  if (!BACKEND_URL) return null;
+  const region_id = await getDefaultRegionId();
+  const res = await fetch(`${BACKEND_URL}/store/carts`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(region_id ? { region_id } : {}),
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const data = (await res.json()) as { cart: Cart };
+  return data.cart;
+}
+
+export async function getCart(cartId: string): Promise<Cart | null> {
+  if (!BACKEND_URL) return null;
+  const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}`, {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) return null;
+  const data = (await res.json()) as { cart: Cart };
+  return data.cart;
+}
+
+export async function addLineItem(
+  cartId: string,
+  variantId: string,
+  quantity = 1,
+): Promise<Cart | null> {
+  if (!BACKEND_URL) return null;
+  const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}/line-items`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ variant_id: variantId, quantity }),
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const data = (await res.json()) as { cart: Cart };
+  return data.cart;
+}
+
+export async function removeLineItem(cartId: string, lineId: string): Promise<Cart | null> {
+  if (!BACKEND_URL) return null;
+  const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}/line-items/${lineId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const data = (await res.json()) as { cart?: Cart; parent?: Cart };
+  return data.cart ?? data.parent ?? null;
+}
+
+export async function updateCart(
+  cartId: string,
+  patch: {
+    email?: string;
+    shipping_address?: CartAddress;
+    billing_address?: CartAddress;
+  },
+): Promise<Cart | null> {
+  if (!BACKEND_URL) return null;
+  const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(patch),
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const data = (await res.json()) as { cart: Cart };
+  return data.cart;
+}
+
+export async function listShippingOptions(cartId: string): Promise<ShippingOption[]> {
+  if (!BACKEND_URL) return [];
+  const url = new URL(`${BACKEND_URL}/store/shipping-options`);
+  url.searchParams.set("cart_id", cartId);
+  const res = await fetch(url.toString(), { headers: authHeaders(), cache: "no-store" });
+  if (!res.ok) return [];
+  const data = (await res.json()) as { shipping_options: ShippingOption[] };
+  return data.shipping_options ?? [];
+}
+
+export async function setShippingMethod(
+  cartId: string,
+  optionId: string,
+): Promise<Cart | null> {
+  if (!BACKEND_URL) return null;
+  const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}/shipping-methods`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ option_id: optionId }),
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const data = (await res.json()) as { cart: Cart };
+  return data.cart;
+}
+
+export interface CompletedOrder {
+  id: string;
+  display_id?: number;
+  email?: string;
+  total: number;
+  currency_code: string;
+}
+
+export async function completeCart(
+  cartId: string,
+): Promise<{ ok: true; order: CompletedOrder } | { ok: false; reason: string }> {
+  if (!BACKEND_URL) return { ok: false, reason: "backend_unavailable" };
+  const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}/complete`, {
+    method: "POST",
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) return { ok: false, reason: `http_${res.status}` };
+  const data = (await res.json()) as { type: string; order?: CompletedOrder; cart?: Cart };
+  if (data.type === "order" && data.order) return { ok: true, order: data.order };
+  return { ok: false, reason: data.type ?? "unknown" };
+}
+
+export async function getOrder(orderId: string): Promise<CompletedOrder | null> {
+  if (!BACKEND_URL) return null;
+  const res = await fetch(`${BACKEND_URL}/store/orders/${orderId}`, {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const data = (await res.json()) as { order: CompletedOrder };
+  return data.order;
+}
+
+export function formatPrice(amount: number, currency = "EUR"): string {
+  return new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+  }).format(amount);
 }
