@@ -28,34 +28,46 @@ export default async function seed({ container }: ExecArgs) {
 
   logger.info("Seeding Binchen catalog...")
 
-  // Bootstrap publishable API key — runs every startup, idempotent
-  // The raw token is only returned on createApiKeys(); store it in Store metadata
-  // so GET /app/config can return it for one-time Vercel env var setup.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let apiKeyModule: any = null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let storeModule: any = null
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const apiKeyModule = container.resolve(Modules.API_KEY) as any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const storeModule = container.resolve(Modules.STORE) as any
-    const existingKeys = await apiKeyModule.listApiKeys({ title: "Storefront" })
-    if (!existingKeys || existingKeys.length === 0) {
-      const newKey = await apiKeyModule.createApiKeys({
-        title: "Storefront",
-        type: "publishable",
-        created_by: "seed",
-      })
-      const rawToken: string = newKey.token ?? (Array.isArray(newKey) ? newKey[0]?.token : undefined)
-      if (rawToken) {
-        const [store] = await storeModule.listStores({})
-        if (store) {
-          await storeModule.updateStores([{
-            id: store.id,
-            metadata: { ...((store.metadata as Record<string, unknown>) ?? {}), _pub_key: rawToken },
-          }])
+    apiKeyModule = container.resolve(Modules.API_KEY)
+    storeModule = container.resolve(Modules.STORE)
+  } catch (err) {
+    logger.warn(`API key / store module resolve failed (non-fatal): ${err}`)
+  }
+
+  // Bootstrap publishable API key — runs every startup, idempotent.
+  // Captures the key id so we can link it to the Online Store sales channel below.
+  let publishableKeyId: string | null = null
+  try {
+    if (apiKeyModule) {
+      const existingKeys = await apiKeyModule.listApiKeys({ title: "Storefront" })
+      if (!existingKeys || existingKeys.length === 0) {
+        const newKey = await apiKeyModule.createApiKeys({
+          title: "Storefront",
+          type: "publishable",
+          created_by: "seed",
+        })
+        const created = Array.isArray(newKey) ? newKey[0] : newKey
+        publishableKeyId = created?.id ?? null
+        const rawToken: string | undefined = created?.token
+        if (rawToken && storeModule) {
+          const [store] = await storeModule.listStores({})
+          if (store) {
+            await storeModule.updateStores([{
+              id: store.id,
+              metadata: { ...((store.metadata as Record<string, unknown>) ?? {}), _pub_key: rawToken },
+            }])
+          }
+          logger.info(`=== BINCHEN PUBLISHABLE KEY: ${rawToken} ===`)
         }
-        logger.info(`=== BINCHEN PUBLISHABLE KEY: ${rawToken} ===`)
+      } else {
+        publishableKeyId = existingKeys[0]?.id ?? null
+        logger.info("Publishable API key already exists — skipping key creation.")
       }
-    } else {
-      logger.info("Publishable API key already exists — skipping key creation.")
     }
   } catch (err) {
     logger.warn(`Publishable key bootstrap error (non-fatal): ${err}`)
@@ -68,10 +80,32 @@ export default async function seed({ container }: ExecArgs) {
     return
   }
 
-  // Create default sales channel
-  await salesChannelModule.createSalesChannels([
-    { name: "Online Store" },
-  ])
+  // Create (or reuse) default sales channel + link publishable API key to it
+  // so /store/products works without manual admin intervention.
+  let onlineStore: { id: string } | null = null
+  try {
+    const existingChannels = await salesChannelModule.listSalesChannels({ name: "Online Store" })
+    if (existingChannels && existingChannels.length > 0) {
+      onlineStore = existingChannels[0]
+    } else {
+      const [created] = await salesChannelModule.createSalesChannels([{ name: "Online Store" }])
+      onlineStore = created
+    }
+  } catch (err) {
+    logger.warn(`Sales channel bootstrap failed (non-fatal): ${err}`)
+  }
+
+  if (onlineStore && publishableKeyId) {
+    try {
+      await remoteLink.create({
+        [Modules.API_KEY]: { publishable_key_id: publishableKeyId },
+        [Modules.SALES_CHANNEL]: { sales_channel_id: onlineStore.id },
+      })
+      logger.info(`Linked publishable key ${publishableKeyId} -> sales channel ${onlineStore.id}`)
+    } catch (err) {
+      logger.warn(`API key <-> sales channel link failed (non-fatal, may already exist): ${err}`)
+    }
+  }
 
   // Create stock location (Binchen Atelier)
   const [stockLocation] = await stockLocationModule.createStockLocations([
@@ -167,15 +201,18 @@ export default async function seed({ container }: ExecArgs) {
     },
   ]
 
+  let createdCount = 0
   for (const p of products) {
+    try {
     logger.info(`Creating product: ${p.title}`)
 
-    // 1. Create core Medusa product with variants (stock=1 each — handmade one-offs)
+    // 1. Create core Medusa product with variants (stock=1 each — handmade one-offs).
+    // status: "published" so the storefront sees it without manual admin action.
     const [product] = await productModule.createProducts([
       {
         title: p.title,
         description: p.description,
-        status: "draft",
+        status: "published",
         variants: p.variants.map((v) => ({
           title: v.title,
           sku: v.sku,
@@ -183,6 +220,18 @@ export default async function seed({ container }: ExecArgs) {
         })),
       },
     ])
+
+    // Link product to Online Store sales channel so /store/products returns it.
+    if (onlineStore) {
+      try {
+        await remoteLink.create({
+          [Modules.PRODUCT]: { product_id: product.id },
+          [Modules.SALES_CHANNEL]: { sales_channel_id: onlineStore.id },
+        })
+      } catch (err) {
+        logger.warn(`Sales channel link for ${p.title} failed (non-fatal): ${err}`)
+      }
+    }
 
     // 2. Attach Binchen catalog metadata (non-fatal if catalog module unavailable)
     if (catalogModule) {
@@ -242,7 +291,12 @@ export default async function seed({ container }: ExecArgs) {
         [Modules.PRICING]: { price_set_id: priceSet.id },
       })
     }
+    createdCount++
+    } catch (err) {
+      // Per-product try/catch so one failure doesn't abort the rest of the catalog.
+      logger.error(`Failed to create product "${p.title}" (continuing): ${err}`)
+    }
   }
 
-  logger.info(`Seeded ${products.length} products. Run 'medusa develop' to view in admin.`)
+  logger.info(`Seeded ${createdCount}/${products.length} products. Run 'medusa develop' to view in admin.`)
 }
