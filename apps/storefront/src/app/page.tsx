@@ -57,7 +57,7 @@ export default function HomePage() {
                 erzählt
               </h1>
               <p className="mt-6 font-body text-lg leading-relaxed text-binchen-ink-muted">
-                Jedes Stück bei Binchen wird von Hand gefertigt — aus natürlichen Materialien, mit
+                Jedes Stück bei Bilulu wird von Hand gefertigt — aus natürlichen Materialien, mit
                 Liebe zum Detail und Respekt vor den Kleinsten.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
@@ -178,7 +178,7 @@ export default function HomePage() {
             {/* Text */}
             <div className="lg:order-1">
               <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta-text">
-                Über Binchen
+                Über Bilulu
               </p>
               <h2
                 id="about-heading"
@@ -187,7 +187,7 @@ export default function HomePage() {
                 Jeder Stich mit Sorgfalt
               </h2>
               <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted">
-                Binchen entstand aus der Überzeugung, dass Kinderkleidung mehr sein kann als eine
+                Bilulu entstand aus der Überzeugung, dass Kinderkleidung mehr sein kann als eine
                 Ware. Wir verarbeiten ausschließlich natürliche Materialien, achten auf
                 umweltbewusste Produktion und stecken viel Liebe in jedes einzelne Stück.
               </p>

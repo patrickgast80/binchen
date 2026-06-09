@@ -24,7 +24,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           {/* Brand */}
           <div>
-            <p className="font-display text-xl font-semibold text-binchen-terracotta-text">Binchen</p>
+            <p className="font-display text-xl font-semibold text-binchen-terracotta-text">Bilulu</p>
             <p className="mt-2 font-body text-sm text-binchen-ink-muted">
               Handgefertigte Baby- & Kinderkleidung mit Liebe gemacht.
             </p>
@@ -71,7 +71,7 @@ export function Footer() {
 
         <div className="mt-8 border-t border-binchen-border pt-8 text-center">
           <p className="font-body text-xs text-binchen-ink-muted">
-            &copy; {new Date().getFullYear()} Binchen Handmade. Alle Rechte vorbehalten.
+            &copy; {new Date().getFullYear()} Bilulu Handmade. Alle Rechte vorbehalten.
           </p>
         </div>
       </div>

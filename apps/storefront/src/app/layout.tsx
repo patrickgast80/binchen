@@ -5,8 +5,8 @@ import { Footer } from "@/components/layout/footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "Binchen Handmade – Baby & Kinderkleidung",
-    template: "%s | Binchen Handmade",
+    default: "Bilulu Handmade – Baby & Kinderkleidung",
+    template: "%s | Bilulu Handmade",
   },
   description:
     "Handgefertigte Baby- & Kinderkleidung aus hochwertigen Materialien. Mit Liebe genäht für die Kleinsten.",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "de_DE",
-    siteName: "Binchen Handmade",
+    siteName: "Bilulu Handmade",
   },
 };
 
