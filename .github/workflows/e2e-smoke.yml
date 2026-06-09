@@ -40,8 +40,8 @@ jobs:
       - name: Run smoke tests
         working-directory: apps/e2e
         env:
-          # Priority: manual input → Vercel preview URL → fallback localhost
-          BINCHEN_PREVIEW_URL: ${{ inputs.preview_url || vars.BINCHEN_PREVIEW_URL || 'http://localhost:3000' }}
+          # Priority: manual input → repo-level var → live Vercel deploy fallback
+          BINCHEN_PREVIEW_URL: ${{ inputs.preview_url || vars.BINCHEN_PREVIEW_URL || 'https://binchen.vercel.app' }}
           CI: true
         run: npm run test:smoke
 

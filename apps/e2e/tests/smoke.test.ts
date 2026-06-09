@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-test.describe('Smoke — Binchen Storefront Homepage', () => {
+test.describe('Smoke — Bilulu Storefront Homepage', () => {
   test('page loads with correct title and key element', async ({ page }) => {
     await page.goto('/');
 
-    // Title must reference the shop brand
-    await expect(page).toHaveTitle(/Binchen/i);
+    // Title must reference the shop brand (renamed Binchen → Bilulu)
+    await expect(page).toHaveTitle(/Bilulu/i);
 
     // At least one product card or nav element must be visible
     const shopLink = page.getByRole('navigation');
