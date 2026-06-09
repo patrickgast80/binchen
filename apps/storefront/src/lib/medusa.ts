@@ -49,8 +49,28 @@ export async function getProducts(params: {
   url.searchParams.set("offset", String(params.offset ?? 0));
 
   const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
-  if (!res.ok) throw new Error(`Backend error: ${res.status}`);
-  return res.json();
+  if (res.ok) return res.json();
+
+  // Medusa returns 400/404 when a custom-metadata filter value matches no products
+  // (e.g. ?size=999). Surface those as empty results so the catalog renders the
+  // empty-state, not the generic error fallback. Keep auth failures loud so a missing
+  // publishable key never silently shows an empty catalog across all queries.
+  let body: unknown = null;
+  try { body = await res.json(); } catch {}
+  const errorType = isMedusaErrorBody(body) ? body.type : null;
+  const isAuthError =
+    res.status === 401 ||
+    res.status === 403 ||
+    errorType === "not_allowed" ||
+    errorType === "unauthorized";
+  if (!isAuthError && (res.status === 400 || res.status === 404)) {
+    return { products: [], count: 0, limit: params.limit ?? 20, offset: params.offset ?? 0 };
+  }
+  throw new Error(`Backend error: ${res.status}`);
+}
+
+function isMedusaErrorBody(body: unknown): body is { type?: string; message?: string } {
+  return typeof body === "object" && body !== null;
 }
 
 // ─── Cart ──────────────────────────────────────────────────────────────
