@@ -68,7 +68,7 @@ export default async function ConfirmationPage({ params }: Props) {
             </div>
           </dl>
         ) : (
-          <p className="mt-6 font-body text-sm text-binchen-ink-subtle">
+          <p className="mt-6 font-body text-sm text-binchen-ink-muted">
             Bestellreferenz: <span className="font-mono">{params.orderId}</span>
           </p>
         )}
