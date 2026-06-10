@@ -16,7 +16,7 @@ export default function AgbPage() {
           Sabine Vollmer<br />
           Sägmühlweg 66<br />
           67454 Haßloch<br />
-          (nachfolgend „Verkäuferin")
+          (nachfolgend „Verkäuferin&rdquo;)
         </p>
         <p>
           geschlossen werden. Abweichende Bedingungen des Käufers werden nicht anerkannt, es sei
@@ -33,7 +33,7 @@ export default function AgbPage() {
           sondern eine Aufforderung zur Bestellung dar.
         </p>
         <p>
-          Durch Anklicken des Buttons „Jetzt kaufen" geben Sie eine verbindliche Bestellung der im
+          Durch Anklicken des Buttons „Jetzt kaufen&rdquo; geben Sie eine verbindliche Bestellung der im
           Warenkorb enthaltenen Waren ab. Die Bestätigung des Eingangs der Bestellung erfolgt
           zusammen mit der Annahme der Bestellung unmittelbar nach dem Absenden durch eine
           automatisch versendete E-Mail. Mit dieser E-Mail-Bestätigung ist der Kaufvertrag
