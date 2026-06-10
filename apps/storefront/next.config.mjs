@@ -12,6 +12,16 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "binchen.vercel.app" }],
+        destination: "https://bilulu.de/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
