@@ -23,25 +23,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'pnpm'
 
-      - name: Install dependencies
-        working-directory: apps/e2e
-        run: npm ci
+      - name: Install workspace deps
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
         working-directory: apps/e2e
-        run: npx playwright install --with-deps chromium firefox
+        run: pnpm exec playwright install --with-deps chromium firefox
 
       - name: Run smoke tests
         working-directory: apps/e2e
         env:
-          # Priority: manual input → repo-level var → live Vercel deploy fallback
           BINCHEN_PREVIEW_URL: ${{ inputs.preview_url || vars.BINCHEN_PREVIEW_URL || 'https://binchen.vercel.app' }}
           CI: true
-        run: npm run test:smoke
+        run: pnpm exec playwright test tests/smoke.test.ts
 
       - name: Upload Playwright report
         if: always()
