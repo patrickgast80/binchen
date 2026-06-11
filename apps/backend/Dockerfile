@@ -38,15 +38,17 @@ WORKDIR /app/apps/backend
 ENV NODE_ENV=production
 EXPOSE 9000
 # Startup sequence (all steps idempotent — safe on every boot):
-# 1. db:migrate      — apply pending migrations
-# 2. medusa user     — create first admin if MEDUSA_ADMIN_EMAIL is set and no users exist yet
-# 3. medusa exec     — run seed script (exits early if products already exist)
-# 4. medusa start    — serve the app
+# 1. db:migrate          — apply pending migrations
+# 2. medusa user         — create first admin if MEDUSA_ADMIN_EMAIL is set and no users exist yet
+# 3. seed.js             — catalog seed (exits early if products already exist)
+# 4. seed-shipping.js    — regions + flat-rate shipping (BIL-31, idempotent)
+# 5. medusa start        — serve the app
 CMD ["sh", "-c", "\
   /app/node_modules/.bin/medusa db:migrate && \
   if [ -n \"$MEDUSA_ADMIN_EMAIL\" ] && [ -n \"$MEDUSA_ADMIN_PASSWORD\" ]; then \
     /app/node_modules/.bin/medusa user -e \"$MEDUSA_ADMIN_EMAIL\" -p \"$MEDUSA_ADMIN_PASSWORD\" 2>/dev/null || true; \
   fi && \
   /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/seed.js 2>/dev/null || true && \
+  /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/seed-shipping.js 2>/dev/null || true && \
   exec /app/node_modules/.bin/medusa start \
 "]
