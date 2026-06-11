@@ -46,3 +46,13 @@ services:
         sync: false       # add when payment goes live; leave blank until then
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+      # BIL-32 transactional email via Brevo. Module degrades to no-op + warn
+      # when these are unset, so deploys stay green until DNS/API key land.
+      - key: BREVO_API_KEY
+        sync: false       # set in Render dashboard after Brevo account verified
+      - key: BREVO_SENDER_EMAIL
+        sync: false       # e.g. noreply@bilulu.de — must be verified in Brevo
+      - key: BREVO_SENDER_NAME
+        value: Bilulu
+      - key: BREVO_ADMIN_EMAIL
+        sync: false       # Sabine's inbox for 'Neue Bestellung' notifications

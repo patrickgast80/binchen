@@ -61,5 +61,16 @@ export default defineConfig({
     // table, which causes db:migrate to fail at boot. Defensive seed (seed.ts) handles
     // the missing module gracefully — products get created without Binchen metadata.
     // TODO: generate migrations via `medusa db:generate catalog` and re-enable.
+    {
+      // BIL-32 transactional email (Brevo). Service degrades gracefully when
+      // BREVO_API_KEY / BREVO_SENDER_EMAIL are unset so dev + CI boots stay green.
+      resolve: "./src/modules/email",
+      options: {
+        apiKey: process.env.BREVO_API_KEY,
+        senderEmail: process.env.BREVO_SENDER_EMAIL,
+        senderName: process.env.BREVO_SENDER_NAME,
+        adminEmail: process.env.BREVO_ADMIN_EMAIL,
+      },
+    },
   ],
 })
