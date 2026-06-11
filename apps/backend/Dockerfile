@@ -33,6 +33,12 @@ RUN pnpm install --filter @binchen/backend --prod --frozen-lockfile --shamefully
 # medusa-config.js is needed by both db:migrate and main.js at runtime
 COPY --from=builder /app/apps/backend/.medusa apps/backend/.medusa
 COPY --from=builder /app/apps/backend/medusa-config.js apps/backend/medusa-config.js
+# medusa-config.js references local modules by their TS source path
+# (e.g. "./src/modules/email"). Node resolves these at runtime relative to
+# medusa-config.js, so the runner needs the source tree too. Without this,
+# any local-source module added to the config blows up boot with
+# "Cannot find module '/app/apps/backend/src/modules/<name>'".
+COPY --from=builder /app/apps/backend/src apps/backend/src
 
 WORKDIR /app/apps/backend
 ENV NODE_ENV=production
