@@ -35,10 +35,12 @@ COPY --from=builder /app/apps/backend/.medusa apps/backend/.medusa
 COPY --from=builder /app/apps/backend/medusa-config.js apps/backend/medusa-config.js
 # medusa-config.js references local modules by their TS source path
 # (e.g. "./src/modules/email"). Node resolves these at runtime relative to
-# medusa-config.js, so the runner needs the source tree too. Without this,
-# any local-source module added to the config blows up boot with
+# medusa-config.js, so the runner needs the *compiled* sibling tree there.
+# Use .medusa/server/src (which Medusa's build step emits) shaped as ./src
+# so Node's require() finds the compiled .js. Without this, any local-source
+# module added to the config blows up boot with
 # "Cannot find module '/app/apps/backend/src/modules/<name>'".
-COPY --from=builder /app/apps/backend/src apps/backend/src
+COPY --from=builder /app/apps/backend/.medusa/server/src apps/backend/src
 
 WORKDIR /app/apps/backend
 ENV NODE_ENV=production
