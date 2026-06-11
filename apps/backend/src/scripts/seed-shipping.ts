@@ -7,6 +7,7 @@ const coreFlows: any = require("@medusajs/medusa/core-flows")
 const createRegionsWorkflow = coreFlows.createRegionsWorkflow
 const createShippingProfilesWorkflow = coreFlows.createShippingProfilesWorkflow
 const createShippingOptionsWorkflow = coreFlows.createShippingOptionsWorkflow
+const updateRegionsWorkflow = coreFlows.updateRegionsWorkflow
 
 // Seed flat-rate shipping (BIL-31):
 //   DE    = €5
@@ -59,6 +60,22 @@ export default async function seedShipping({ container }: ExecArgs) {
     logger.info(`Created ${created.length} region(s).`)
   } else {
     logger.info("Regions already present.")
+  }
+
+  // BIL-29: link Stripe payment provider to every region when STRIPE_SECRET_KEY
+  // is configured. Idempotent — passing the same provider list is a no-op.
+  if (process.env.STRIPE_SECRET_KEY) {
+    try {
+      await updateRegionsWorkflow(container).run({
+        input: {
+          selector: { id: Array.from(regionByName.values()).map((r) => r.id) },
+          update: { payment_providers: ["pp_stripe_stripe"] },
+        },
+      })
+      logger.info(`Linked stripe provider to ${regionByName.size} region(s).`)
+    } catch (err) {
+      logger.warn(`Stripe -> regions link (non-fatal): ${err}`)
+    }
   }
 
   // 2. Default shipping profile
