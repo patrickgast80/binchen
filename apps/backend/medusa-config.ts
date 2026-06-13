@@ -22,19 +22,25 @@ export default defineConfig({
     backendUrl: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
   },
   modules: [
-    // Only register Stripe when the key is present — server boots fine without it.
-    // Add STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET env vars in Render/Railway to enable payments.
-    ...(process.env.STRIPE_SECRET_KEY ? [{
+    // BIL-124 — Board pivot 2026-06-13: PayPal is the only payment method.
+    // The payment module registers when both PAYPAL_CLIENT_ID + PAYPAL_CLIENT_SECRET
+    // are present so dev/CI boots stay green when payments are unconfigured.
+    // PAYPAL_MODE selects sandbox (default) or live; PAYPAL_WEBHOOK_ID gates
+    // webhook signature verification.
+    ...(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET ? [{
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
           {
-            resolve: "@medusajs/payment-stripe",
-            id: "stripe",
+            // Resolves to ./src/modules/payment-paypal at runtime. Registered
+            // without an id so the Medusa provider key is `pp_paypal` and the
+            // built-in webhook route exposes /hooks/payment/paypal.
+            resolve: "./src/modules/payment-paypal",
             options: {
-              apiKey: process.env.STRIPE_SECRET_KEY,
-              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-              capture: false,
+              clientId: process.env.PAYPAL_CLIENT_ID,
+              clientSecret: process.env.PAYPAL_CLIENT_SECRET,
+              mode: process.env.PAYPAL_MODE === "live" ? "live" : "sandbox",
+              webhookId: process.env.PAYPAL_WEBHOOK_ID,
             },
           },
         ],

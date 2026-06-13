@@ -58,23 +58,23 @@ Most variables are pre-configured in `render.yaml`. The following must be set ma
 | `MEDUSA_BACKEND_URL` | Set after first deploy | e.g. `https://binchen-backend.onrender.com` |
 | `MEDUSA_ADMIN_EMAIL` | `admin@binchen.de` | First admin user (bootstrap on startup) |
 | `MEDUSA_ADMIN_PASSWORD` | See `infra/.vault/admin-credentials.env` | Generated 2026-06-06; rotate via Render dashboard + vault |
-| `STRIPE_SECRET_KEY` | Set when payment goes live | Stripe secret key (`sk_test_…` for sandbox) |
-| `STRIPE_WEBHOOK_SECRET` | Set when payment goes live | Stripe webhook endpoint secret (`whsec_…`) |
-| `PAYPAL_CLIENT_ID` | Set when payment goes live | PayPal app client ID |
-| `PAYPAL_CLIENT_SECRET` | Set when payment goes live | PayPal app client secret |
-| `PAYPAL_AUTH_WEBHOOK_ID` | Set after first deploy | PayPal webhook ID |
+| `PAYPAL_CLIENT_ID` | Board provides — PayPal Business app | PayPal REST API client ID (sandbox or live, matched to `PAYPAL_MODE`) |
+| `PAYPAL_CLIENT_SECRET` | Board provides — PayPal Business app | PayPal REST API client secret (`x-www-form-urlencoded` Basic auth pair with client id) |
+| `PAYPAL_WEBHOOK_ID` | Set after webhook registered | Webhook id from PayPal dashboard; gates signature verification on `/hooks/payment/paypal` |
+| `PAYPAL_MODE` | `sandbox` until go-live | Selects PayPal API host: `sandbox` → `api-m.sandbox.paypal.com`, `live` → `api-m.paypal.com` |
 | `SENTRY_DSN` | Set after Sentry project created | Sentry DSN for backend error tracking |
 | `STORE_CORS` | Set in render.yaml | `https://binchen.vercel.app` |
 | `ADMIN_CORS` | Set in render.yaml | `https://binchen.vercel.app` |
 | `AUTH_CORS` | Set in render.yaml | `https://binchen.vercel.app` |
 | `MEDUSA_WORKER_MODE` | Production only | `worker` for async jobs (set on worker instance only) |
 
-**How to obtain PayPal sandbox credentials:**
-1. Sign in or create account at https://developer.paypal.com
-2. Go to **Apps & Credentials** → **Create App** (sandbox mode)
-3. Copy `Client ID` → `PAYPAL_CLIENT_ID`
-4. Copy `Secret` → `PAYPAL_CLIENT_SECRET`
-5. After first deploy, create a webhook in the PayPal dashboard pointing to `https://[railway-url]/hooks/payment/paypal_pp` and copy the Webhook ID → `PAYPAL_AUTH_WEBHOOK_ID`
+**How to obtain PayPal credentials (BIL-124, PayPal-only since 2026-06-13):**
+1. Sign in at https://developer.paypal.com — Business account required for live; sandbox is auto-provisioned.
+2. **Apps & Credentials** → **Create App**. Use the **Sandbox** tab for dev/integration, the **Live** tab for production.
+3. Copy `Client ID` → `PAYPAL_CLIENT_ID`, `Secret` → `PAYPAL_CLIENT_SECRET`.
+4. **Webhooks** tab (under the app) → **Add Webhook** with URL `https://binchen-backend.onrender.com/hooks/payment/paypal` (or the matching sandbox URL during dev), subscribe to events
+   `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.DENIED`, `PAYMENT.CAPTURE.REFUNDED`. Copy the resulting Webhook ID → `PAYPAL_WEBHOOK_ID`.
+5. Set `PAYPAL_MODE=sandbox` while integrating; flip to `PAYPAL_MODE=live` at go-live cutover (re-issue Render rotate with the live app's client id/secret/webhook id).
 
 ---
 
@@ -93,7 +93,7 @@ These must never be committed even in `.env` example files with real values:
 
 - Any `*_SECRET` or `*_TOKEN`
 - `DATABASE_URL` with credentials
-- Stripe keys
+- PayPal client secrets and webhook ids
 - Sentry auth tokens
 - Vercel/Railway API tokens
 

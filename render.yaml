@@ -42,10 +42,16 @@ services:
         generateValue: true
       - key: COOKIE_SECRET
         generateValue: true
-      - key: STRIPE_SECRET_KEY
-        sync: false       # add when payment goes live; leave blank until then
-      - key: STRIPE_WEBHOOK_SECRET
+      # BIL-124 PayPal-only. The Medusa payment module activates when CLIENT_ID
+      # and CLIENT_SECRET are both set; sandbox vs. live is driven by PAYPAL_MODE.
+      - key: PAYPAL_CLIENT_ID
+        sync: false       # board provides; sandbox first, swap to live for go-live
+      - key: PAYPAL_CLIENT_SECRET
         sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false       # set after webhook registered in PayPal developer dashboard
+      - key: PAYPAL_MODE
+        value: sandbox    # change to "live" on go-live cutover
       # BIL-32 transactional email via Brevo. Module degrades to no-op + warn
       # when these are unset, so deploys stay green until DNS/API key land.
       - key: BREVO_API_KEY
