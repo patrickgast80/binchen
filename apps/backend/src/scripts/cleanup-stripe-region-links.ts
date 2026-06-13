@@ -1,39 +1,32 @@
 import { ExecArgs } from "@medusajs/framework/types"
-import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
-// BIL-29 was cancelled (board pivoted to PayPal-only). A prior deploy linked
-// `pp_stripe_stripe` to every region; setRegionsPaymentProvidersStep treats
-// `payment_providers: []` as a no-op, so we dismiss the region<->stripe links
-// directly via remoteLink. Idempotent — re-runs silently when no links exist.
-//
-// Remove this script after the next successful deploy verifies regions return
-// no stripe in /store/payment-providers?region_id=…
+// BIL-128: Remove the dormant `pp_stripe_stripe` payment provider linked to
+// every region from the pre-pivot deploy. The previous remoteLink.dismiss
+// approach silently no-op'd on the live container (BIL-126 verify-chain
+// confirmed pp_stripe_stripe still surfaced after multiple deploys), so this
+// script now goes straight at the link table via the framework's knex
+// connection. Idempotent — re-runs delete 0 rows.
 export default async function cleanupStripeRegionLinks({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
-  const regionModule = container.resolve(Modules.REGION)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const remoteLink = container.resolve(ContainerRegistrationKeys.LINK) as any
+  const pg = container.resolve(ContainerRegistrationKeys.PG_CONNECTION) as any
 
-  const regions = await regionModule.listRegions({})
-  if (regions.length === 0) {
-    logger.info("No regions present — nothing to clean.")
+  const before = await pg("region_payment_provider")
+    .where({ payment_provider_id: "pp_stripe_stripe" })
+    .count<{ count: string }[]>("* as count")
+  const beforeCount = Number(before[0]?.count ?? 0)
+
+  if (beforeCount === 0) {
+    logger.info("[BIL-128] No stripe region-links present — nothing to clean.")
     return
   }
 
-  const dismissed: string[] = []
-  for (const region of regions) {
-    try {
-      await remoteLink.dismiss({
-        [Modules.REGION]: { region_id: region.id },
-        [Modules.PAYMENT]: { payment_provider_id: "pp_stripe_stripe" },
-      })
-      dismissed.push(region.name)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (!/not found|does not exist/i.test(msg)) {
-        logger.warn(`Region ${region.name} stripe-link dismiss (non-fatal): ${err}`)
-      }
-    }
-  }
-  logger.info(`Stripe region-link cleanup: dismissed ${dismissed.length}/${regions.length} (${dismissed.join(", ") || "none"}).`)
+  const deleted = await pg("region_payment_provider")
+    .where({ payment_provider_id: "pp_stripe_stripe" })
+    .del()
+
+  logger.info(
+    `[BIL-128] Stripe region-link cleanup: deleted ${deleted}/${beforeCount} rows from region_payment_provider.`
+  )
 }
