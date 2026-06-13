@@ -58,5 +58,6 @@ CMD ["sh", "-c", "\
   fi && \
   /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/seed.js 2>/dev/null || true && \
   /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/seed-shipping.js 2>/dev/null || true && \
+  /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/cleanup-stripe-region-links.js 2>/dev/null || true && \
   exec /app/node_modules/.bin/medusa start \
 "]
