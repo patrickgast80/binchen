@@ -14,7 +14,7 @@ export default async function cleanupStripeRegionLinks({ container }: ExecArgs) 
 
   const before = await pg("region_payment_provider")
     .where({ payment_provider_id: "pp_stripe_stripe" })
-    .count<{ count: string }[]>("* as count")
+    .count("* as count")
   const beforeCount = Number(before[0]?.count ?? 0)
 
   if (beforeCount === 0) {
