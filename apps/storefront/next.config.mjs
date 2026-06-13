@@ -13,6 +13,7 @@ const nextConfig = {
     ],
   },
   async redirects() {
+    if (process.env.BILULU_CANONICAL_REDIRECT !== "true") return [];
     return [
       {
         source: "/:path*",
