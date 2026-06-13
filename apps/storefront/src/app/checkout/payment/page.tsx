@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { loadCart } from "@/lib/cart-cookie";
-import { formatPrice } from "@/lib/medusa";
+import { loadCart, readCartId } from "@/lib/cart-cookie";
+import { formatPrice, ensurePaymentCollection, createPaymentSession } from "@/lib/medusa";
 import { completeOrderAction } from "./actions";
+import PayPalButton from "./PayPalButton";
 
 export const metadata: Metadata = {
   title: "Bezahlung",
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
+const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
 
 export default async function PaymentPage() {
   const cart = await loadCart();
@@ -29,13 +30,32 @@ export default async function PaymentPage() {
   }
 
   const currency = cart!.currency_code;
-  const stripeReady = Boolean(STRIPE_PUBLISHABLE_KEY);
+  const paypalReady = Boolean(PAYPAL_CLIENT_ID);
+
+  // Create payment collection + PayPal session server-side so the client
+  // island gets a pre-created PayPal Order ID (no client-side order creation).
+  let paypalOrderId: string | null = null;
+  if (paypalReady) {
+    try {
+      const collection = await ensurePaymentCollection(cart!.id);
+      if (collection) {
+        const session = await createPaymentSession(collection.id, "pp_paypal");
+        const sessionData = session?.data as { id?: string } | undefined;
+        paypalOrderId = sessionData?.id ?? null;
+      }
+    } catch {
+      // Non-fatal: PayPal block hidden if order ID missing
+      paypalOrderId = null;
+    }
+  }
+
+  const cartId = readCartId();
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
       <nav aria-label="Checkout-Schritte" className="mb-8">
         <ol className="flex items-center gap-2 font-body text-xs text-binchen-ink-muted sm:text-sm">
-          <li>1. Adresse & Versand</li>
+          <li>1. Adresse &amp; Versand</li>
           <li aria-hidden="true">›</li>
           <li className="font-semibold text-binchen-ink">2. Bezahlung</li>
           <li aria-hidden="true">›</li>
@@ -51,13 +71,24 @@ export default async function PaymentPage() {
             Zahlungsmethode
           </h2>
 
-          {stripeReady ? (
+          {paypalReady && paypalOrderId && cartId ? (
             <div className="mt-6 rounded-lg border border-binchen-border bg-binchen-cream p-6">
-              <p className="font-body text-sm text-binchen-ink-muted">
-                Stripe Payment Element wird hier geladen (Visa, Mastercard, SEPA, Klarna).
+              <p className="mb-4 font-body text-sm font-semibold text-binchen-ink">
+                Mit PayPal bezahlen
               </p>
-              <p className="mt-3 font-body text-xs text-binchen-ink-subtle">
-                Initialisierung erfolgt sobald die Backend-Zahlungssitzung verbunden ist.
+              <PayPalButton
+                clientId={PAYPAL_CLIENT_ID}
+                orderId={paypalOrderId}
+                cartId={cartId}
+              />
+            </div>
+          ) : paypalReady && (!paypalOrderId || !cartId) ? (
+            <div className="mt-6 rounded-lg border border-binchen-terracotta/30 bg-binchen-terracotta/5 p-6">
+              <p className="font-body text-sm font-semibold text-binchen-ink">
+                PayPal konnte nicht initialisiert werden
+              </p>
+              <p className="mt-2 font-body text-sm text-binchen-ink-muted">
+                Bitte lade die Seite neu oder kontaktiere uns, falls das Problem bestehen bleibt.
               </p>
             </div>
           ) : (
@@ -66,17 +97,13 @@ export default async function PaymentPage() {
                 Zahlungssystem wird gerade eingerichtet
               </p>
               <p className="mt-2 font-body text-sm text-binchen-ink-muted">
-                Stripe ist noch nicht konfiguriert. Bitte versuche es in Kürze erneut oder kontaktiere uns,
-                falls du sofort bestellen möchtest.
-              </p>
-              <p className="mt-3 font-body text-xs text-binchen-ink-subtle">
-                Hinweis (intern): <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> fehlt in der Umgebung.
+                PayPal ist noch nicht konfiguriert. Bitte versuche es in Kürze erneut oder
+                kontaktiere uns, falls du sofort bestellen möchtest.
               </p>
             </div>
           )}
 
-          {/* Dev-only fallback: complete order without real payment.
-              TODO: replace with Stripe confirmPayment once BIL-29 ships keys. */}
+          {/* Dev-only fallback: complete order without real payment. */}
           {process.env.NODE_ENV !== "production" ? (
             <form action={completeOrderAction} className="mt-6">
               <Button type="submit" variant="outline" size="sm">
@@ -123,7 +150,7 @@ export default async function PaymentPage() {
 
       <div className="mt-10 border-t border-binchen-border pt-6 text-center">
         <Button asChild variant="ghost">
-          <Link href="/checkout">← Zurück zu Adresse & Versand</Link>
+          <Link href="/checkout">← Zurück zu Adresse &amp; Versand</Link>
         </Button>
       </div>
     </div>

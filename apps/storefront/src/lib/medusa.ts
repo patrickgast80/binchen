@@ -286,6 +286,52 @@ export async function getOrder(orderId: string): Promise<CompletedOrder | null> 
   return data.order;
 }
 
+// ─── Payment Collections ──────────────────────────────────────────────
+
+export interface PaymentSession {
+  id: string;
+  provider_id: string;
+  data: Record<string, unknown>;
+}
+
+export interface PaymentCollection {
+  id: string;
+  payment_sessions?: PaymentSession[];
+}
+
+export async function ensurePaymentCollection(cartId: string): Promise<PaymentCollection | null> {
+  if (!BACKEND_URL) return null;
+  const res = await fetch(`${BACKEND_URL}/store/payment-collections`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ cart_id: cartId }),
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const data = (await res.json()) as { payment_collection: PaymentCollection };
+  return data.payment_collection ?? null;
+}
+
+export async function createPaymentSession(
+  collectionId: string,
+  providerId: string,
+): Promise<PaymentSession | null> {
+  if (!BACKEND_URL) return null;
+  const res = await fetch(
+    `${BACKEND_URL}/store/payment-collections/${collectionId}/payment-sessions`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ provider_id: providerId }),
+      cache: "no-store",
+    },
+  );
+  if (!res.ok) return null;
+  const data = (await res.json()) as { payment_collection: PaymentCollection };
+  const sessions = data.payment_collection?.payment_sessions ?? [];
+  return sessions.find((s) => s.provider_id === providerId) ?? null;
+}
+
 export function formatPrice(amount: number, currency = "EUR"): string {
   return new Intl.NumberFormat("de-DE", {
     style: "currency",
