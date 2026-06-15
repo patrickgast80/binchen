@@ -39,7 +39,7 @@ export default function DatenschutzPage() {
         <h2 className="font-display text-xl font-semibold text-binchen-ink">3. Bestellungen</h2>
         <p>
           Bei einer Bestellung erheben wir: Name, Lieferadresse, E-Mail-Adresse sowie
-          Zahlungsdaten (verarbeitet durch Stripe, s. u.). Diese Daten sind zur Vertragserfüllung
+          Zahlungsdaten (verarbeitet durch PayPal, s. u.). Diese Daten sind zur Vertragserfüllung
           erforderlich (Art. 6 Abs. 1 lit. b DSGVO) und werden nach Ablauf handels- und
           steuerrechtlicher Aufbewahrungsfristen (i. d. R. 10 Jahre) gelöscht.
         </p>
@@ -87,19 +87,19 @@ export default function DatenschutzPage() {
         </p>
 
         <h3 className="font-display text-lg font-semibold text-binchen-ink">
-          Stripe Payments Europe, Ltd. (Zahlungsabwicklung)
+          PayPal (Europe) S.à r.l. et Cie, S.C.A. (Zahlungsabwicklung)
         </h3>
         <p>
-          Zahlungen werden über Stripe abgewickelt. Stripe Payments Europe, Ltd., 1 Grand Canal
-          Street Lower, Grand Canal Dock, Dublin, D02 H210, Irland. Stripe erhebt und verarbeitet
-          Zahlungsdaten als eigenständig Verantwortlicher. Datenschutzerklärung:{" "}
+          Zahlungen werden über PayPal abgewickelt. PayPal (Europe) S.à r.l. et Cie, S.C.A.,
+          22-24 Boulevard Royal, L-2449 Luxembourg. PayPal erhebt und verarbeitet Zahlungsdaten
+          als eigenständig Verantwortlicher. Datenschutzerklärung:{" "}
           <a
-            href="https://stripe.com/de/privacy"
+            href="https://www.paypal.com/de/legalhub/privacy-full"
             target="_blank"
             rel="noopener noreferrer"
             className="text-binchen-terracotta-text underline"
           >
-            stripe.com/de/privacy
+            paypal.com/de/legalhub/privacy-full
           </a>
           . Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
         </p>

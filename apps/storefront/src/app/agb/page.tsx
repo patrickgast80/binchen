@@ -50,8 +50,9 @@ export default function AgbPage() {
           von § 19 UStG gilt, wird keine Umsatzsteuer erhoben und ausgewiesen.
         </p>
         <p>
-          Die Zahlung erfolgt über die im Shop angebotenen Zahlungsmethoden (z. B. Kreditkarte,
-          SEPA-Lastschrift via Stripe). Der Kaufpreis ist mit Abschluss des Vertrags fällig.
+          Die Zahlung erfolgt über die im Shop angebotenen Zahlungsmethoden (aktuell PayPal,
+          inklusive PayPal-Gast-Checkout mit Karte). Der Kaufpreis ist mit Abschluss des Vertrags
+          fällig.
         </p>
       </section>
 
