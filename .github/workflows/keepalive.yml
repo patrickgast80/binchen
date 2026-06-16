@@ -1,0 +1,23 @@
+name: Backend keep-alive
+
+# Render's free tier spins the backend down after 15 minutes of inactivity,
+# which gives the storefront a 50–60s cold-start hang on /catalog (the page
+# is server-rendered and the fetch times out before Render wakes the
+# container). Ping /health every 10 minutes to keep it warm.
+#
+# Once the Render plan is upgraded to Starter (or higher) this workflow
+# can be deleted — Starter has no spin-down.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend /health
+        run: |
+          curl -sS --max-time 90 -o /dev/null -w "HTTP %{http_code} | time %{time_total}s\n" \
+            https://binchen-backend.onrender.com/health
