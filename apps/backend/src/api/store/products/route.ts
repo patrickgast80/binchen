@@ -17,8 +17,16 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   } = req.query as Record<string, string>
 
   const productModule = req.scope.resolve(Modules.PRODUCT)
+  // Catalog module is registered only when the product_metadata migrations exist
+  // (see medusa-config.ts). Resolve defensively so /store/products keeps returning
+  // products — without metadata — when the module is intentionally absent.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const catalogModule = req.scope.resolve(CATALOG_MODULE) as any
+  let catalogModule: any = null
+  try {
+    catalogModule = req.scope.resolve(CATALOG_MODULE)
+  } catch {
+    catalogModule = null
+  }
 
   // Build metadata filter
   const metaFilter: Record<string, unknown> = {}
@@ -28,9 +36,15 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   if (age_min) metaFilter.ageMonthsMax = { $gte: Number(age_min) }
   if (age_max) metaFilter.ageMonthsMin = { $lte: Number(age_max) }
 
+  // Metadata filters require the catalog module. If filters are requested but
+  // catalog is unavailable, return an empty page rather than 500-ing.
+  if (Object.keys(metaFilter).length > 0 && !catalogModule) {
+    return res.json({ products: [], count: 0, limit: Number(limit), offset: Number(offset) })
+  }
+
   // Get matching productIds from catalog metadata
   let productIds: string[] | undefined
-  if (Object.keys(metaFilter).length > 0) {
+  if (Object.keys(metaFilter).length > 0 && catalogModule) {
     const metas = await catalogModule.listProductMetadatas(metaFilter, {
       select: ["productId"],
     })
@@ -53,12 +67,17 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     }
   )
 
-  // Attach metadata to each product
-  const allMetas = await catalogModule.listProductMetadatas(
-    { productId: products.map((p) => p.id) },
-    { select: ["productId", "sizeLabel", "fabric", "ageCategory", "ageMonthsMin", "ageMonthsMax", "careInstructions"] }
-  )
-  const metaByProductId = Object.fromEntries(allMetas.map((m) => [m.productId, m]))
+  // Attach metadata to each product (skip when catalog module is unavailable)
+  const metaByProductId: Record<string, unknown> = catalogModule
+    ? Object.fromEntries(
+        (
+          await catalogModule.listProductMetadatas(
+            { productId: products.map((p) => p.id) },
+            { select: ["productId", "sizeLabel", "fabric", "ageCategory", "ageMonthsMin", "ageMonthsMax", "careInstructions"] }
+          )
+        ).map((m: { productId: string }) => [m.productId, m])
+      )
+    : {}
 
   const result = products.map((product) => ({
     id: product.id,
