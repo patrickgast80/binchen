@@ -100,11 +100,22 @@ export default async function seed({ container }: ExecArgs) {
     logger.warn(`Publishable key bootstrap error (non-fatal): ${err}`)
   }
 
-  // Idempotency guard — skip if products already exist
-  const [existingProducts] = await productModule.listAndCountProducts({}, { take: 1 })
-  if (existingProducts.length > 0) {
-    logger.info("Catalog already seeded — skipping.")
-    return
+  // Per-product idempotency: gather the SKUs already in the DB so we can skip
+  // products that exist and create only the ones that are still missing.
+  // (The previous all-or-nothing guard meant a partial seed — e.g. the BIL-19
+  // crash that landed 2 of 5 products — could never be completed by re-running.)
+  const existingSkus = new Set<string>()
+  try {
+    const [existingVariants] = await productModule.listAndCountProductVariants(
+      {},
+      { take: 1000, select: ["sku"] },
+    )
+    for (const v of existingVariants) {
+      if (v?.sku) existingSkus.add(v.sku)
+    }
+    logger.info(`Found ${existingSkus.size} existing variant SKUs in catalog.`)
+  } catch (err) {
+    logger.warn(`Could not enumerate existing SKUs (non-fatal, will assume empty): ${err}`)
   }
 
   // Create (or reuse) default sales channel + link publishable API key to it
@@ -134,10 +145,18 @@ export default async function seed({ container }: ExecArgs) {
     }
   }
 
-  // Create stock location (Binchen Atelier)
-  const [stockLocation] = await stockLocationModule.createStockLocations([
-    { name: "Binchen Atelier" },
-  ])
+  // Stock location (Binchen Atelier) — reuse if it already exists so a re-run
+  // doesn't accumulate duplicate locations.
+  let stockLocation: { id: string }
+  const existingLocations = await stockLocationModule.listStockLocations({ name: "Binchen Atelier" })
+  if (existingLocations && existingLocations.length > 0) {
+    stockLocation = existingLocations[0]
+  } else {
+    const [created] = await stockLocationModule.createStockLocations([
+      { name: "Binchen Atelier" },
+    ])
+    stockLocation = created
+  }
 
   // Price set currency
   const EUR = "eur"
@@ -229,7 +248,16 @@ export default async function seed({ container }: ExecArgs) {
   ]
 
   let createdCount = 0
+  let skippedCount = 0
   for (const p of products) {
+    // Per-product idempotency: if every SKU for this product already exists,
+    // skip it. The CEO's existing 2 products are kept intact; only the missing
+    // 3 (Musselinhose, Wendejacke, Spielanzug) get created on re-run.
+    if (p.variants.every((v) => existingSkus.has(v.sku))) {
+      logger.info(`Skipping ${p.title} — all SKUs already exist (${p.variants.map((v) => v.sku).join(", ")})`)
+      skippedCount++
+      continue
+    }
     try {
     logger.info(`Creating product: ${p.title}`)
 
@@ -325,5 +353,5 @@ export default async function seed({ container }: ExecArgs) {
     }
   }
 
-  logger.info(`Seeded ${createdCount}/${products.length} products. Run 'medusa develop' to view in admin.`)
+  logger.info(`Seeded ${createdCount}/${products.length} products (${skippedCount} skipped, already existed).`)
 }
