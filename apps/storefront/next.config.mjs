@@ -10,6 +10,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "binchen-backend.onrender.com",
       },
+      {
+        protocol: "https",
+        hostname: "bilulu.de",
+      },
+      {
+        protocol: "https",
+        hostname: "binchen.vercel.app",
+      },
     ],
   },
   async redirects() {
