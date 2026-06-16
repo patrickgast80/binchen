@@ -3,5 +3,11 @@
   "buildCommand": "cd ../.. && pnpm --filter storefront build",
   "outputDirectory": ".next",
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "devCommand": "pnpm dev"
+  "devCommand": "pnpm dev",
+  "crons": [
+    {
+      "path": "/api/keep-backend-warm",
+      "schedule": "*/10 * * * *"
+    }
+  ]
 }
