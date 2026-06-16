@@ -8,9 +8,12 @@ test.describe('Smoke — Bilulu Storefront Homepage', () => {
     // Title must reference the shop brand (renamed Binchen → Bilulu)
     await expect(page).toHaveTitle(/Bilulu/i);
 
-    // At least one product card or nav element must be visible
-    const shopLink = page.getByRole('navigation');
-    await expect(shopLink).toBeVisible();
+    // Navigation surface must be visible: <nav> on desktop, hamburger toggle on mobile
+    // (mobile <nav> is `hidden md:flex` until the hamburger sheet opens)
+    const navOrMenuToggle = page
+      .getByRole('navigation')
+      .or(page.getByRole('button', { name: /men[üu]/i }));
+    await expect(navOrMenuToggle.first()).toBeVisible();
   });
 
   test('homepage passes axe-core WCAG AA scan', async ({ page }) => {
