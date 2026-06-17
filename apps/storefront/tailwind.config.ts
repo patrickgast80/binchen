@@ -23,7 +23,7 @@ const config: Config = {
           "terracotta-text": "#7A3318", // WCAG AA on cream (8.5:1) — use for text / button bg
           ink: "#2C2417",             // warm near-black — primary text
           "ink-muted": "#6B5E4E",     // warm mid-gray — secondary text
-          "ink-subtle": "#A89880",    // warm light-gray — placeholder, disabled
+          "ink-subtle": "#6B5A40",    // warm brown — placeholder, disabled (WCAG AA on cream + border)
           border: "#E5DDD4",          // warm gray — borders/dividers
         },
       },
