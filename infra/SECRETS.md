@@ -109,3 +109,26 @@ These must never be committed even in `.env` example files with real values:
 | Zone ID | Vercel project env `CLOUDFLARE_ZONE_ID` (not secret, but kept with token for convenience) |
 
 Cloudflare WAF rules and DNS are managed via Cloudflare dashboard or Terraform (see `infra/terraform/` when added).
+
+---
+
+## Hetzner Cloud + Coolify (BIL-1544)
+
+| Secret | Where it lives | Who can read | Rotates |
+|---|---|---|---|
+| `HCLOUD_TOKEN` (Read & Write, project `bilulu`) | DevOps workstation: `infra/.vault/hetzner-api.env` (gitignored). CI: GitHub Actions secret when DB/snapshot scripts are added. | DevOps only. CEO holds the Hetzner Console UI as fallback. | Annually, or **immediately** if the token leaks out of the Paperclip handoff comment (rotate via Console → API Tokens → trash icon). |
+| Coolify admin password (root user) | `infra/.vault/coolify-admin.env` (gitignored) + Bitwarden "Bilulu / Coolify Admin". | DevOps + CEO. | After incidents or quarterly. Rotate in Coolify → Profile → Change Password. |
+| Coolify API token (CI deploys) | `infra/.vault/coolify-api.env` locally; GitHub Actions secret `COOLIFY_API_TOKEN` once CI-driven deploys are wired. Scope: `read:projects`, `write:applications`, `write:deployments`. | DevOps, Backend, Frontend (only if they need preview environments outside Vercel). | Quarterly, or after any agent leaves the rotation. |
+| Server root SSH key (Hetzner-uploaded) | Public half in Hetzner Console as `board@bilulu`. Private half stays on CEO + DevOps workstations under `~/.ssh/id_ed25519` (never copied anywhere else). | CEO + DevOps. `deploy` user on the box only — root SSH is disabled by `infra/hetzner-cloud-init.yaml`. | On compromise or workstation loss. |
+
+**Handoff rule for `HCLOUD_TOKEN`:** CEO posts the token as a Paperclip comment on the relevant
+infra issue with the prefix `🔒 token follows — delete after consumption`. DevOps consumes it
+in the same heartbeat, writes it to `infra/.vault/hetzner-api.env`, and deletes the comment via
+`DELETE /api/issues/:id/comments/:commentId`. Never put it in a PR body or commit message.
+
+**Vault directory** (`infra/.vault/`) is in `.gitignore` and contains `*.env` files. If a vault
+file is committed by accident: rotate immediately, force-push the removal, notify CEO.
+
+**Rotation failure alert:** Better Stack monitor on `https://coolify.bilulu.de/api/health` —
+if expired-cert errors appear in monitor history, that is our signal that Coolify's
+embedded Let's Encrypt renewal failed; investigate within 24 h.
