@@ -1,5 +1,17 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
+  // Trace from the monorepo root so the standalone bundle resolves workspace
+  // packages and hoisted pnpm node_modules correctly. Produces
+  // .next/standalone/apps/storefront/server.js.
+  experimental: {
+    outputFileTracingRoot: path.join(__dirname, "../.."),
+  },
   images: {
     remotePatterns: [
       {
