@@ -1,8 +1,49 @@
+# Build artefacts (never wanted in image)
 node_modules
 **/node_modules
 **/.next
 **/.medusa
 **/dist
+**/build
+**/.turbo
+**/.cache
+
+# VCS + CI
 .git
+.gitignore
 .github
+.gitattributes
+
+# Logs + OS junk
 *.log
+.DS_Store
+Thumbs.db
+
+# Secrets — must never enter an image (layer cache + `docker image inspect`
+# can leak baked-in env files). Templates/examples are explicitly re-included.
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.template
+!**/.env.example
+
+# Local-only tooling
+.vscode
+.idea
+*.code-workspace
+.husky
+
+# Infra docs + repo-level docs — not needed in runtime image.
+# (apps/backend/README.md kept for `docker image inspect` debuggability.)
+infra
+README.md
+docs
+
+# Tests + Playwright artefacts
+playwright-report
+test-results
+coverage
+
+# Vercel / Render local artefacts
+.vercel
