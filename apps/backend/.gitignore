@@ -6,3 +6,9 @@ uploads/
 .env.local
 .env.production
 .env.template
+
+# Pre-transpile artifacts emitted by scripts/pretranspile-config.js in the
+# Docker builder stage. Sibling .js files exist only inside the image — never
+# committed to the repo (BIL-2172).
+medusa-config.js
+src/modules/**/*.js

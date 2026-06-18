@@ -12,10 +12,12 @@ COPY apps/e2e/package.json apps/e2e/
 RUN pnpm install --filter @binchen/backend --frozen-lockfile --shamefully-hoist
 # Copy backend source only (keeps build context cache-friendly)
 COPY apps/backend/ apps/backend/
-# dynamicImport() in @medusajs/utils uses require() with no extension, so Node tries
-# medusa-config.js before medusa-config.ts. Pre-transpile the config using the
-# TypeScript compiler already installed as a devDep — no npm/ts-node needed.
-RUN node -e "const ts=require('/app/node_modules/typescript');const fs=require('fs');const r=ts.transpileModule(fs.readFileSync('apps/backend/medusa-config.ts','utf8'),{compilerOptions:{module:1,target:7,esModuleInterop:true,allowSyntheticDefaultImports:true}});fs.writeFileSync('apps/backend/medusa-config.js',r.outputText);console.log('pre-transpiled medusa-config.js');"
+# Pre-transpile medusa-config.ts AND every src/modules/**/*.ts into sibling .js.
+# defineConfig() in @medusajs/utils require()s each local module resolve path at
+# config-load time (i.e. before `medusa build` emits .medusa/server), so the
+# referenced ./src/modules/<name> needs a .js entrypoint right next to the .ts
+# source. The TypeScript compiler is already installed as a devDep.
+RUN cd apps/backend && node scripts/pretranspile-config.js
 # Build Medusa — compiles TS and generates .medusa/server artifact
 RUN pnpm --filter @binchen/backend build
 
