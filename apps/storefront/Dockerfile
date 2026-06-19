@@ -6,10 +6,36 @@
 # Build context expected: monorepo root (so we can use the workspace lockfile).
 # Build command:   docker build -f apps/storefront/Dockerfile -t bilulu-storefront .
 # Run command:     docker run --rm -p 3000:3000 --env-file apps/storefront/.env.local bilulu-storefront
+#
+# BIL-2176: Coolify injects extra --build-arg flags (COOLIFY_*, NEXT_PUBLIC_*,
+# PORT, HOSTNAME, COOLIFY_BUILD_SECRETS_HASH). Declaring them as no-op ARGs in
+# a global pre-stage block silences BuildKit warnings, prevents any host shell
+# env from being accidentally picked up as build-time env, and gives Coolify
+# a stable hash for its layer cache. NODE_ENV is intentionally NOT declared as
+# a global ARG so the deps stage always installs devDependencies (next/sharp
+# postinstall scripts + typescript), regardless of the build host's NODE_ENV.
+
+ARG COOLIFY_URL
+ARG COOLIFY_FQDN
+ARG COOLIFY_BRANCH
+ARG COOLIFY_RESOURCE_UUID
+ARG COOLIFY_BUILD_SECRETS_HASH
+ARG NEXT_PUBLIC_MEDUSA_BACKEND_URL
+ARG MEDUSA_BACKEND_URL
+ARG NEXT_PUBLIC_BASE_URL
+ARG PORT
+ARG HOSTNAME
 
 # ---------- 1. deps: install workspace deps with frozen lockfile ----------
 FROM node:20-slim AS deps
 WORKDIR /app
+
+# Force devDependencies install regardless of the build host's NODE_ENV /
+# `--build-arg NODE_ENV=production`. pnpm 9 treats NODE_ENV=production as
+# implicit `--prod`, which would strip TypeScript (devDep) and break the
+# Next.js Webpack compile in the builder stage.
+ENV NODE_ENV=development
+ENV CI=true
 
 RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 
@@ -17,7 +43,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/storefront/package.json apps/storefront/package.json
 
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile --filter=storefront...
+    pnpm install --frozen-lockfile --prod=false --filter=storefront...
 
 # ---------- 2. builder: build standalone Next.js output ----------
 FROM node:20-slim AS builder
@@ -29,6 +55,20 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/storefront/node_modules ./apps/storefront/node_modules
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/storefront ./apps/storefront
+
+# Fail fast and loud if the COPY above silently dropped the source tree.
+# BIL-2176 surfaced as `Module not found: @/components/ui/button` in Coolify
+# while local builds with identical flags succeeded — log a fingerprint of
+# the storefront tree so the build log itself proves whether the source
+# files reached the builder layer.
+RUN echo "--- BIL-2176 storefront tree fingerprint ---" \
+ && ls -la /app/apps/storefront \
+ && ls -la /app/apps/storefront/src/components/ui \
+ && ls -la /app/apps/storefront/src/lib \
+ && test -f /app/apps/storefront/src/components/ui/button.tsx \
+ && test -f /app/apps/storefront/src/components/ui/input.tsx \
+ && test -f /app/apps/storefront/src/lib/cart-cookie.ts \
+ && echo "--- BIL-2176 fingerprint ok ---"
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
