@@ -2,10 +2,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatPrice, getProducts, type MedusaProduct } from "@/lib/medusa";
 
-const placeholderProducts = [
+interface FeaturedCard {
+  id: string;
+  name: string;
+  description: string;
+  price: string | null;
+  image: string | null;
+  alt: string;
+  badge: string | null;
+}
+
+const placeholderCards: FeaturedCard[] = [
   {
-    id: 1,
+    id: "placeholder-strampler",
     name: "Strampler aus Bio-Musselin",
     description: "Weicher Musselin, ideal für empfindliche Babyhaut. Größen: 50–74.",
     price: "32,00 €",
@@ -14,7 +25,7 @@ const placeholderProducts = [
     badge: "Neuheit",
   },
   {
-    id: 2,
+    id: "placeholder-jacke",
     name: "Sommerjacke für Kleinkinder",
     description: "Luftige Jacke aus 100 % Baumwolle. Für aktive Kleine von 1–3 Jahren.",
     price: "48,00 €",
@@ -23,7 +34,7 @@ const placeholderProducts = [
     badge: "Bestseller",
   },
   {
-    id: 3,
+    id: "placeholder-geschenk",
     name: "Geschenkset Neugeborene",
     description: "Mütze, Fäustlinge und Söckchen im Set. Perfektes Babygeschenk.",
     price: "28,00 €",
@@ -33,7 +44,51 @@ const placeholderProducts = [
   },
 ];
 
-export default function HomePage() {
+function firstSentence(text: string | null | undefined, max = 140): string {
+  if (!text) return "";
+  const trimmed = text.trim();
+  if (!trimmed) return "";
+  const sentenceEnd = trimmed.search(/[.!?](\s|$)/);
+  const candidate = sentenceEnd > 0 ? trimmed.slice(0, sentenceEnd + 1) : trimmed;
+  if (candidate.length <= max) return candidate;
+  return `${candidate.slice(0, max - 1).trimEnd()}…`;
+}
+
+function productToCard(product: MedusaProduct): FeaturedCard {
+  const variant = product.variants?.[0];
+  const calculated = variant?.calculated_price?.calculated_amount;
+  const legacy = variant?.prices?.[0]?.amount;
+  const currency =
+    variant?.calculated_price?.currency_code ?? variant?.prices?.[0]?.currency_code ?? "EUR";
+  const priceAmount = typeof calculated === "number" ? calculated : legacy;
+  const image = product.thumbnail ?? product.images?.[0]?.url ?? null;
+  const description =
+    firstSentence(product.subtitle) || firstSentence(product.description) || "";
+
+  return {
+    id: product.id,
+    name: product.title,
+    description,
+    price: typeof priceAmount === "number" ? formatPrice(priceAmount, currency) : null,
+    image,
+    alt: product.title,
+    badge: null,
+  };
+}
+
+async function loadFeaturedCards(): Promise<FeaturedCard[]> {
+  try {
+    const { products } = await getProducts({ limit: 3, currency_code: "eur" });
+    if (products.length === 0) return placeholderCards;
+    const cards = products.slice(0, 3).map(productToCard);
+    return cards.length >= 3 ? cards : placeholderCards;
+  } catch {
+    return placeholderCards;
+  }
+}
+
+export default async function HomePage() {
+  const featuredProducts = await loadFeaturedCards();
   return (
     <>
       {/* Hero section */}
@@ -85,7 +140,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Product grid — placeholder */}
       <section
         aria-labelledby="products-heading"
         className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
@@ -108,18 +162,24 @@ export default function HomePage() {
           role="list"
           aria-label="Produkte"
         >
-          {placeholderProducts.map((product) => (
+          {featuredProducts.map((product) => (
             <li key={product.id}>
               <Card className="group overflow-hidden transition-shadow hover:shadow-md">
                 {/* Product image */}
                 <div className="relative aspect-square overflow-hidden bg-binchen-border">
-                  <Image
-                    src={product.image}
-                    alt={product.alt}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
+                  {product.image ? (
+                    <Image
+                      src={product.image}
+                      alt={product.alt}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <span className="font-body text-sm text-binchen-ink-subtle">Kein Bild</span>
+                    </div>
+                  )}
                   {product.badge && (
                     <span className="absolute left-3 top-3 rounded-full bg-binchen-terracotta-text px-3 py-1 font-body text-xs font-semibold text-binchen-cream">
                       {product.badge}
@@ -131,12 +191,14 @@ export default function HomePage() {
                   <h3 className="font-display text-lg font-semibold text-binchen-ink">
                     {product.name}
                   </h3>
-                  <p className="mt-1 font-body text-sm leading-relaxed text-binchen-ink-muted">
-                    {product.description}
-                  </p>
+                  {product.description && (
+                    <p className="mt-1 font-body text-sm leading-relaxed text-binchen-ink-muted">
+                      {product.description}
+                    </p>
+                  )}
                   <div className="mt-4 flex items-center justify-between">
                     <span className="font-body text-base font-semibold text-binchen-ink">
-                      {product.price}
+                      {product.price ?? ""}
                     </span>
                     <Button asChild variant="default" size="sm">
                       <Link href="/catalog" aria-label={`${product.name} in der Kollektion ansehen`}>
