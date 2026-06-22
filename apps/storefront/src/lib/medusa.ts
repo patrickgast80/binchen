@@ -7,11 +7,32 @@ function authHeaders(): Record<string, string> {
   return h;
 }
 
+export interface MedusaProductImage {
+  id?: string;
+  url: string;
+}
+
+export interface MedusaCalculatedPrice {
+  calculated_amount?: number;
+  original_amount?: number;
+  currency_code?: string;
+}
+
+export interface MedusaProductVariant {
+  sku: string;
+  inventory_quantity: number;
+  calculated_price?: MedusaCalculatedPrice | null;
+  prices?: { amount: number; currency_code: string }[] | null;
+}
+
 export interface MedusaProduct {
   id: string;
   title: string;
+  description?: string | null;
+  subtitle?: string | null;
   thumbnail: string | null;
-  variants: { sku: string; inventory_quantity: number }[];
+  images?: MedusaProductImage[] | null;
+  variants: MedusaProductVariant[];
   metadata: {
     sizeLabel?: string;
     ageCategory?: string;
@@ -34,6 +55,8 @@ export async function getProducts(params: {
   age_max?: string;
   limit?: number;
   offset?: number;
+  region_id?: string;
+  currency_code?: string;
 }): Promise<ProductsResponse> {
   if (!BACKEND_URL) {
     return { products: [], count: 0, limit: params.limit ?? 20, offset: params.offset ?? 0 };
@@ -45,6 +68,8 @@ export async function getProducts(params: {
   if (params.age_category) url.searchParams.set("age_category", params.age_category);
   if (params.age_min) url.searchParams.set("age_min", params.age_min);
   if (params.age_max) url.searchParams.set("age_max", params.age_max);
+  if (params.region_id) url.searchParams.set("region_id", params.region_id);
+  if (params.currency_code) url.searchParams.set("currency_code", params.currency_code);
   url.searchParams.set("limit", String(params.limit ?? 20));
   url.searchParams.set("offset", String(params.offset ?? 0));
 
