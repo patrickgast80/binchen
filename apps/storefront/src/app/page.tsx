@@ -139,7 +139,7 @@ export default function HomePage() {
                       {product.price}
                     </span>
                     <Button asChild variant="default" size="sm">
-                      <Link href={`/product/${product.id}`} aria-label={`${product.name} ansehen`}>
+                      <Link href="/catalog" aria-label={`${product.name} in der Kollektion ansehen`}>
                         Ansehen
                       </Link>
                     </Button>
