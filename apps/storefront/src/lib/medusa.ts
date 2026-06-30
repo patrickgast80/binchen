@@ -19,6 +19,8 @@ export interface MedusaCalculatedPrice {
 }
 
 export interface MedusaProductVariant {
+  id: string;
+  title?: string | null;
   sku: string;
   inventory_quantity: number;
   calculated_price?: MedusaCalculatedPrice | null;
@@ -96,6 +98,17 @@ export async function getProducts(params: {
 
 function isMedusaErrorBody(body: unknown): body is { type?: string; message?: string } {
   return typeof body === "object" && body !== null;
+}
+
+export async function getProduct(id: string): Promise<MedusaProduct | null> {
+  if (!BACKEND_URL) return null;
+  const url = new URL(`${BACKEND_URL}/store/products/${id}`);
+  url.searchParams.set("currency_code", "eur");
+  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
+  if (res.status === 404) return null;
+  if (!res.ok) return null;
+  const data = (await res.json()) as { product: MedusaProduct };
+  return data.product ?? null;
 }
 
 // ─── Cart ──────────────────────────────────────────────────────────────
