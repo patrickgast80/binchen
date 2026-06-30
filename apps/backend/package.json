@@ -8,6 +8,7 @@
     "start": "medusa start",
     "seed": "medusa exec ./src/scripts/seed.ts",
     "seed:shipping": "medusa exec ./src/scripts/seed-shipping.ts",
+    "seed:inventory": "medusa exec ./src/scripts/seed-inventory.ts",
     "migrate": "medusa db:migrate",
     "lint": "tsc --noEmit --pretty",
     "typecheck": "tsc --noEmit"
