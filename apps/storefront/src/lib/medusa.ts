@@ -103,7 +103,6 @@ function isMedusaErrorBody(body: unknown): body is { type?: string; message?: st
 export async function getProduct(id: string): Promise<MedusaProduct | null> {
   if (!BACKEND_URL) return null;
   const url = new URL(`${BACKEND_URL}/store/products/${id}`);
-  url.searchParams.set("currency_code", "eur");
   const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
   if (res.status === 404) return null;
   if (!res.ok) return null;
