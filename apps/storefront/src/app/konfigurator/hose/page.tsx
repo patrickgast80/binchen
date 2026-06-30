@@ -16,10 +16,11 @@ export const metadata: Metadata = {
   },
 };
 
+// Render at request time so useSearchParams resolves server-side and the full
+// page paints on first response. Avoids the empty-fallback → hydrated-content
+// layout jump that pushed CLS above budget.
+export const dynamic = "force-dynamic";
+
 export default function HoseKonfiguratorPage() {
-  return (
-    <React.Suspense fallback={null}>
-      <HoseKonfigurator />
-    </React.Suspense>
-  );
+  return <HoseKonfigurator />;
 }
