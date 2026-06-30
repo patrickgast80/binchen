@@ -6,6 +6,20 @@ export default defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,
+    // BIL-2175: deployed container hung in epoll_wait after first SELECT EXISTS roundtrip
+    // when running db:migrate against the Coolify-managed Postgres. Medusa's pg wrapper
+    // already sets keepAlive=true with a 10s initial delay; here we tighten that to 1s
+    // so TCP keepalive probes fire before any NAT/proxy idle timeout (Hetzner/Coolify
+    // overlay networks have been observed dropping idle flows in <30s), and bound any
+    // single idle transaction at 60s so a stuck migration surfaces as an error instead
+    // of an indefinite stall. Enable BACKEND_DB_LOGGING=true to log SQL via Medusa.
+    databaseLogging: process.env.BACKEND_DB_LOGGING === "true",
+    databaseDriverOptions: {
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 1000,
+      connectionTimeoutMillis: 10000,
+      idle_in_transaction_session_timeout: 60000,
+    },
     http: {
       storeCors: process.env.STORE_CORS || "http://localhost:3000",
       adminCors: process.env.ADMIN_CORS || "http://localhost:7001",

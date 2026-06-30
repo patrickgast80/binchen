@@ -54,8 +54,14 @@ EXPOSE 9000
 # 4. seed-shipping.js    — regions + flat-rate shipping (BIL-31, idempotent)
 # 5. seed-inventory.js   — sales-channel<->location link + ≥25 stocked qty per variant (BIL-2386)
 # 6. medusa start        — serve the app
+#
+# BIL-2175 debug hooks (set on the Coolify service when migrations stall):
+# - BACKEND_MIGRATE_DEBUG=true  → MIKRO_ORM_DEBUG + --verbose: dumps every SQL the
+#   migrator runs so the exact hung module/query is visible in container logs.
+# - BACKEND_DB_LOGGING=true     → enables Medusa's databaseLogging in medusa-config.
 CMD ["sh", "-c", "\
-  /app/node_modules/.bin/medusa db:migrate && \
+  if [ \"$BACKEND_MIGRATE_DEBUG\" = \"true\" ]; then export MIKRO_ORM_DEBUG=true; MIGRATE_FLAGS=\"--verbose\"; else MIGRATE_FLAGS=\"\"; fi && \
+  /app/node_modules/.bin/medusa db:migrate $MIGRATE_FLAGS && \
   if [ -n \"$MEDUSA_ADMIN_EMAIL\" ] && [ -n \"$MEDUSA_ADMIN_PASSWORD\" ]; then \
     /app/node_modules/.bin/medusa user -e \"$MEDUSA_ADMIN_EMAIL\" -p \"$MEDUSA_ADMIN_PASSWORD\" 2>/dev/null || true; \
   fi && \
