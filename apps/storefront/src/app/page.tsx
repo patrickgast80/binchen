@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatPrice, getProducts, type MedusaProduct } from "@/lib/medusa";
+import { PantsSvg } from "./konfigurator/hose/pants-svg";
 
 interface FeaturedCard {
   id: string;
@@ -216,6 +217,50 @@ export default async function HomePage() {
           <Button asChild variant="outline" size="lg">
             <Link href="/catalog">Alle Produkte ansehen</Link>
           </Button>
+        </div>
+      </section>
+
+      {/* Konfigurator teaser */}
+      <section
+        aria-labelledby="konfigurator-heading"
+        className="bg-binchen-cream"
+      >
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="grid items-center gap-10 rounded-3xl border border-binchen-border bg-binchen-cream-dark px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[1fr_1.4fr] lg:gap-14 lg:px-14 lg:py-14">
+            <div className="mx-auto w-full max-w-xs lg:max-w-sm">
+              <PantsSvg
+                colors={{
+                  bund: "#7A3318",
+                  mainLeft: "#E8DDC8",
+                  mainRight: "#A8C5AB",
+                  buendchen: "#5BA8AE",
+                }}
+                title="Vorschau einer individuell konfigurierten Hose"
+                className="h-auto w-full"
+              />
+            </div>
+            <div>
+              <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta-text">
+                Neu · Konfigurator
+              </p>
+              <h2
+                id="konfigurator-heading"
+                className="mt-3 font-display text-3xl font-semibold text-binchen-ink sm:text-4xl"
+              >
+                Stell deine Hose selbst zusammen
+              </h2>
+              <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted">
+                Bund, beide Hauptteile und Bündchen einzeln einfärben — deine Auswahl steckt im
+                Link, sodass du sie speichern oder teilen kannst. Echte Stoffmuster folgen bald, du
+                kannst die Farbvorschau aber schon jetzt ausprobieren.
+              </p>
+              <div className="mt-6">
+                <Button asChild variant="accent" size="lg">
+                  <Link href="/konfigurator/hose">Konfigurator öffnen</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

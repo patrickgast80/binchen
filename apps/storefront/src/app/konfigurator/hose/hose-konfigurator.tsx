@@ -1,0 +1,294 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Check, RotateCcw, Share2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+import {
+  PALETTE,
+  REGIONS,
+  type RegionDef,
+  resolveColor,
+  resolveSwatchId,
+  type Swatch,
+} from "./palette";
+import { PantsSvg, type PantsColors } from "./pants-svg";
+
+type Selection = Record<RegionDef["param"], string>;
+
+function buildSelection(searchParams: URLSearchParams | null): Selection {
+  return REGIONS.reduce<Selection>((acc, region) => {
+    acc[region.param] = resolveSwatchId(searchParams?.get(region.param), region.defaultColor);
+    return acc;
+  }, {} as Selection);
+}
+
+function isDefaultSelection(selection: Selection): boolean {
+  return REGIONS.every((region) => selection[region.param] === region.defaultColor);
+}
+
+export function HoseKonfigurator() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const selection = React.useMemo(() => buildSelection(searchParams), [searchParams]);
+  const [lastChanged, setLastChanged] = React.useState<{
+    region: string;
+    swatch: string;
+  } | null>(null);
+  const [shareStatus, setShareStatus] = React.useState<"idle" | "copied">("idle");
+
+  const colors: PantsColors = React.useMemo(
+    () => ({
+      bund: resolveColor(selection.bund, "petrol"),
+      mainLeft: resolveColor(selection.links, "cream"),
+      mainRight: resolveColor(selection.rechts, "cream"),
+      buendchen: resolveColor(selection.buendchen, "petrol"),
+    }),
+    [selection],
+  );
+
+  const updateRegion = React.useCallback(
+    (region: RegionDef, swatch: Swatch) => {
+      const next = new URLSearchParams(searchParams?.toString() ?? "");
+      if (swatch.id === region.defaultColor) {
+        next.delete(region.param);
+      } else {
+        next.set(region.param, swatch.id);
+      }
+      const query = next.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+      setLastChanged({ region: region.label, swatch: swatch.name });
+      setShareStatus("idle");
+    },
+    [pathname, router, searchParams],
+  );
+
+  const handleReset = React.useCallback(() => {
+    router.replace(pathname, { scroll: false });
+    setLastChanged({ region: "Konfiguration", swatch: "zurückgesetzt" });
+    setShareStatus("idle");
+  }, [pathname, router]);
+
+  const handleShare = React.useCallback(async () => {
+    if (typeof window === "undefined") return;
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Meine Bilulu-Hose", url });
+        return;
+      }
+    } catch {
+      // Nutzer hat Share-Dialog abgebrochen — fällt unten auf Clipboard zurück.
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareStatus("copied");
+      window.setTimeout(() => setShareStatus("idle"), 2500);
+    } catch {
+      setShareStatus("idle");
+    }
+  }, []);
+
+  const showReset = !isDefaultSelection(selection);
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 sm:pt-12 lg:px-8">
+      {/* Page header */}
+      <header className="max-w-3xl">
+        <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta-text">
+          Konfigurator · MVP
+        </p>
+        <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-binchen-ink sm:text-4xl lg:text-5xl">
+          Stell deine Hose selbst zusammen
+        </h1>
+        <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted sm:text-lg">
+          Wähle Farbe und Stil für Bund, beide Hauptteile und Bündchen. Deine Auswahl wird live in
+          der Vorschau gezeigt und in der Adresse gespeichert — du kannst den Link teilen und später
+          wieder öffnen.
+        </p>
+      </header>
+
+      {/* Hinweis-Banner */}
+      <aside
+        role="note"
+        aria-label="Hinweis zum Konfigurator"
+        className="mt-8 rounded-xl border border-binchen-border bg-binchen-cream-dark px-4 py-3 sm:px-5 sm:py-4"
+      >
+        <p className="font-body text-sm leading-relaxed text-binchen-ink">
+          <span className="font-semibold">Bald mit echten Stoff-Mustern.</span>{" "}
+          <span className="text-binchen-ink-muted">
+            Derzeit zeigt dir der Konfigurator eine reine Farbvorschau. Sobald die Stoffmuster
+            eintreffen, kannst du hier echte Druckmotive auswählen.
+          </span>
+        </p>
+      </aside>
+
+      {/* Live region for screen readers */}
+      <span aria-live="polite" aria-atomic="true" className="sr-only">
+        {lastChanged ? `${lastChanged.region}: ${lastChanged.swatch}` : ""}
+      </span>
+
+      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-14">
+        {/* Live preview */}
+        <section
+          aria-labelledby="preview-heading"
+          className="lg:sticky lg:top-24 lg:self-start"
+        >
+          <h2 id="preview-heading" className="sr-only">
+            Live-Vorschau deiner Hose
+          </h2>
+          <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
+            <PantsSvg
+              colors={colors}
+              title="Live-Vorschau der konfigurierten Hose"
+              className="mx-auto h-auto w-full max-w-md"
+            />
+          </div>
+
+          {/* Selection summary + actions */}
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-2 font-body text-sm">
+              {REGIONS.map((region) => {
+                const swatchId = selection[region.param];
+                const swatch = PALETTE.find((s) => s.id === swatchId);
+                return (
+                  <div key={region.id} className="flex items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className="h-4 w-4 shrink-0 rounded-full border border-binchen-border"
+                      style={{ backgroundColor: swatch?.hex ?? "#FAF7F2" }}
+                    />
+                    <dt className="text-binchen-ink-muted">{region.label}:</dt>
+                    <dd className="font-medium text-binchen-ink">{swatch?.name ?? "—"}</dd>
+                  </div>
+                );
+              })}
+            </dl>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                aria-live="polite"
+              >
+                {shareStatus === "copied" ? (
+                  <>
+                    <Check className="h-4 w-4" aria-hidden="true" />
+                    Link kopiert
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="h-4 w-4" aria-hidden="true" />
+                    Konfiguration teilen
+                  </>
+                )}
+              </Button>
+              {showReset && (
+                <Button type="button" variant="ghost" size="sm" onClick={handleReset}>
+                  <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                  Zurücksetzen
+                </Button>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Palette controls */}
+        <section aria-labelledby="palette-heading" className="space-y-8">
+          <h2 id="palette-heading" className="sr-only">
+            Farbpalette für jede Region
+          </h2>
+
+          {REGIONS.map((region) => {
+            const activeId = selection[region.param];
+            return (
+              <fieldset
+                key={region.id}
+                className="rounded-2xl border border-binchen-border bg-binchen-cream-dark/40 p-5 sm:p-6"
+              >
+                <legend className="px-2 font-display text-xl font-semibold text-binchen-ink">
+                  {region.label}
+                </legend>
+                <p className="font-body text-sm text-binchen-ink-muted">{region.description}</p>
+                <div
+                  role="radiogroup"
+                  aria-label={`Farbe für ${region.label}`}
+                  className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-6"
+                >
+                  {PALETTE.map((swatch) => {
+                    const isActive = swatch.id === activeId;
+                    return (
+                      <button
+                        key={swatch.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={isActive}
+                        aria-label={`${region.label}: ${swatch.name}`}
+                        onClick={() => updateRegion(region, swatch)}
+                        className={cn(
+                          "group flex flex-col items-center gap-1.5 rounded-lg p-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 focus-visible:ring-offset-binchen-cream",
+                          isActive && "bg-binchen-cream shadow-sm",
+                        )}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            "relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-transform group-hover:scale-105 sm:h-11 sm:w-11",
+                            isActive
+                              ? "border-binchen-ink shadow-inner"
+                              : "border-binchen-border",
+                          )}
+                          style={{ backgroundColor: swatch.hex }}
+                        >
+                          {isActive && (
+                            <Check
+                              className="h-5 w-5 drop-shadow"
+                              aria-hidden="true"
+                              style={{ color: swatchTextColor(swatch.hex) }}
+                            />
+                          )}
+                        </span>
+                        <span className="text-center font-body text-xs leading-tight text-binchen-ink">
+                          {swatch.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            );
+          })}
+
+          <p className="font-body text-sm text-binchen-ink-muted">
+            Du möchtest dieses Modell bestellen?{" "}
+            <Link
+              href="/contact"
+              className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
+            >
+              Schreib uns
+            </Link>{" "}
+            mit deinem Konfigurations-Link — wir melden uns mit verfügbaren Stoffen.
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+/** Helle Farben bekommen dunkles Häkchen, dunkle Farben helles. */
+function swatchTextColor(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  // Perceived luminance per Rec. 709
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return lum > 0.6 ? "#2C2417" : "#FAF7F2";
+}

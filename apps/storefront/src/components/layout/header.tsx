@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 
 const navLinks = [
   { href: "/catalog", label: "Shop" },
+  { href: "/konfigurator/hose", label: "Konfigurator" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
