@@ -100,6 +100,54 @@ function isMedusaErrorBody(body: unknown): body is { type?: string; message?: st
   return typeof body === "object" && body !== null;
 }
 
+/**
+ * Resolve the base variant used by the Hose-Konfigurator.
+ *
+ * Preferred: `NEXT_PUBLIC_CONFIGURATOR_HOSE_VARIANT_ID` set to a real variant id
+ * (Backend can dedicate a "Konfigurator-Hose" product later). Fallback: pick the
+ * first available variant of the first product whose title contains "Hose", so
+ * the flow works against today's seed data without extra backend work.
+ */
+export async function getConfiguratorHoseVariant(): Promise<
+  { variantId: string; productId: string; priceAmount: number; currency: string } | null
+> {
+  const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_HOSE_VARIANT_ID?.trim();
+  if (envVariant && BACKEND_URL) {
+    // We still need price/currency for display; fall through to product lookup below.
+  }
+  if (!BACKEND_URL) return null;
+  const url = new URL(`${BACKEND_URL}/store/products`);
+  url.searchParams.set("limit", "20");
+  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
+  if (!res.ok) return null;
+  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const hose = products.find((p) => /hose/i.test(p.title)) ?? products[0];
+  if (!hose) return null;
+  const variant =
+    hose.variants.find((v) => (envVariant ? v.id === envVariant : v.inventory_quantity > 0)) ??
+    hose.variants[0];
+  if (!variant) return null;
+  const price = variantPriceOrNull(variant);
+  return {
+    variantId: envVariant || variant.id,
+    productId: hose.id,
+    priceAmount: price?.amount ?? 0,
+    currency: price?.currency ?? "EUR",
+  };
+}
+
+function variantPriceOrNull(
+  variant: MedusaProductVariant,
+): { amount: number; currency: string } | null {
+  const calc = variant.calculated_price?.calculated_amount;
+  const legacy = variant.prices?.[0]?.amount;
+  const amount = typeof calc === "number" ? calc : legacy;
+  if (typeof amount !== "number") return null;
+  const currency =
+    variant.calculated_price?.currency_code ?? variant.prices?.[0]?.currency_code ?? "EUR";
+  return { amount, currency };
+}
+
 export async function getProduct(id: string): Promise<MedusaProduct | null> {
   if (!BACKEND_URL) return null;
   const url = new URL(`${BACKEND_URL}/store/products/${id}`);
@@ -135,6 +183,7 @@ export interface CartLineItem {
   unit_price: number;
   subtotal: number;
   total: number;
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface CartShippingMethod {
@@ -218,12 +267,15 @@ export async function addLineItem(
   cartId: string,
   variantId: string,
   quantity = 1,
+  metadata?: Record<string, unknown>,
 ): Promise<Cart | null> {
   if (!BACKEND_URL) return null;
+  const body: Record<string, unknown> = { variant_id: variantId, quantity };
+  if (metadata && Object.keys(metadata).length > 0) body.metadata = metadata;
   const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}/line-items`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ variant_id: variantId, quantity }),
+    body: JSON.stringify(body),
     cache: "no-store",
   });
   if (!res.ok) return null;

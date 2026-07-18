@@ -3,10 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Check, RotateCcw, Share2 } from "lucide-react";
+import { Check, RotateCcw, Share2, ShoppingBag } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { addConfiguredHoseToCartAction } from "@/app/cart/actions";
 
 import {
   PALETTE,
@@ -267,8 +268,51 @@ export function HoseKonfigurator() {
             );
           })}
 
+          <form
+            action={addConfiguredHoseToCartAction}
+            className="rounded-2xl border border-binchen-sage/40 bg-binchen-cream p-5 sm:p-6"
+          >
+            {REGIONS.map((region) => {
+              const swatchId = selection[region.param];
+              const swatch = PALETTE.find((s) => s.id === swatchId);
+              return (
+                <React.Fragment key={region.param}>
+                  <input type="hidden" name={region.param} value={swatchId} />
+                  <input
+                    type="hidden"
+                    name={`${region.param}Name`}
+                    value={swatch?.name ?? ""}
+                  />
+                </React.Fragment>
+              );
+            })}
+            <input
+              type="hidden"
+              name="configHref"
+              value={
+                typeof window !== "undefined"
+                  ? window.location.pathname + window.location.search
+                  : "/konfigurator/hose"
+              }
+            />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-display text-lg font-semibold text-binchen-ink">
+                  Deine Konfiguration in den Warenkorb
+                </p>
+                <p className="mt-1 font-body text-sm text-binchen-ink-muted">
+                  Handgenäht auf Bestellung. Preis + Versand siehst du im Warenkorb.
+                </p>
+              </div>
+              <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto">
+                <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+                In den Warenkorb
+              </Button>
+            </div>
+          </form>
+
           <p className="font-body text-sm text-binchen-ink-muted">
-            Du möchtest dieses Modell bestellen?{" "}
+            Fragen zu Stoffen oder Sondermaßen?{" "}
             <Link
               href="/contact"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"

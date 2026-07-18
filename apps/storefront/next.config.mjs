@@ -30,15 +30,19 @@ const nextConfig = {
     ],
   },
   async redirects() {
-    if (process.env.BILULU_CANONICAL_REDIRECT !== "true") return [];
-    return [
-      {
+    const redirects = [
+      { source: "/warenkorb", destination: "/cart", permanent: true },
+      { source: "/warenkorb/:path*", destination: "/cart/:path*", permanent: true },
+    ];
+    if (process.env.BILULU_CANONICAL_REDIRECT === "true") {
+      redirects.push({
         source: "/:path*",
         has: [{ type: "host", value: "binchen.vercel.app" }],
         destination: "https://bilulu.de/:path*",
         permanent: true,
-      },
-    ];
+      });
+    }
+    return redirects;
   },
 };
 

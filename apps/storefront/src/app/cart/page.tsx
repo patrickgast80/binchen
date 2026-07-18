@@ -3,8 +3,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { loadCart } from "@/lib/cart-cookie";
-import { formatPrice } from "@/lib/medusa";
+import { formatPrice, type CartLineItem } from "@/lib/medusa";
 import { removeFromCartAction } from "./actions";
+
+interface KonfiguratorSelection {
+  bundName?: string | null;
+  linksName?: string | null;
+  rechtsName?: string | null;
+  buendchenName?: string | null;
+  configHref?: string | null;
+}
+
+function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null {
+  const md = item.metadata;
+  if (!md || typeof md !== "object") return null;
+  if ((md as { kind?: unknown }).kind !== "konfigurator-hose") return null;
+  const asStr = (v: unknown) => (typeof v === "string" && v.trim() ? v : null);
+  const m = md as Record<string, unknown>;
+  return {
+    bundName: asStr(m.bundName),
+    linksName: asStr(m.linksName),
+    rechtsName: asStr(m.rechtsName),
+    buendchenName: asStr(m.buendchenName),
+    configHref: asStr(m.configHref),
+  };
+}
 
 export const metadata: Metadata = {
   title: "Warenkorb",
@@ -40,52 +63,97 @@ export default async function CartPage() {
         <div className="mt-8 lg:grid lg:grid-cols-[1fr_360px] lg:gap-12">
           <section aria-label="Artikel im Warenkorb">
             <ul role="list" className="divide-y divide-binchen-border border-y border-binchen-border">
-              {items.map((item) => (
-                <li key={item.id} className="flex gap-4 py-6">
-                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded bg-binchen-border sm:h-24 sm:w-24">
-                    {item.thumbnail ? (
-                      <Image
-                        src={item.thumbnail}
-                        alt={item.title}
-                        fill
-                        sizes="96px"
-                        className="object-cover"
-                      />
-                    ) : null}
-                  </div>
-                  <div className="flex flex-1 flex-col justify-between gap-2">
-                    <div>
-                      <h2 className="font-display text-base font-semibold text-binchen-ink">
-                        {item.title}
-                      </h2>
-                      {item.subtitle ? (
-                        <p className="mt-0.5 font-body text-sm text-binchen-ink-muted">
-                          {item.subtitle}
-                        </p>
+              {items.map((item) => {
+                const konfig = konfiguratorSelection(item);
+                const displayTitle = konfig ? "Konfigurator-Hose" : item.title;
+                return (
+                  <li key={item.id} className="flex gap-4 py-6">
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded bg-binchen-border sm:h-24 sm:w-24">
+                      {item.thumbnail ? (
+                        <Image
+                          src={item.thumbnail}
+                          alt={displayTitle}
+                          fill
+                          sizes="96px"
+                          className="object-cover"
+                        />
                       ) : null}
-                      <p className="mt-1 font-body text-xs text-binchen-ink-subtle">
-                        Unikat — Stückzahl auf 1 begrenzt
-                      </p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-body text-sm font-semibold text-binchen-ink">
-                        {formatPrice(item.subtotal, currency)}
-                      </span>
-                      <form action={removeFromCartAction.bind(null, item.id)}>
-                        <Button
-                          type="submit"
-                          variant="ghost"
-                          size="sm"
-                          aria-label={`${item.title} entfernen`}
-                          className="text-binchen-ink-muted hover:text-binchen-terracotta-text"
-                        >
-                          Entfernen
-                        </Button>
-                      </form>
+                    <div className="flex flex-1 flex-col justify-between gap-2">
+                      <div>
+                        <h2 className="font-display text-base font-semibold text-binchen-ink">
+                          {displayTitle}
+                        </h2>
+                        {konfig ? (
+                          <p className="mt-0.5 font-body text-sm text-binchen-ink-muted">
+                            Deine Konfiguration
+                          </p>
+                        ) : item.subtitle ? (
+                          <p className="mt-0.5 font-body text-sm text-binchen-ink-muted">
+                            {item.subtitle}
+                          </p>
+                        ) : null}
+                        {konfig ? (
+                          <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-body text-xs text-binchen-ink-muted">
+                            {konfig.bundName ? (
+                              <>
+                                <dt className="text-binchen-ink-subtle">Bund:</dt>
+                                <dd className="font-medium text-binchen-ink">{konfig.bundName}</dd>
+                              </>
+                            ) : null}
+                            {konfig.linksName ? (
+                              <>
+                                <dt className="text-binchen-ink-subtle">Hauptteil links:</dt>
+                                <dd className="font-medium text-binchen-ink">{konfig.linksName}</dd>
+                              </>
+                            ) : null}
+                            {konfig.rechtsName ? (
+                              <>
+                                <dt className="text-binchen-ink-subtle">Hauptteil rechts:</dt>
+                                <dd className="font-medium text-binchen-ink">{konfig.rechtsName}</dd>
+                              </>
+                            ) : null}
+                            {konfig.buendchenName ? (
+                              <>
+                                <dt className="text-binchen-ink-subtle">Bündchen:</dt>
+                                <dd className="font-medium text-binchen-ink">{konfig.buendchenName}</dd>
+                              </>
+                            ) : null}
+                          </dl>
+                        ) : (
+                          <p className="mt-1 font-body text-xs text-binchen-ink-subtle">
+                            Unikat — Stückzahl auf 1 begrenzt
+                          </p>
+                        )}
+                        {konfig?.configHref ? (
+                          <Link
+                            href={konfig.configHref}
+                            className="mt-2 inline-block font-body text-xs font-medium text-binchen-terracotta-text underline-offset-4 hover:underline"
+                          >
+                            Konfiguration anpassen
+                          </Link>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-body text-sm font-semibold text-binchen-ink">
+                          {formatPrice(item.subtotal, currency)}
+                        </span>
+                        <form action={removeFromCartAction.bind(null, item.id)}>
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`${displayTitle} entfernen`}
+                            className="text-binchen-ink-muted hover:text-binchen-terracotta-text"
+                          >
+                            Entfernen
+                          </Button>
+                        </form>
+                      </div>
                     </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </section>
 
