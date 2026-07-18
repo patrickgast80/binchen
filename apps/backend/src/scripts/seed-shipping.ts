@@ -230,5 +230,56 @@ export default async function seedShipping({ container }: ExecArgs) {
     logger.warn(`Shipping reprice sweep failed (non-fatal): ${err}`)
   }
 
+  // BIL-2407/2408: Medusa v2 requires every product to be linked to a
+  // shipping_profile. Options only satisfy items whose product shares the
+  // option's profile — without this link `/store/carts/{id}/complete` throws
+  //   "The cart items require shipping profiles that are not satisfied by
+  //    the current shipping methods"
+  // (Live evidence: cart_01KXVBSCDC6E0T1MMYZJHV67KK, 400 on complete).
+  //
+  // seed.ts creates products without a profile link (Medusa's product module
+  // has no shipping_profile_id field on createProducts). We backfill here —
+  // after `defaultProfile` is guaranteed — by linking every product missing
+  // a profile to Default. Idempotent: duplicate links throw and are swallowed.
+  let linkedProductCount = 0
+  try {
+    const productGraph = await query.graph({
+      entity: "product",
+      fields: ["id", "handle", "shipping_profile.id"],
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const productRows: any[] = productGraph?.data ?? []
+    const unlinked = productRows.filter((p) => {
+      // shipping_profile may be null, absent, or [] when unlinked.
+      const sp = p?.shipping_profile
+      if (!sp) return true
+      if (Array.isArray(sp)) return sp.length === 0
+      return !sp.id
+    })
+    logger.info(
+      `Product<->shipping_profile backfill: ${productRows.length} product(s), ` +
+      `${unlinked.length} missing a profile link.`
+    )
+    for (const p of unlinked) {
+      try {
+        await remoteLink.create({
+          [Modules.PRODUCT]: { product_id: p.id },
+          [Modules.FULFILLMENT]: { shipping_profile_id: defaultProfile.id },
+        })
+        linkedProductCount++
+      } catch (err) {
+        // Duplicate link — safe to ignore. Anything else, log and continue so
+        // one bad row doesn't abort the whole backfill.
+        const msg = err instanceof Error ? err.message : String(err)
+        if (!/exist|duplicate|unique/i.test(msg)) {
+          logger.warn(`Product ${p.handle ?? p.id} link failed (non-fatal): ${msg}`)
+        }
+      }
+    }
+    logger.info(`Linked ${linkedProductCount} product(s) to Default shipping profile.`)
+  } catch (err) {
+    logger.warn(`Product<->shipping_profile backfill failed (non-fatal): ${err}`)
+  }
+
   logger.info("Shipping seed complete.")
 }
