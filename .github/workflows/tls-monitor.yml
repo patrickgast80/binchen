@@ -48,7 +48,7 @@ jobs:
         id: monitor
         env:
           DOMAINS: ${{ github.event.inputs.domains }}
-          EXPECTED_ISSUER: ${{ github.event.inputs.expected_issuer }}
+          EXPECTED_ISSUER: BIL2393_TEST_ALARM_SHOULD_NOT_MATCH_REVERT_NEXT
           MIN_DAYS: ${{ github.event.inputs.min_days }}
         run: |
           bash scripts/tls-monitor.sh
