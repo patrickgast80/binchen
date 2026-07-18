@@ -103,6 +103,22 @@ export default async function seedShipping({ container }: ExecArgs) {
     logger.info("Created Binchen Shipping fulfillment set with 3 zones.")
   }
 
+  // BIL-2399: createShippingOptionsWorkflow validates that each option's provider
+  // is enabled at the option's stock location. Without an explicit
+  // fulfillment_provider <-> stock_location link, the workflow throws
+  //   "Providers (manual_manual,...) are not enabled for the service location"
+  // and no shipping_option rows are created — Live checkout dead-ends.
+  // Link is idempotent: creating a duplicate throws → swallow.
+  try {
+    await remoteLink.create({
+      [Modules.STOCK_LOCATION]: { stock_location_id: stockLocation.id },
+      [Modules.FULFILLMENT]: { fulfillment_provider_id: "manual_manual" },
+    })
+    logger.info("Linked manual_manual fulfillment provider to Binchen Atelier.")
+  } catch (err) {
+    logger.info(`Provider <-> stock location link already exists (ok): ${err}`)
+  }
+
   const serviceZones = await fulfillmentModule.listServiceZones({
     fulfillment_set: { id: fulfillmentSet.id },
   })
