@@ -52,8 +52,9 @@ EXPOSE 9000
 # 2. medusa user         — create first admin if MEDUSA_ADMIN_EMAIL is set and no users exist yet
 # 3. seed.js             — catalog seed (exits early if products already exist)
 # 4. seed-shipping.js    — regions + flat-rate shipping (BIL-31, idempotent)
-# 5. seed-inventory.js   — sales-channel<->location link + ≥25 stocked qty per variant (BIL-2386)
-# 6. medusa start        — serve the app
+# 5. seed-payments.js    — link pp_system_default (Vorkasse) + pp_paypal (when configured) to every region (BIL-2394)
+# 6. seed-inventory.js   — sales-channel<->location link + ≥25 stocked qty per variant (BIL-2386)
+# 7. medusa start        — serve the app
 #
 # BIL-2175 debug hooks (set on the Coolify service when migrations stall):
 # - BACKEND_MIGRATE_DEBUG=true  → MIKRO_ORM_DEBUG + --verbose: dumps every SQL the
@@ -68,6 +69,7 @@ CMD ["sh", "-c", "\
   /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/seed.js 2>/dev/null || true && \
   /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/seed-shipping.js 2>/dev/null || true && \
   /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/cleanup-stripe-region-links.js 2>/dev/null || true && \
+  /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/seed-payments.js 2>/dev/null || true && \
   /app/node_modules/.bin/medusa exec .medusa/server/src/scripts/seed-inventory.js 2>/dev/null || true && \
   exec /app/node_modules/.bin/medusa start \
 "]

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { loadCart, readCartId } from "@/lib/cart-cookie";
 import { formatPrice, ensurePaymentCollection, createPaymentSession } from "@/lib/medusa";
-import { completeOrderAction } from "./actions";
+import { completeOfflineOrderAction } from "./actions";
 import PayPalButton from "./PayPalButton";
 
 export const metadata: Metadata = {
@@ -50,6 +50,7 @@ export default async function PaymentPage() {
   }
 
   const cartId = readCartId();
+  const paypalBlockAvailable = paypalReady && Boolean(paypalOrderId) && Boolean(cartId);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
@@ -71,45 +72,50 @@ export default async function PaymentPage() {
             Zahlungsmethode
           </h2>
 
-          {paypalReady && paypalOrderId && cartId ? (
+          {paypalBlockAvailable ? (
             <div className="mt-6 rounded-lg border border-binchen-border bg-binchen-cream p-6">
               <p className="mb-4 font-body text-sm font-semibold text-binchen-ink">
                 Mit PayPal bezahlen
               </p>
               <PayPalButton
                 clientId={PAYPAL_CLIENT_ID}
-                orderId={paypalOrderId}
-                cartId={cartId}
+                orderId={paypalOrderId!}
+                cartId={cartId!}
               />
             </div>
-          ) : paypalReady && (!paypalOrderId || !cartId) ? (
-            <div className="mt-6 rounded-lg border border-binchen-terracotta/30 bg-binchen-terracotta/5 p-6">
-              <p className="font-body text-sm font-semibold text-binchen-ink">
-                PayPal konnte nicht initialisiert werden
-              </p>
-              <p className="mt-2 font-body text-sm text-binchen-ink-muted">
-                Bitte lade die Seite neu oder kontaktiere uns, falls das Problem bestehen bleibt.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-6 rounded-lg border border-binchen-terracotta/30 bg-binchen-terracotta/5 p-6">
-              <p className="font-body text-sm font-semibold text-binchen-ink">
-                Zahlungssystem wird gerade eingerichtet
-              </p>
-              <p className="mt-2 font-body text-sm text-binchen-ink-muted">
-                PayPal ist noch nicht konfiguriert. Bitte versuche es in Kürze erneut oder
-                kontaktiere uns, falls du sofort bestellen möchtest.
-              </p>
-            </div>
-          )}
+          ) : null}
 
-          {/* Dev-only fallback: complete order without real payment. */}
-          {process.env.NODE_ENV !== "production" ? (
-            <form action={completeOrderAction} className="mt-6">
-              <Button type="submit" variant="outline" size="sm">
-                [DEV] Bestellung ohne Zahlung abschließen
+          {/* BIL-2394 — Vorkasse / Überweisung (system provider). Always shown so
+              the checkout stays completable even when PayPal is not configured
+              or fails to initialise. Bank details land in the confirmation
+              email + on the confirmation page. */}
+          <div className="mt-6 rounded-lg border border-binchen-border bg-binchen-cream-dark p-6">
+            <p className="font-body text-sm font-semibold text-binchen-ink">
+              Vorkasse / Überweisung
+            </p>
+            <p className="mt-2 font-body text-sm text-binchen-ink-muted">
+              Du bestellst jetzt und überweist den Betrag auf unser Konto. Sobald
+              das Geld eingegangen ist, nähen wir dein Stück und versenden es. Die
+              Bankverbindung erhältst du direkt nach dem Absenden per E-Mail und
+              auf der nächsten Seite.
+            </p>
+            <form action={completeOfflineOrderAction} className="mt-4">
+              <Button type="submit" size="lg">
+                Bestellung verbindlich abschließen
               </Button>
             </form>
+          </div>
+
+          {paypalReady && !paypalBlockAvailable ? (
+            <div className="mt-6 rounded-lg border border-binchen-terracotta/30 bg-binchen-terracotta/5 p-6">
+              <p className="font-body text-sm font-semibold text-binchen-ink">
+                PayPal konnte gerade nicht geladen werden
+              </p>
+              <p className="mt-2 font-body text-sm text-binchen-ink-muted">
+                Du kannst deine Bestellung oben per Vorkasse abschließen oder die
+                Seite neu laden, um PayPal noch einmal zu versuchen.
+              </p>
+            </div>
           ) : null}
         </section>
 

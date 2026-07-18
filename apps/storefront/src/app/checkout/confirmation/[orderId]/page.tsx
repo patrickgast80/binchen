@@ -13,10 +13,16 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: { orderId: string };
+  searchParams: { method?: string };
 }
 
-export default async function ConfirmationPage({ params }: Props) {
+export default async function ConfirmationPage({ params, searchParams }: Props) {
   const order = await getOrder(params.orderId);
+  const isOffline = searchParams?.method === "offline";
+  const iban = process.env.NEXT_PUBLIC_BANK_IBAN ?? "";
+  const bic = process.env.NEXT_PUBLIC_BANK_BIC ?? "";
+  const accountHolder = process.env.NEXT_PUBLIC_BANK_HOLDER ?? "Sabine Vollmer";
+  const bankName = process.env.NEXT_PUBLIC_BANK_NAME ?? "";
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
@@ -72,6 +78,60 @@ export default async function ConfirmationPage({ params }: Props) {
             Bestellreferenz: <span className="font-mono">{params.orderId}</span>
           </p>
         )}
+
+        {isOffline ? (
+          <div className="mx-auto mt-8 max-w-md rounded-lg border border-binchen-border bg-binchen-cream p-5 text-left font-body text-sm">
+            <p className="font-semibold text-binchen-ink">Zahlung per Vorkasse</p>
+            <p className="mt-2 text-binchen-ink-muted">
+              Bitte überweise den Gesamtbetrag innerhalb von 7 Tagen. Sobald das Geld
+              bei uns eingegangen ist, beginnen wir mit der Fertigung.
+            </p>
+            {iban ? (
+              <dl className="mt-4 space-y-2 border-t border-binchen-border pt-3 text-binchen-ink">
+                <div className="flex justify-between gap-3">
+                  <dt className="text-binchen-ink-muted">Empfänger</dt>
+                  <dd className="font-medium">{accountHolder}</dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-binchen-ink-muted">IBAN</dt>
+                  <dd className="font-mono font-medium">{iban}</dd>
+                </div>
+                {bic ? (
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-binchen-ink-muted">BIC</dt>
+                    <dd className="font-mono font-medium">{bic}</dd>
+                  </div>
+                ) : null}
+                {bankName ? (
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-binchen-ink-muted">Bank</dt>
+                    <dd className="font-medium">{bankName}</dd>
+                  </div>
+                ) : null}
+                {order ? (
+                  <div className="flex justify-between gap-3 border-t border-binchen-border pt-2">
+                    <dt className="text-binchen-ink-muted">Verwendungszweck</dt>
+                    <dd className="font-mono font-medium">
+                      {order.display_id ? `#${order.display_id}` : order.id.slice(0, 8)}
+                    </dd>
+                  </div>
+                ) : null}
+              </dl>
+            ) : (
+              <p className="mt-3 text-binchen-ink-muted">
+                Die Bankverbindung schicken wir dir per E-Mail — falls sie nicht ankommt,
+                melde dich einfach bei{" "}
+                <a
+                  href="mailto:info@bilulu.de"
+                  className="font-medium text-binchen-ink underline"
+                >
+                  info@bilulu.de
+                </a>
+                .
+              </p>
+            )}
+          </div>
+        ) : null}
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button asChild variant="accent" size="lg">
