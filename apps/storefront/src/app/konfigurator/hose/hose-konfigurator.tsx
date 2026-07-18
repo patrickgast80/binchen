@@ -289,11 +289,10 @@ export function HoseKonfigurator() {
             <input
               type="hidden"
               name="configHref"
-              value={
-                typeof window !== "undefined"
-                  ? window.location.pathname + window.location.search
-                  : "/konfigurator/hose"
-              }
+              value={(() => {
+                const q = searchParams?.toString() ?? "";
+                return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/hose";
+              })()}
             />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
