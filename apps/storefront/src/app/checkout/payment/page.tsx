@@ -3,7 +3,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { loadCart, readCartId } from "@/lib/cart-cookie";
-import { formatPrice, ensurePaymentCollection, createPaymentSession } from "@/lib/medusa";
+import {
+  formatPrice,
+  lineItemSubtotal,
+  ensurePaymentCollection,
+  createPaymentSession,
+} from "@/lib/medusa";
 import { completeOfflineOrderAction } from "./actions";
 import PayPalButton from "./PayPalButton";
 
@@ -127,7 +132,7 @@ export default async function PaymentPage() {
                 <li key={item.id} className="flex justify-between gap-3 font-body text-sm">
                   <span className="text-binchen-ink-muted">{item.title}</span>
                   <span className="shrink-0 font-medium text-binchen-ink">
-                    {formatPrice(item.subtotal, currency)}
+                    {formatPrice(lineItemSubtotal(item), currency)}
                   </span>
                 </li>
               ))}

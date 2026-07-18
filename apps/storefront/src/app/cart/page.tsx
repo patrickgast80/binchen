@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { loadCart } from "@/lib/cart-cookie";
-import { formatPrice, type CartLineItem } from "@/lib/medusa";
+import { formatPrice, lineItemSubtotal, type CartLineItem } from "@/lib/medusa";
 import { removeFromCartAction } from "./actions";
 
 interface KonfiguratorSelection {
@@ -136,7 +136,7 @@ export default async function CartPage() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="font-body text-sm font-semibold text-binchen-ink">
-                          {formatPrice(item.subtotal, currency)}
+                          {formatPrice(lineItemSubtotal(item), currency)}
                         </span>
                         <form action={removeFromCartAction.bind(null, item.id)}>
                           <Button

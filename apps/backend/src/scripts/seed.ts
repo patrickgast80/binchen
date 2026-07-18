@@ -15,6 +15,9 @@ export default async function seed({ container }: ExecArgs) {
   // and variant→priceSet associations (upsertProductVariants does not accept those fields).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const remoteLink = container.resolve(ContainerRegistrationKeys.LINK) as any
+  // query.graph is used by the BIL-2400 reprice sweep to resolve variant→price_set.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const query = container.resolve(ContainerRegistrationKeys.QUERY) as any
 
   // CATALOG_MODULE is a custom module — if auto-discovery fails in the compiled bundle
   // the seed must still create core products.  Resolve it defensively.
@@ -176,7 +179,11 @@ export default async function seed({ container }: ExecArgs) {
         ageCategory: "newborn",
         careInstructions: "30°C Schonwaschgang, nicht bleichen, liegend trocknen",
       },
-      priceEur: 3800, // 38.00 EUR in cents
+      // BIL-2400: Medusa v2 stores prices as decimal major units, not cents.
+      // The old comment "// 38.00 EUR in cents" was wrong — passing 3800 was
+      // published by the Store API as 3800 EUR. Retail target for handmade
+      // baby clothing is ~29–55 EUR, so we now pass major-unit values directly.
+      priceEur: 38,
     },
     {
       title: "Jersey Bodysuits Set – Regenbogen (2er-Pack)",
@@ -195,7 +202,7 @@ export default async function seed({ container }: ExecArgs) {
         ageCategory: "baby",
         careInstructions: "40°C, links waschen",
       },
-      priceEur: 4200,
+      priceEur: 42,
     },
     {
       title: "Musselinhose – Salbeigrün",
@@ -211,7 +218,7 @@ export default async function seed({ container }: ExecArgs) {
         ageCategory: "baby",
         careInstructions: "30°C Schonwaschgang, liegend trocknen",
       },
-      priceEur: 2900,
+      priceEur: 29,
     },
     {
       title: "Wendejacke – Punkte & Streifen",
@@ -227,7 +234,7 @@ export default async function seed({ container }: ExecArgs) {
         ageCategory: "toddler",
         careInstructions: "30°C Schonwaschgang",
       },
-      priceEur: 5500,
+      priceEur: 55,
     },
     {
       title: "Spielanzug mit Füßen – Sternchen",
@@ -243,7 +250,7 @@ export default async function seed({ container }: ExecArgs) {
         ageCategory: "child",
         careInstructions: "40°C, Trockner geeignet",
       },
-      priceEur: 4800,
+      priceEur: 48,
     },
   ]
 
@@ -354,4 +361,56 @@ export default async function seed({ container }: ExecArgs) {
   }
 
   logger.info(`Seeded ${createdCount}/${products.length} products (${skippedCount} skipped, already existed).`)
+
+  // BIL-2400: Reprice sweep — for every seeded SKU, sync the linked price_set
+  // amount to the intended major-unit EUR value. This corrects products that
+  // were created by an earlier seed run that (mistakenly) passed cent values
+  // like 2900 which Medusa v2 stores as 2900 EUR. Idempotent on every boot.
+  let repricedCount = 0
+  try {
+    const targetBySku = new Map<string, number>()
+    for (const p of products) {
+      for (const v of p.variants) targetBySku.set(v.sku, p.priceEur)
+    }
+    const variantGraph = await query.graph({
+      entity: "variant",
+      fields: [
+        "id",
+        "sku",
+        "price_set.id",
+        "price_set.prices.id",
+        "price_set.prices.amount",
+        "price_set.prices.currency_code",
+      ],
+      filters: { sku: Array.from(targetBySku.keys()) },
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows: any[] = variantGraph?.data ?? []
+    for (const row of rows) {
+      const target = targetBySku.get(row.sku)
+      if (typeof target !== "number") continue
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const priceSet = row.price_set as any
+      if (!priceSet?.id) {
+        logger.warn(`Variant ${row.sku} has no linked price_set — skipping reprice.`)
+        continue
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const eurPrice = (priceSet.prices ?? []).find((pr: any) => pr?.currency_code === EUR)
+      const currentAmount = eurPrice?.amount != null ? Number(eurPrice.amount) : null
+      if (currentAmount === target) continue
+      try {
+        await pricingModule.updatePriceSets(priceSet.id, {
+          prices: [{ amount: target, currency_code: EUR }],
+        })
+        logger.info(`Repriced ${row.sku}: ${currentAmount ?? "n/a"} → ${target} EUR (price_set ${priceSet.id}).`)
+        repricedCount++
+      } catch (err) {
+        logger.warn(`Reprice failed for ${row.sku} (non-fatal): ${err}`)
+      }
+    }
+    logger.info(`Reprice sweep complete: ${repricedCount} price_set(s) synced.`)
+  } catch (err) {
+    logger.warn(`Reprice sweep failed (non-fatal): ${err}`)
+  }
 }

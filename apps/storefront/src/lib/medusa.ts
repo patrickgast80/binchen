@@ -7,6 +7,24 @@ function authHeaders(): Record<string, string> {
   return h;
 }
 
+// BIL-2400: Medusa v2's default /store/carts response omits line-item totals
+// (items.subtotal / items.total / items.original_total). Without explicit
+// selection the cart page reads `item.subtotal` as undefined → NaN €.
+// See @medusajs/medusa/dist/api/store/carts/query-config.js (defaultStoreCartFields).
+// Prefix each field with "+" so it augments the default field list.
+const CART_FIELDS = [
+  "+items.subtotal",
+  "+items.total",
+  "+items.original_total",
+  "+items.tax_total",
+  "+items.discount_total",
+].join(",");
+function appendCartFields(url: string): string {
+  return url.includes("?")
+    ? `${url}&fields=${encodeURIComponent(CART_FIELDS)}`
+    : `${url}?fields=${encodeURIComponent(CART_FIELDS)}`;
+}
+
 export interface MedusaProductImage {
   id?: string;
   url: string;
@@ -181,8 +199,11 @@ export interface CartLineItem {
   thumbnail?: string | null;
   quantity: number;
   unit_price: number;
-  subtotal: number;
-  total: number;
+  // BIL-2400: Medusa v2 omits decorated line-item totals unless requested via
+  // fields=+items.subtotal etc. Treat as optional so downstream code uses
+  // `lineItemSubtotal()` (which falls back to unit_price * quantity).
+  subtotal?: number | null;
+  total?: number | null;
   metadata?: Record<string, unknown> | null;
 }
 
@@ -240,7 +261,7 @@ export async function getDefaultRegionId(): Promise<string | null> {
 export async function createCart(): Promise<Cart | null> {
   if (!BACKEND_URL) return null;
   const region_id = await getDefaultRegionId();
-  const res = await fetch(`${BACKEND_URL}/store/carts`, {
+  const res = await fetch(appendCartFields(`${BACKEND_URL}/store/carts`), {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(region_id ? { region_id } : {}),
@@ -253,7 +274,7 @@ export async function createCart(): Promise<Cart | null> {
 
 export async function getCart(cartId: string): Promise<Cart | null> {
   if (!BACKEND_URL) return null;
-  const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}`, {
+  const res = await fetch(appendCartFields(`${BACKEND_URL}/store/carts/${cartId}`), {
     headers: authHeaders(),
     cache: "no-store",
   });
@@ -272,12 +293,15 @@ export async function addLineItem(
   if (!BACKEND_URL) return null;
   const body: Record<string, unknown> = { variant_id: variantId, quantity };
   if (metadata && Object.keys(metadata).length > 0) body.metadata = metadata;
-  const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}/line-items`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify(body),
-    cache: "no-store",
-  });
+  const res = await fetch(
+    appendCartFields(`${BACKEND_URL}/store/carts/${cartId}/line-items`),
+    {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(body),
+      cache: "no-store",
+    },
+  );
   if (!res.ok) return null;
   const data = (await res.json()) as { cart: Cart };
   return data.cart;
@@ -285,11 +309,14 @@ export async function addLineItem(
 
 export async function removeLineItem(cartId: string, lineId: string): Promise<Cart | null> {
   if (!BACKEND_URL) return null;
-  const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}/line-items/${lineId}`, {
-    method: "DELETE",
-    headers: authHeaders(),
-    cache: "no-store",
-  });
+  const res = await fetch(
+    appendCartFields(`${BACKEND_URL}/store/carts/${cartId}/line-items/${lineId}`),
+    {
+      method: "DELETE",
+      headers: authHeaders(),
+      cache: "no-store",
+    },
+  );
   if (!res.ok) return null;
   const data = (await res.json()) as { cart?: Cart; parent?: Cart };
   return data.cart ?? data.parent ?? null;
@@ -304,7 +331,7 @@ export async function updateCart(
   },
 ): Promise<Cart | null> {
   if (!BACKEND_URL) return null;
-  const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}`, {
+  const res = await fetch(appendCartFields(`${BACKEND_URL}/store/carts/${cartId}`), {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(patch),
@@ -421,9 +448,31 @@ export async function createPaymentSession(
   return sessions.find((s) => s.provider_id === providerId) ?? null;
 }
 
-export function formatPrice(amount: number, currency = "EUR"): string {
+export function formatPrice(amount: number | null | undefined, currency = "EUR"): string {
+  // BIL-2400: guard against undefined / NaN so we never render "NaN €" in the UI
+  // (a real Abmahnung-risk under § 1 PAngV). Fallback preserves layout without
+  // making up a price.
+  const n = typeof amount === "number" ? amount : Number(amount);
+  if (!Number.isFinite(n)) return "—";
   return new Intl.NumberFormat("de-DE", {
     style: "currency",
-    currency: currency.toUpperCase(),
-  }).format(amount);
+    currency: (currency || "EUR").toUpperCase(),
+  }).format(n);
+}
+
+/**
+ * Compute an effective line-item subtotal that falls back to unit_price * quantity
+ * when Medusa v2 omits the decorated subtotal (see BIL-2400 root cause: default
+ * store cart fields exclude items.subtotal). Prefer server-computed subtotal
+ * when present because it accounts for adjustments, tax lines, and rounding.
+ */
+export function lineItemSubtotal(item: CartLineItem): number {
+  const server = (item as { subtotal?: unknown }).subtotal;
+  if (typeof server === "number" && Number.isFinite(server)) return server;
+  const numeric = typeof server === "string" ? Number(server) : NaN;
+  if (Number.isFinite(numeric)) return numeric;
+  const unit = typeof item.unit_price === "number" ? item.unit_price : Number(item.unit_price);
+  const qty = typeof item.quantity === "number" ? item.quantity : Number(item.quantity);
+  if (Number.isFinite(unit) && Number.isFinite(qty)) return unit * qty;
+  return NaN;
 }
