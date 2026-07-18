@@ -1,0 +1,34 @@
+# Traefik dynamic config: expose Uptime Kuma at a public FQDN.
+#
+# Deployed on the Hetzner box at /data/coolify/proxy/dynamic/bilulu-uptime.yaml.
+# Coolify only regenerates its own /data/coolify/proxy/dynamic/coolify.yaml, so
+# additional files in the same directory are left alone.
+#
+# Why we need this: the Coolify one-click Uptime Kuma template sets FQDN to a
+# private sslip.io (10.0.1.1) that is not reachable outside the docker bridge.
+# The public API does not expose the FQDN setter (`PATCH /services` rejects it),
+# so we wire a second router directly in Traefik.
+#
+# Requirement: the Uptime Kuma container (uptime-kuma-a3m1d7wz1mcd0qib30ljq17c)
+# must be attached to the `coolify` docker network:
+#   docker network connect coolify uptime-kuma-a3m1d7wz1mcd0qib30ljq17c
+#
+# BIL-1548 (Backups + Uptime-Monitor).
+http:
+  routers:
+    bilulu-uptime-http:
+      entryPoints: [http]
+      service: bilulu-uptime
+      rule: Host(`uptime-kuma.188-245-40-74.sslip.io`)
+      middlewares: [redirect-to-https]
+    bilulu-uptime-https:
+      entryPoints: [https]
+      service: bilulu-uptime
+      rule: Host(`uptime-kuma.188-245-40-74.sslip.io`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    bilulu-uptime:
+      loadBalancer:
+        servers:
+          - url: http://uptime-kuma-a3m1d7wz1mcd0qib30ljq17c:3001

@@ -91,6 +91,139 @@ monitored domains are covered. If a new customer-facing domain needs coverage:
 
 ---
 
+## Postgres backups (BIL-1548)
+
+**Where they run:** on the Hetzner host as user `deploy`, driven by cron.
+
+- Script: `/home/deploy/bin/binchen-pg-backup.sh` (canonical copy in repo at
+  `infra/scripts/binchen-pg-backup.sh`).
+- Schedule: `15 1 * * *` (deploy-user crontab) — 01:15 UTC ≈ 03:15 CEST / 02:15 CET.
+  Chosen fixed-UTC to avoid DST drift.
+- Dumps land in `/home/deploy/backups/bilulu-postgres/` as
+  `binchen-YYYYMMDDTHHMMSSZ.dump` (pg_dump `-Fc` custom-format).
+- Retention 14 days (per BIL-1548 spec) — older dumps deleted by `find -mtime +14`.
+- One-line status log per run at `/home/deploy/backups/bilulu-postgres/.log`.
+
+Verify recent runs:
+```
+ssh deploy@188.245.40.74 'tail -5 /home/deploy/backups/bilulu-postgres/.log'
+ssh deploy@188.245.40.74 'ls -la /home/deploy/backups/bilulu-postgres/'
+```
+
+### Playbook: restore into an ephemeral container (drill)
+
+```
+ssh deploy@188.245.40.74 /home/deploy/bin/binchen-pg-restore-test.sh
+```
+
+Script boots a `postgres:16-alpine` in `docker network coolify`, restores the
+newest dump, prints per-table row counts, and tears the temp container back
+down. **Never touches the production database.** Repo copy:
+`infra/scripts/binchen-pg-restore-test.sh`.
+
+### Playbook: restore into production (real incident)
+
+⚠ **Board approval required** — this replaces the live database. Rollback is
+recreating from the current dump.
+
+1. Freeze writes: pause the storefront + backend in Coolify.
+2. Take a fresh dump of the current (broken) DB first for forensics:
+   ```
+   ssh deploy@188.245.40.74 /home/deploy/bin/binchen-pg-backup.sh
+   ```
+3. Drop and recreate the target database in the postgres container:
+   ```
+   ssh deploy@188.245.40.74 'docker exec rqh57h1ohsowasr6eheqz0dr \
+     psql -U binchen -d postgres -c "DROP DATABASE binchen;"
+   docker exec rqh57h1ohsowasr6eheqz0dr \
+     psql -U binchen -d postgres -c "CREATE DATABASE binchen OWNER binchen;"'
+   ```
+4. Stream the desired dump into the container:
+   ```
+   ssh deploy@188.245.40.74 \
+     'docker exec -i rqh57h1ohsowasr6eheqz0dr pg_restore -U binchen -d binchen \
+        --no-owner --no-privileges --clean --if-exists' \
+     < /home/deploy/backups/bilulu-postgres/binchen-<STAMP>.dump
+   ```
+5. Restart backend + storefront in Coolify. Smoke-test `/health` and `/store/products`.
+
+### Board-side hardening asks (not agent-actionable)
+
+- **Hetzner daily snapshot** on the CX22 (+€0.46/mo): Hetzner Cloud → Server →
+  Backups → Enable. No agent has a Hetzner Cloud API token in the vault.
+- **Storage Box BX11** (optional off-box copy): if provisioned, extend
+  `binchen-pg-backup.sh` with an `sftp` push step and set `RETENTION_DAYS=30`.
+
+---
+
+## Uptime monitor — Uptime Kuma (BIL-1548)
+
+**Where it runs:** Coolify-managed one-click service `binchen-uptime`
+(service UUID `a3m1d7wz1mcd0qib30ljq17c`, container
+`uptime-kuma-a3m1d7wz1mcd0qib30ljq17c`, image `louislam/uptime-kuma:2`).
+
+**Public URL:** `https://uptime-kuma.188-245-40-74.sslip.io`
+(sslip.io magic DNS → 188.245.40.74; Let's Encrypt cert). This is an interim
+FQDN; swap to `uptime.bilulu.de` once the DNS A record exists (Strato
+board-action) and the Coolify UI can set the service FQDN (public API rejects
+the FQDN field, so this must be done in the Coolify web UI).
+
+**Traefik routing:** static Docker labels point at the private sslip.io the
+Coolify template hard-codes, which is unreachable. The public route lives in
+a separate dynamic file at `/data/coolify/proxy/dynamic/bilulu-uptime.yaml`
+(repo copy: `infra/traefik/bilulu-uptime.yaml`). Coolify only regenerates
+`coolify.yaml`, so this side-file is stable across Coolify redeploys. If
+Coolify ever redeploys the Uptime Kuma service, the container may lose its
+`coolify`-network attachment — re-attach with:
+```
+ssh deploy@188.245.40.74 \
+  'docker network connect coolify uptime-kuma-a3m1d7wz1mcd0qib30ljq17c'
+```
+
+### First-time setup (remaining after deploy)
+
+Uptime Kuma v2 requires a web-based wizard for DB choice + admin creation and
+does not expose a REST setup endpoint. Follow-up in a child issue:
+
+1. Open `https://uptime-kuma.188-245-40-74.sslip.io/` → **SQLite** (default).
+2. Create admin (store password in vault as `UPTIME_KUMA_ADMIN_PASSWORD`).
+3. Add monitors:
+   - `bilulu.de HTTPS 200` — HTTPS, URL `https://bilulu.de`, interval 60s,
+     retries 3, "Ignore TLS/SSL error" **OFF**.
+   - `api.bilulu.de/health` — HTTPS, URL `https://api.bilulu.de/health`,
+     interval 60s, expect body contains `OK`.
+   - `bilulu-postgres TCP` — TCP, hostname `rqh57h1ohsowasr6eheqz0dr` (or
+     `10.0.1.<pg-ip>`), port `5432`. Only reachable because the container is
+     on the `coolify` network.
+4. Add notification: **SMTP** with Brevo (host `smtp-relay.brevo.com`,
+   port 587, user = Brevo SMTP username, password = Brevo SMTP key,
+   from `info@bilulu.de`, to `bestellung@bilulu.de`). Send a test alert.
+5. Attach the notification to all three monitors; toggle each monitor down
+   once to confirm an email lands.
+
+### Playbook: alert says a monitor is red
+
+1. Reproduce with `curl -I https://bilulu.de`, `curl -I https://api.bilulu.de/health`.
+   Response codes match the alert? → real incident, jump to service runbook.
+2. Codes green? → Uptime Kuma false positive, check its own logs:
+   `docker logs uptime-kuma-a3m1d7wz1mcd0qib30ljq17c --tail 100`.
+3. If the Uptime Kuma container itself is down: `docker restart` it. Data
+   volume is `a3m1d7wz1mcd0qib30ljq17c_uptime-kuma-data` — do NOT delete on
+   restart.
+
+### Rollback / decommission
+
+If Uptime Kuma has to be removed:
+```
+export COOLIFY_API_BASE=https://coolify.bilulu.de/api/v1
+source infra/.vault/coolify-pat.env
+curl -X DELETE -H "Authorization: Bearer $COOLIFY_PAT" \
+  "$COOLIFY_API_BASE/services/a3m1d7wz1mcd0qib30ljq17c"
+ssh deploy@188.245.40.74 'sudo rm /data/coolify/proxy/dynamic/bilulu-uptime.yaml'
+```
+
+---
+
 ## Future hardening — Better Stack (parked)
 
 The BIL-2393 spec listed Better Stack as an alternative alarm channel (free tier,
