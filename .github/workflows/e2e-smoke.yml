@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       preview_url:
-        description: 'Preview URL to test against (overrides VERCEL_PREVIEW_URL)'
+        description: 'URL to smoke-test (defaults to https://bilulu.de — own Coolify server)'
         required: false
 
 concurrency:
@@ -40,7 +40,7 @@ jobs:
       - name: Run smoke tests
         working-directory: apps/e2e
         env:
-          BINCHEN_PREVIEW_URL: ${{ inputs.preview_url || vars.BINCHEN_PREVIEW_URL || 'https://binchen.vercel.app' }}
+          BINCHEN_PREVIEW_URL: ${{ inputs.preview_url || vars.BINCHEN_PREVIEW_URL || 'https://bilulu.de' }}
           CI: true
         run: pnpm exec playwright test tests/smoke.test.ts
 
