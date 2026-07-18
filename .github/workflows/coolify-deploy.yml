@@ -1,0 +1,57 @@
+name: Coolify Deploy (fallback)
+
+# Fallback trigger: Coolify's GitHub App webhook has never fired on this repo
+# (see BIL-2397). Until that is fixed, this workflow POSTs to the Coolify deploy
+# API on every push to main so prod does not go stale again.
+#
+# Requires the repo secret `COOLIFY_PAT` (mint via CEO). Storefront and backend
+# UUIDs live in infra/.vault/coolify-pat.env and are safe to inline here.
+#
+# If the secret is missing, the job skips cleanly — no CI failure noise.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: coolify-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Trigger Coolify redeploy
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.message != '' }}
+    steps:
+      - name: Check secret is present
+        id: check
+        run: |
+          if [ -z "${{ secrets.COOLIFY_PAT }}" ]; then
+            echo "COOLIFY_PAT secret is not set — skipping. Ask CEO to add it (see BIL-2397)."
+            echo "has_secret=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secret=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy storefront
+        if: steps.check.outputs.has_secret == 'true'
+        env:
+          COOLIFY_PAT: ${{ secrets.COOLIFY_PAT }}
+        run: |
+          set -euo pipefail
+          curl -sS -X POST \
+            -H "Authorization: Bearer $COOLIFY_PAT" \
+            "https://coolify.bilulu.de/api/v1/deploy?uuid=f12ixtdbpa4bl8ks7qe1ln19&force=false"
+          echo ""
+
+      - name: Deploy backend
+        if: steps.check.outputs.has_secret == 'true'
+        env:
+          COOLIFY_PAT: ${{ secrets.COOLIFY_PAT }}
+        run: |
+          set -euo pipefail
+          curl -sS -X POST \
+            -H "Authorization: Bearer $COOLIFY_PAT" \
+            "https://coolify.bilulu.de/api/v1/deploy?uuid=k3apwpfen4qlb1hc1jdnli6f&force=false"
+          echo ""

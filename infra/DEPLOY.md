@@ -18,19 +18,30 @@ curl -sI https://bilulu.de/ | grep -E "X-Powered-By|Server"
 
 ## What triggers a deploy
 
-`git push origin main` → **Coolify's built-in GitHub integration** picks the
-commit up and rebuilds the storefront and backend services on the Hetzner box.
+`git push origin main` → `coolify-deploy.yml` GitHub Actions workflow POSTs to
+the Coolify deploy API, which rebuilds storefront + backend on the Hetzner box.
 
-There is no GitHub Actions workflow that pushes to a Coolify webhook. If we
-ever need to trigger a manual redeploy without a push, use the Coolify UI
-(Application → Deploy) or the Coolify API with the PAT stored at
-`infra/.vault/coolify-pat.env`.
+**Requires repo secret `COOLIFY_PAT`.** Without it the workflow logs a skip and
+exits 0 — no auto-deploy happens. Coolify's built-in GitHub App integration is
+present but has never delivered a webhook (BIL-2397 root cause), so this
+workflow is the load-bearing path today.
+
+Manual trigger without a push: run `coolify-deploy.yml` via `workflow_dispatch`
+in the GitHub UI, hit the Coolify UI (Application → Deploy), or POST the API
+with the PAT stored at `infra/.vault/coolify-pat.env`:
+
+```
+source infra/.vault/coolify-pat.env
+curl -X POST -H "Authorization: Bearer $COOLIFY_PAT" \
+  "$COOLIFY_API_BASE/deploy?uuid=$COOLIFY_STOREFRONT_UUID&force=false"
+```
 
 ## What GitHub Actions still runs
 
 - `ci.yml` — lint, typecheck, build on every PR + push to `main`. No deploy.
 - `e2e-smoke.yml` — Playwright smoke against `https://bilulu.de` on push. No deploy.
 - `tls-monitor.yml` — daily cert check (BIL-2393). No deploy.
+- `coolify-deploy.yml` — Coolify deploy trigger on push to main (BIL-2397).
 
 Removed in BIL-2396: `preview.yml`, `staging.yml`, `production.yml`,
 `keepalive.yml`, plus `vercel.json` and `render.yaml`. See rollback below if
