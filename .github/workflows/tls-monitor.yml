@@ -1,0 +1,104 @@
+name: TLS Monitor (bilulu.de prod domains)
+
+# BIL-2393 — daily verification that bilulu.de, www.bilulu.de and api.bilulu.de
+# serve a valid Let's Encrypt certificate. Alerts when the issuer flips back to
+# a Traefik default cert (BIL-2392 root cause) or when a cert is <14 days from
+# expiry. On failure: (1) workflow email to repo watchers via GitHub, and
+# (2) a GitHub issue opens with the failure report labelled `tls-alarm` /
+# `bil-2393`, which the DevOps agent picks up and turns into a Paperclip
+# follow-up if human triage confirms the alarm is real.
+#
+# Runs daily at 06:15 UTC (~08:15 CEST) and on manual dispatch.
+
+on:
+  schedule:
+    - cron: '15 6 * * *'
+  workflow_dispatch:
+    inputs:
+      domains:
+        description: 'Space-separated domains to check (defaults to prod set)'
+        required: false
+        default: ''
+      expected_issuer:
+        description: 'Substring the cert issuer must contain'
+        required: false
+        default: "Let's Encrypt"
+      min_days:
+        description: 'Alert if cert has fewer than this many days remaining'
+        required: false
+        default: '14'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    name: Verify TLS certs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run TLS monitor
+        id: monitor
+        env:
+          DOMAINS: ${{ github.event.inputs.domains }}
+          EXPECTED_ISSUER: ${{ github.event.inputs.expected_issuer }}
+          MIN_DAYS: ${{ github.event.inputs.min_days }}
+        run: |
+          bash scripts/tls-monitor.sh
+
+      - name: Open GitHub issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            const runUrl = process.env.RUN_URL;
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `TLS-Alarm ${today}: prod cert check failed`;
+            const body = [
+              '## TLS-Alarm',
+              '',
+              'The daily TLS monitor (BIL-2393) reports a failure on one or more production domains.',
+              '',
+              `**Workflow run:** ${runUrl}`,
+              '',
+              '## Playbook',
+              '',
+              '1. Check whether the alarm is real: `openssl s_client -connect bilulu.de:443 -servername bilulu.de </dev/null 2>/dev/null | openssl x509 -noout -issuer -dates` from any shell.',
+              '2. If the issuer is `TRAEFIK DEFAULT CERT` (BIL-2392 pattern):',
+              '   - Restart the Coolify proxy: `ssh <coolify-host> "docker restart coolify-proxy"`.',
+              '   - Watch `docker logs -f coolify-proxy | grep -E "acme|certificate"` for LE re-issue.',
+              '   - Recheck with `curl -sI https://bilulu.de/` — expect a valid LE chain, no `-k` needed.',
+              '3. If the alarm is real but the failure is different, open a Paperclip DevOps issue with a link to this run and the openssl output.',
+              '4. If the alarm is a false positive (short outage, transient DNS), close this issue with a note.',
+              '',
+              'See `infra/RUNBOOK.md` → **TLS-Alarm** for the full playbook.',
+            ].join('\n');
+
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'tls-alarm',
+            });
+            if (existing.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing[0].number,
+                body: `Another TLS-Alarm run failed on ${today}. Run: ${runUrl}`,
+              });
+              core.notice(`Appended to existing alarm issue #${existing[0].number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['tls-alarm', 'bil-2393'],
+              });
+              core.notice(`Opened alarm issue #${created.data.number}`);
+            }
