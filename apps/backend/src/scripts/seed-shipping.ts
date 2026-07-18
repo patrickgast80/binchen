@@ -7,6 +7,7 @@ const coreFlows: any = require("@medusajs/medusa/core-flows")
 const createRegionsWorkflow = coreFlows.createRegionsWorkflow
 const createShippingProfilesWorkflow = coreFlows.createShippingProfilesWorkflow
 const createShippingOptionsWorkflow = coreFlows.createShippingOptionsWorkflow
+const updateShippingOptionsWorkflow = coreFlows.updateShippingOptionsWorkflow
 
 // Seed flat-rate shipping (BIL-31):
 //   DE    = €5
@@ -23,6 +24,9 @@ export default async function seedShipping({ container }: ExecArgs) {
   const stockLocationModule = container.resolve(Modules.STOCK_LOCATION)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const remoteLink = container.resolve(ContainerRegistrationKeys.LINK) as any
+  // query.graph is used by the BIL-2403 reprice sweep to resolve shipping_option prices.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const query = container.resolve(ContainerRegistrationKeys.QUERY) as any
 
   const DE = ["de"]
   const EU = [
@@ -32,10 +36,14 @@ export default async function seedShipping({ container }: ExecArgs) {
   ]
   const WORLD = ["us", "gb", "ch", "no", "au", "ca", "jp"]
 
+  // BIL-2403: Medusa v2 stores prices as decimal major units, not cents.
+  // The old values 500/1000/2000 were persisted by the Store API as 500/1000/2000 EUR
+  // (Live checkout showed "Standard DE = 500,00 €" — Abmahnung-Risiko unter § 1 PAngV).
+  // Retail target for flat-rate DE/EU/WORLD is 5/10/20 EUR — passed as major units.
   const zones: { name: "DE" | "EU" | "WORLD"; countries: string[]; price: number }[] = [
-    { name: "DE", countries: DE, price: 500 },
-    { name: "EU", countries: EU, price: 1000 },
-    { name: "WORLD", countries: WORLD, price: 2000 },
+    { name: "DE", countries: DE, price: 5 },
+    { name: "EU", countries: EU, price: 10 },
+    { name: "WORLD", countries: WORLD, price: 20 },
   ]
 
   logger.info("Seeding flat-rate shipping (BIL-31)...")
@@ -163,6 +171,63 @@ export default async function seedShipping({ container }: ExecArgs) {
     logger.info(`Created ${optionsToCreate.length} shipping option(s).`)
   } else {
     logger.info("Shipping options already present.")
+  }
+
+  // BIL-2403: Reprice sweep — for every seeded zone, sync the linked shipping_option
+  // prices to the intended major-unit EUR value. This corrects options that were
+  // created by an earlier seed run that (mistakenly) passed cent values like 500
+  // which Medusa v2 stores as 500 EUR. Idempotent on every boot.
+  let repricedCount = 0
+  try {
+    const targetByName = new Map<string, number>()
+    for (const z of zones) targetByName.set(`Standard ${z.name}`, z.price)
+    const optionGraph = await query.graph({
+      entity: "shipping_option",
+      fields: [
+        "id",
+        "name",
+        "prices.id",
+        "prices.amount",
+        "prices.currency_code",
+        "prices.region_id",
+      ],
+      filters: { name: Array.from(targetByName.keys()) },
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows: any[] = optionGraph?.data ?? []
+    for (const row of rows) {
+      const target = targetByName.get(row.name)
+      if (typeof target !== "number") continue
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const prices: any[] = row.prices ?? []
+      const mismatched = prices.filter((p) => {
+        if (p?.currency_code !== "eur") return false
+        const amount = p?.amount != null ? Number(p.amount) : null
+        return amount !== target
+      })
+      if (mismatched.length === 0) continue
+      const updatedPrices = mismatched.map((p) => ({
+        id: p.id as string,
+        amount: target,
+      }))
+      try {
+        await updateShippingOptionsWorkflow(container).run({
+          input: [{ id: row.id, prices: updatedPrices }],
+        })
+        for (const p of mismatched) {
+          logger.info(
+            `Repriced ${row.name} (${p.region_id ? "region" : "currency"}): ` +
+            `${p.amount ?? "n/a"} → ${target} EUR (price ${p.id}).`
+          )
+          repricedCount++
+        }
+      } catch (err) {
+        logger.warn(`Reprice failed for ${row.name} (non-fatal): ${err}`)
+      }
+    }
+    logger.info(`Shipping reprice sweep complete: ${repricedCount} price(s) synced.`)
+  } catch (err) {
+    logger.warn(`Shipping reprice sweep failed (non-fatal): ${err}`)
   }
 
   logger.info("Shipping seed complete.")
