@@ -142,6 +142,27 @@ export function HoseKonfigurator() {
         </p>
       </aside>
 
+      {/* Frühchen-Hinweis */}
+      <aside
+        role="note"
+        aria-label="Hinweis zu Frühchengrößen"
+        className="mt-4 rounded-xl border border-binchen-terracotta/40 bg-binchen-terracotta/10 px-4 py-3 sm:px-5 sm:py-4"
+      >
+        <p className="font-body text-sm leading-relaxed text-binchen-ink">
+          <span className="font-semibold text-binchen-terracotta-text">Auch für Frühchen.</span>{" "}
+          <span className="text-binchen-ink-muted">
+            Wir nähen in Frühchengrößen 38, 44 und 50 — Sondermaße auf Anfrage. Mehr Infos auf{" "}
+            <Link
+              href="/fruehchen"
+              className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
+            >
+              der Frühchen-Seite
+            </Link>
+            .
+          </span>
+        </p>
+      </aside>
+
       {/* Live region for screen readers */}
       <span aria-live="polite" aria-atomic="true" className="sr-only">
         {lastChanged ? `${lastChanged.region}: ${lastChanged.swatch}` : ""}

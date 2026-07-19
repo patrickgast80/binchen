@@ -23,6 +23,14 @@ type SearchParams = {
 
 const LIMIT = 12;
 
+const FRUEHCHEN_SIZE_TOKENS = ["32", "38", "44", "50"];
+
+function hasFruehchenSize(sizeLabel: string | undefined): boolean {
+  if (!sizeLabel) return false;
+  const tokens = sizeLabel.match(/\d{2,3}/g) ?? [];
+  return tokens.some((t) => FRUEHCHEN_SIZE_TOKENS.includes(t));
+}
+
 export default async function CatalogPage({ searchParams }: { searchParams: SearchParams }) {
   const page = Math.max(1, Number(searchParams.page ?? 1));
   const offset = (page - 1) * LIMIT;
@@ -100,6 +108,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Sear
                 >
                   {products.map((product) => {
                     const isSoldOut = product.variants.every((v) => v.inventory_quantity === 0);
+                    const isFruehchen = hasFruehchenSize(product.metadata?.sizeLabel);
                     return (
                       <li key={product.id}>
                         <Card className="group overflow-hidden transition-shadow hover:shadow-md">
@@ -122,6 +131,11 @@ export default async function CatalogPage({ searchParams }: { searchParams: Sear
                             {isSoldOut && (
                               <span className="absolute left-3 top-3 rounded-full bg-binchen-ink px-3 py-1 font-body text-xs font-semibold text-binchen-cream">
                                 ausverkauft
+                              </span>
+                            )}
+                            {!isSoldOut && isFruehchen && (
+                              <span className="absolute right-3 top-3 rounded-full bg-binchen-terracotta-text px-3 py-1 font-body text-xs font-semibold text-binchen-cream shadow-sm">
+                                Frühchengröße verfügbar
                               </span>
                             )}
                           </div>

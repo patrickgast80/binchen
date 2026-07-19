@@ -141,6 +141,62 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Frühchen highlight */}
+      <section
+        aria-labelledby="fruehchen-heading"
+        className="border-y border-binchen-terracotta/30 bg-binchen-terracotta/10"
+      >
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:gap-14">
+            <div>
+              <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta-text">
+                Auch in Frühchengrößen&nbsp;❤
+              </p>
+              <h2
+                id="fruehchen-heading"
+                className="mt-3 font-display text-3xl font-semibold text-binchen-ink sm:text-4xl"
+              >
+                Handgemachte Kleidung für die kleinsten Wunder
+              </h2>
+              <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted sm:text-lg">
+                Frühchen finden im Handel kaum passende Kleidung — wir nähen jede Hose einzeln
+                in Größen 38, 44 und 50 aus weichen Naturmaterialien. Farben wählt ihr selbst.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button asChild variant="accent" size="lg">
+                  <Link href="/fruehchen">Frühchen-Angebot ansehen</Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/catalog?size=50">Kleine Größen im Shop</Link>
+                </Button>
+              </div>
+            </div>
+            <ul
+              className="grid grid-cols-3 gap-3 sm:gap-4"
+              role="list"
+              aria-label="Verfügbare Frühchengrößen"
+            >
+              {["38", "44", "50"].map((size) => (
+                <li key={size}>
+                  <Link
+                    href={`/catalog?size=${size}`}
+                    className="flex min-h-24 flex-col items-center justify-center rounded-2xl border border-binchen-border bg-binchen-cream px-4 py-5 text-center transition-colors hover:border-binchen-terracotta hover:text-binchen-terracotta-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage focus-visible:ring-offset-2"
+                    aria-label={`Kollektion in Frühchengröße ${size} ansehen`}
+                  >
+                    <span className="font-display text-3xl font-semibold text-binchen-ink sm:text-4xl">
+                      {size}
+                    </span>
+                    <span className="mt-1 font-body text-xs uppercase tracking-widest text-binchen-ink-muted">
+                      Frühchen
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <section
         aria-labelledby="products-heading"
         className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8"

@@ -19,6 +19,8 @@ const AGE_CATEGORIES = [
   { value: "toddler", label: "Kleinkind (1–3 J)" },
 ];
 
+const FRUEHCHEN_SIZES = ["38", "44", "50"];
+
 export function CatalogFilters({ size, fabric, ageCategory, ageMin, ageMax }: CatalogFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -51,6 +53,39 @@ export function CatalogFilters({ size, fabric, ageCategory, ageMin, ageMax }: Ca
           Größe
         </label>
         <Input id="size" name="size" type="text" placeholder="z.B. 56" defaultValue={size} />
+        <div className="pt-1">
+          <p className="font-body text-xs font-medium uppercase tracking-widest text-binchen-terracotta-text">
+            Frühchengrößen
+          </p>
+          <div
+            role="group"
+            aria-label="Frühchengrößen als Schnellfilter"
+            className="mt-2 flex flex-wrap gap-2"
+          >
+            {FRUEHCHEN_SIZES.map((s) => {
+              const isActive = size === s;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => {
+                    const params = new URLSearchParams();
+                    params.set("size", s);
+                    router.push(`${pathname}?${params.toString()}`);
+                  }}
+                  className={`inline-flex min-h-11 min-w-14 items-center justify-center rounded-full border px-3 py-1 font-body text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage focus-visible:ring-offset-2 ${
+                    isActive
+                      ? "border-binchen-terracotta bg-binchen-terracotta/10 text-binchen-terracotta-text"
+                      : "border-binchen-border bg-binchen-cream text-binchen-ink hover:border-binchen-terracotta hover:text-binchen-terracotta-text"
+                  }`}
+                >
+                  {s}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="space-y-2">
