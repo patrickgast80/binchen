@@ -58,12 +58,15 @@ export async function getProducts(params: {
   limit?: number;
   offset?: number;
   region_id?: string;
-  currency_code?: string;
 }): Promise<ProductsResponse> {
   if (!BACKEND_URL) {
     return { products: [], count: 0, limit: params.limit ?? 20, offset: params.offset ?? 0 };
   }
 
+  // BIL-2413: do NOT set currency_code on /store/products. Medusa v2 (2.15.5)
+  // rejects the field with 400 "Unrecognized fields: 'currency_code'" and the
+  // fallback below would then silently render an empty catalog. Prices are
+  // resolved via the region_id (or the publishable key's default region).
   const url = new URL(`${BACKEND_URL}/store/products`);
   if (params.size) url.searchParams.set("size", params.size);
   if (params.fabric) url.searchParams.set("fabric", params.fabric);
@@ -71,7 +74,6 @@ export async function getProducts(params: {
   if (params.age_min) url.searchParams.set("age_min", params.age_min);
   if (params.age_max) url.searchParams.set("age_max", params.age_max);
   if (params.region_id) url.searchParams.set("region_id", params.region_id);
-  if (params.currency_code) url.searchParams.set("currency_code", params.currency_code);
   url.searchParams.set("limit", String(params.limit ?? 20));
   url.searchParams.set("offset", String(params.offset ?? 0));
 
