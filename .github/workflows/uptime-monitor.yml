@@ -1,0 +1,106 @@
+name: Uptime Monitor (bilulu.de + api.bilulu.de)
+
+# BIL-2405 -- hits the two launch-critical URLs on a schedule and opens a
+# GitHub issue on failure (dedup by label `uptime-alarm`). This is the free,
+# no-external-account replacement for UptimeRobot for the launch phase; if we
+# later want a paged escalation path we can add Better Stack alongside this
+# workflow (same pattern as tls-monitor.yml -> Better Stack note).
+#
+# Cadence: every 15 minutes. GitHub-Actions cron is best-effort (can slip
+# 5-10 minutes under load); acceptable for a launch monitor without a paged SLA.
+#
+# On failure the workflow (1) fails the run so repo watchers get a GitHub email
+# and (2) opens/updates an issue labelled `uptime-alarm` that DevOps picks up.
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/uptime-monitor.yml'
+      - 'scripts/uptime-monitor.sh'
+  workflow_dispatch:
+    inputs:
+      probes:
+        description: 'Space-separated "URL|EXPECTED_STATUS" tokens'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: uptime-monitor
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Probe production URLs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run uptime probes
+        id: probe
+        env:
+          PROBES: ${{ github.event.inputs.probes }}
+        run: |
+          bash scripts/uptime-monitor.sh
+
+      - name: Open GitHub issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            const runUrl = process.env.RUN_URL;
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Uptime-Alarm ${today}: production URL check failed`;
+            const body = [
+              '## Uptime-Alarm',
+              '',
+              'The uptime monitor (BIL-2405) reports a failing probe against a production URL.',
+              '',
+              `**Workflow run:** ${runUrl}`,
+              '',
+              '## Playbook',
+              '',
+              '1. Reproduce from any shell:',
+              '   `curl -sS -o /dev/null -w "%{http_code} %{time_total}s\\n" https://bilulu.de/`',
+              '   `curl -sS -o /dev/null -w "%{http_code} %{time_total}s\\n" https://api.bilulu.de/health`',
+              '2. If both are green now, the alarm was a transient network blip from the GH-Actions runner. Close this issue with a note.',
+              '3. If `bilulu.de` is down but `api.bilulu.de/health` is up, the storefront (Coolify app `f12ixtdb`) is the suspect: check `docker logs -f <app-container>` on the Hetzner box.',
+              '4. If `api.bilulu.de/health` is down, the backend (`k3apwpfe`) is the suspect: same drill.',
+              '5. If both are down, check Traefik (`docker ps | grep coolify-proxy`) and DNS (`dig +short bilulu.de`) -- see `infra/RUNBOOK.md` -> **TLS-Alarm** for host access.',
+              '6. If the alarm persists after DevOps triage, escalate to CEO with the failing curl output and this run link.',
+              '',
+              'See `infra/RUNBOOK.md` -> **Uptime-Alarm** for the full playbook.',
+            ].join('\n');
+
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'uptime-alarm',
+            });
+            if (existing.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing[0].number,
+                body: `Another Uptime-Alarm run failed on ${today}. Run: ${runUrl}`,
+              });
+              core.notice(`Appended to existing alarm issue #${existing[0].number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['uptime-alarm', 'bil-2405'],
+              });
+              core.notice(`Opened alarm issue #${created.data.number}`);
+            }

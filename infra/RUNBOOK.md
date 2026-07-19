@@ -106,3 +106,144 @@ If we adopt Better Stack later:
 - Add three Certificate-Expiration monitors with threshold `14 days`.
 - Route alerts to `info@bilulu.de` (and a paging channel once one exists).
 - Turn off the GitHub-Actions workflow, or keep it as a second-source cross-check.
+
+---
+
+## Postgres backups (BIL-2405)
+
+**Where they live.** Nightly logical dumps of the `binchen` database land on
+the Hetzner host at `/home/deploy/backups/bilulu-postgres/`, one file per run
+named `binchen-YYYYMMDDTHHMMSSZ.dump` (pg_dump custom format, `-Fc`). The
+directory is on the host filesystem, **outside** the Coolify Postgres
+container's volume, so a container wipe does not take backups with it.
+
+**Schedule.** `crontab -l` as user `deploy` runs `/home/deploy/bin/binchen-pg-backup.sh`
+at 01:15 UTC daily. Retention is 14 days; older dumps are pruned by the same
+script. Success/failure lines append to `/home/deploy/backups/bilulu-postgres/.log`.
+
+**How to verify (weekly sanity check):**
+```
+ssh deploy@188.245.40.74 'tail -5 /home/deploy/backups/bilulu-postgres/.log
+ls -lh /home/deploy/backups/bilulu-postgres/ | head -8'
+```
+Expect one new `OK` line per day and a fresh `.dump` file each morning.
+
+### Playbook: Restore from backup
+
+Restore into a **scratch database** first -- never straight into `binchen`
+without confirmation from the CEO.
+
+```
+ssh deploy@188.245.40.74
+# 1) pick a dump
+LATEST=$(ls -1t /home/deploy/backups/bilulu-postgres/binchen-*.dump | head -1)
+echo "$LATEST"
+
+# 2) create scratch db + restore
+docker exec rqh57h1ohsowasr6eheqz0dr dropdb -U binchen --if-exists binchen_restore_test
+docker exec rqh57h1ohsowasr6eheqz0dr createdb -U binchen binchen_restore_test
+cat "$LATEST" | docker exec -i rqh57h1ohsowasr6eheqz0dr \
+  pg_restore -U binchen -d binchen_restore_test --no-owner --no-privileges
+
+# 3) sanity-check row counts (top 10 tables by size)
+docker exec rqh57h1ohsowasr6eheqz0dr psql -U binchen -d binchen_restore_test \
+  -c "SELECT relname, n_live_tup FROM pg_stat_user_tables ORDER BY n_live_tup DESC LIMIT 10;"
+
+# 4) drop scratch when done
+docker exec rqh57h1ohsowasr6eheqz0dr dropdb -U binchen binchen_restore_test
+```
+
+**Cutover to prod (only with CEO go-ahead):**
+1. Stop the backend container so nothing writes during restore:
+   `docker stop k3apwpfen4qlb1hc1jdnli6f` (or whatever `docker ps` shows).
+2. `dropdb -U binchen binchen && createdb -U binchen binchen`.
+3. `cat "$DUMP" | docker exec -i rqh57h1ohsowasr6eheqz0dr pg_restore -U binchen -d binchen --no-owner --no-privileges`.
+4. Start the backend container back up; confirm `/health` returns 200.
+5. Post a comment on the incident issue with dump filename + restore duration.
+
+**Restore-test evidence (initial):** 2026-07-19 -- dump
+`binchen-20260718T231501Z.dump` (445 KB) restored into scratch db with all
+seeded tables intact (`region_country=250`, `currency=123`, 164 migrations).
+Repeat this test at least quarterly and before every DR drill.
+
+### Playbook: Backups stopped
+
+Symptoms: `tail /home/deploy/backups/bilulu-postgres/.log` shows a `FAIL`
+line, or no new dump for >24h.
+
+1. Reproduce the run manually:
+   `ssh deploy@188.245.40.74 /home/deploy/bin/binchen-pg-backup.sh`
+2. Common failures:
+   - **`container not running`** -> the Postgres UUID changed. Check
+     `docker ps | grep postgres`, update `CONTAINER=` in the script.
+   - **`No space left on device`** -> `df -h /home` on the host. Prune old
+     dumps beyond retention, or bump the disk on the Hetzner box.
+   - **`pg_dump: connection refused`** -> Postgres is down. Escalate to
+     backend crash triage before touching backups.
+3. If the fix is a script change, edit `/home/deploy/bin/binchen-pg-backup.sh`
+   in place and commit the same change to `infra/scripts/pg-backup.sh` if we
+   add a copy to the repo (currently host-only to avoid drift with the
+   Coolify-managed container UUID).
+4. Escalate to CEO if backups are down for >48h -- that is the point at which
+   a hard failure would exceed the acceptable data-loss window.
+
+---
+
+## Uptime-Alarm (BIL-2405)
+
+**Alert source:** GitHub Actions workflow `Uptime Monitor (bilulu.de + api.bilulu.de)`
+runs every 15 minutes and probes:
+
+- `GET https://bilulu.de/` -- expects 200 within 15s (storefront root).
+- `GET https://api.bilulu.de/health` -- expects 200 within 15s (Medusa health).
+
+Each probe retries twice with a 3s gap before it counts as a failure, so a
+single dropped packet from a GH-Actions runner does not page anyone. On
+failure the workflow (1) fails the run so repo watchers get a GitHub email
+and (2) opens/updates an issue labelled `uptime-alarm` / `bil-2405`.
+
+### Playbook: Uptime-Alarm fired
+
+1. **Reproduce from any shell:**
+   ```
+   curl -sS -o /dev/null -w '%{http_code} %{time_total}s\n' https://bilulu.de/
+   curl -sS -o /dev/null -w '%{http_code} %{time_total}s\n' https://api.bilulu.de/health
+   ```
+   Both should print `200`. If they do now, the alarm was a transient blip
+   from the runner -- close with a note.
+
+2. **Storefront down, backend up:** the Coolify app `f12ixtdb...` (storefront)
+   is the suspect.
+   ```
+   ssh deploy@188.245.40.74 'docker ps --filter name=f12ixtdb --format "{{.Names}} {{.Status}}"'
+   ssh deploy@188.245.40.74 'docker logs --tail 200 <container-name>'
+   ```
+   Common causes: Next.js build regression, missing env var after redeploy,
+   Vercel-style edge cache miss timing out (unlikely on self-host but check).
+
+3. **Backend down, storefront up:** the Coolify app `k3apwpfe...` (backend)
+   is the suspect. Same drill. Common causes: Medusa boot failure (check
+   `medusa db:migrate` output), Postgres unreachable (check
+   `docker ps | grep rqh57`), env-var breakage.
+
+4. **Both down:** Traefik or DNS.
+   ```
+   ssh deploy@188.245.40.74 'docker ps | grep coolify-proxy'
+   dig +short bilulu.de
+   dig +short api.bilulu.de
+   ```
+   If Traefik is missing, `docker start coolify-proxy`. If DNS is wrong,
+   Cloudflare dashboard -- CEO action.
+
+5. **Alarm persists after fix:** escalate to CEO with the failing curl
+   output, the GitHub Actions run URL, and a link to whichever container's
+   logs surfaced the root cause.
+
+### Recommendation vs. external monitors
+
+We keep the GitHub-Actions cron because it is free, needs no external
+account, alerts land as GitHub issues that DevOps already handles, and the
+same pattern (labelled issue + workflow-run email) is used by the TLS
+monitor -- one playbook covers both. If a paged SLA is needed later,
+Better Stack's free tier gives 10 monitors and can co-exist alongside this
+workflow as a second source (same note as the TLS section above).
