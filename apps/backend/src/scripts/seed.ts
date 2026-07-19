@@ -164,11 +164,18 @@ export default async function seed({ container }: ExecArgs) {
   // Price set currency
   const EUR = "eur"
 
+  // BIL-2425: image URLs point at self-hosted storefront assets under
+  // https://bilulu.de/products/*.svg. Interim branded placeholders — CEO can
+  // swap for real photos by (a) uploading a new file at the same URL, or
+  // (b) editing product.thumbnail / product.images via Medusa Admin.
+  const IMG_BASE = "https://bilulu.de/products"
   const products = [
     {
       title: "Bio-Baumwolle Strampler – Waldtiere",
       description: "Weicher Strampler aus 100% GOTS-zertifizierter Bio-Baumwolle mit liebevoll gestickten Waldtieren. Handgemacht in Deutschland.",
       variants: [{ title: "56 / 0-2 Monate", sku: "STR-WALD-56" }],
+      thumbnail: `${IMG_BASE}/strampler-waldtiere.svg`,
+      images: [`${IMG_BASE}/strampler-waldtiere.svg`],
       meta: {
         sizeLabel: "56",
         sizeCmMin: 56,
@@ -192,6 +199,8 @@ export default async function seed({ container }: ExecArgs) {
         { title: "62 / 2-4 Monate", sku: "BODY-RAIN-62" },
         { title: "68 / 4-6 Monate", sku: "BODY-RAIN-68" },
       ],
+      thumbnail: `${IMG_BASE}/bodysuit-regenbogen.svg`,
+      images: [`${IMG_BASE}/bodysuit-regenbogen.svg`],
       meta: {
         sizeLabel: "62-68",
         sizeCmMin: 62,
@@ -208,6 +217,8 @@ export default async function seed({ container }: ExecArgs) {
       title: "Musselinhose – Salbeigrün",
       description: "Luftige Sommerhose aus doppellagigem Musselin. Gummizug, handgenähte Säume.",
       variants: [{ title: "74-80 / 9-12 Monate", sku: "HOSE-MUS-74" }],
+      thumbnail: `${IMG_BASE}/musselinhose-salbei.svg`,
+      images: [`${IMG_BASE}/musselinhose-salbei.svg`],
       meta: {
         sizeLabel: "74-80",
         sizeCmMin: 74,
@@ -224,6 +235,8 @@ export default async function seed({ container }: ExecArgs) {
       title: "Wendejacke – Punkte & Streifen",
       description: "Handgenähte Wendejacke, außen Punkte, innen Streifen. Mit Druckknöpfen, kein Reißverschluss.",
       variants: [{ title: "86-92 / 18-24 Monate", sku: "JACK-WEND-86" }],
+      thumbnail: `${IMG_BASE}/wendejacke-punkte.svg`,
+      images: [`${IMG_BASE}/wendejacke-punkte.svg`],
       meta: {
         sizeLabel: "86-92",
         sizeCmMin: 86,
@@ -240,6 +253,8 @@ export default async function seed({ container }: ExecArgs) {
       title: "Spielanzug mit Füßen – Sternchen",
       description: "Warmer Schlafanzug aus French-Terry, mit Füßen und Reißverschluss vorne. Handgenäht.",
       variants: [{ title: "98-104 / 3 Jahre", sku: "SLEEP-STERN-98" }],
+      thumbnail: `${IMG_BASE}/spielanzug-sternchen.svg`,
+      images: [`${IMG_BASE}/spielanzug-sternchen.svg`],
       meta: {
         sizeLabel: "98-104",
         sizeCmMin: 98,
@@ -275,6 +290,8 @@ export default async function seed({ container }: ExecArgs) {
         title: p.title,
         description: p.description,
         status: "published",
+        thumbnail: p.thumbnail,
+        images: p.images.map((url) => ({ url })),
         variants: p.variants.map((v) => ({
           title: v.title,
           sku: v.sku,
@@ -412,5 +429,61 @@ export default async function seed({ container }: ExecArgs) {
     logger.info(`Reprice sweep complete: ${repricedCount} price_set(s) synced.`)
   } catch (err) {
     logger.warn(`Reprice sweep failed (non-fatal): ${err}`)
+  }
+
+  // BIL-2425: Image backfill sweep — for every seeded SKU, ensure the parent
+  // product has the intended thumbnail + images. Products created by earlier
+  // seed runs (before this change) have thumbnail=null → catalog renders
+  // "Kein Bild" placeholders. Idempotent: only writes when the URLs differ.
+  let imageSyncCount = 0
+  try {
+    const targetBySku = new Map<string, { thumbnail: string; images: string[] }>()
+    for (const p of products) {
+      for (const v of p.variants) {
+        targetBySku.set(v.sku, { thumbnail: p.thumbnail, images: p.images })
+      }
+    }
+    const variantImgGraph = await query.graph({
+      entity: "variant",
+      fields: [
+        "sku",
+        "product.id",
+        "product.thumbnail",
+        "product.images.url",
+      ],
+      filters: { sku: Array.from(targetBySku.keys()) },
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows: any[] = variantImgGraph?.data ?? []
+    const seenProductIds = new Set<string>()
+    for (const row of rows) {
+      const target = targetBySku.get(row.sku)
+      if (!target) continue
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const prod = row.product as any
+      if (!prod?.id) continue
+      if (seenProductIds.has(prod.id)) continue
+      seenProductIds.add(prod.id)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const currentUrls = ((prod.images ?? []) as any[]).map((i) => i?.url).filter(Boolean)
+      const sameThumb = prod.thumbnail === target.thumbnail
+      const sameImages =
+        currentUrls.length === target.images.length &&
+        target.images.every((u, i) => currentUrls[i] === u)
+      if (sameThumb && sameImages) continue
+      try {
+        await productModule.updateProducts(prod.id, {
+          thumbnail: target.thumbnail,
+          images: target.images.map((url) => ({ url })),
+        })
+        logger.info(`Image backfill: ${row.sku} → thumbnail set (product ${prod.id}).`)
+        imageSyncCount++
+      } catch (err) {
+        logger.warn(`Image backfill failed for ${row.sku} (non-fatal): ${err}`)
+      }
+    }
+    logger.info(`Image backfill sweep complete: ${imageSyncCount} product(s) synced.`)
+  } catch (err) {
+    logger.warn(`Image backfill sweep failed (non-fatal): ${err}`)
   }
 }

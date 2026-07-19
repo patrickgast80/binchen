@@ -28,6 +28,11 @@ const nextConfig = {
         hostname: "binchen.vercel.app",
       },
     ],
+    // BIL-2425: interim product placeholders under public/products/*.svg are
+    // authored by us — script-sandboxed CSP keeps external SVG safe.
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   async redirects() {
     const redirects = [

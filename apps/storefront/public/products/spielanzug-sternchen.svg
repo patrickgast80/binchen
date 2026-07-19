@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Spielanzug Sternchen Platzhalterbild">
+  <rect width="800" height="800" fill="#FAF7F2"/>
+  <g transform="translate(400 380)" fill="#A8C5AB" opacity="0.45">
+    <path d="M-100 -170 L100 -170 L130 -20 L100 200 L50 260 L20 260 L20 100 L-20 100 L-20 260 L-50 260 L-100 200 L-130 -20 Z"/>
+  </g>
+  <g fill="#7A3318" opacity="0.75">
+    <g transform="translate(340 300)"><path d="M0 -20 L6 -6 L20 -6 L9 4 L14 20 L0 10 L-14 20 L-9 4 L-20 -6 L-6 -6 Z"/></g>
+    <g transform="translate(460 340)"><path d="M0 -14 L4 -4 L14 -4 L6 3 L10 14 L0 7 L-10 14 L-6 3 L-14 -4 L-4 -4 Z"/></g>
+    <g transform="translate(400 260)"><path d="M0 -18 L5 -5 L18 -5 L8 3 L12 18 L0 9 L-12 18 L-8 3 L-18 -5 L-5 -5 Z"/></g>
+    <g transform="translate(370 440)"><path d="M0 -12 L4 -3 L12 -3 L5 3 L8 12 L0 6 L-8 12 L-5 3 L-12 -3 L-4 -3 Z"/></g>
+    <g transform="translate(440 480)"><path d="M0 -16 L5 -4 L16 -4 L7 3 L11 16 L0 8 L-11 16 L-7 3 L-16 -4 L-5 -4 Z"/></g>
+  </g>
+  <text x="400" y="580" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="34" fill="#2C2417">Spielanzug</text>
+  <text x="400" y="620" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="22" fill="#6B5E4E" font-style="italic">Sternchen</text>
+  <text x="400" y="770" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#6B5A40" letter-spacing="3">BILULU · HANDGEMACHT</text>
+</svg>

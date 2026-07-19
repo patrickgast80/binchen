@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Musselinhose Salbeigrün Platzhalterbild">
+  <rect width="800" height="800" fill="#FAF7F2"/>
+  <g transform="translate(400 400)" fill="#7A9E7E" opacity="0.55">
+    <path d="M-90 -160 L90 -160 L110 60 L60 240 L20 240 L10 80 L-10 80 L-20 240 L-60 240 L-110 60 Z"/>
+  </g>
+  <g transform="translate(400 400)" fill="none" stroke="#5A7E5E" stroke-width="3" opacity="0.7">
+    <path d="M-95 -150 Q0 -140 95 -150"/>
+    <path d="M-100 -110 Q0 -100 100 -110"/>
+  </g>
+  <text x="400" y="530" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="34" fill="#2C2417">Musselinhose</text>
+  <text x="400" y="570" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="22" fill="#6B5E4E" font-style="italic">Salbeigrün</text>
+  <text x="400" y="770" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#6B5A40" letter-spacing="3">BILULU · HANDGEMACHT</text>
+</svg>

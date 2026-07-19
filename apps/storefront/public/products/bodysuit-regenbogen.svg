@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Jersey Bodysuit Regenbogen Platzhalterbild">
+  <rect width="800" height="800" fill="#FAF7F2"/>
+  <g transform="translate(400 380)" fill="none" stroke-width="18" stroke-linecap="round">
+    <path d="M-200 60 A200 200 0 0 1 200 60" stroke="#7A3318" opacity="0.6"/>
+    <path d="M-160 60 A160 160 0 0 1 160 60" stroke="#C4704A" opacity="0.6"/>
+    <path d="M-120 60 A120 120 0 0 1 120 60" stroke="#D4886A" opacity="0.6"/>
+    <path d="M-80 60 A80 80 0 0 1 80 60" stroke="#7A9E7E" opacity="0.6"/>
+    <path d="M-40 60 A40 40 0 0 1 40 60" stroke="#A8C5AB" opacity="0.7"/>
+  </g>
+  <text x="400" y="530" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="34" fill="#2C2417">Bodys Regenbogen</text>
+  <text x="400" y="570" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="22" fill="#6B5E4E" font-style="italic">2er-Pack Jersey</text>
+  <text x="400" y="770" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#6B5A40" letter-spacing="3">BILULU · HANDGEMACHT</text>
+</svg>

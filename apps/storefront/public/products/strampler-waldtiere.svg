@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Bio-Baumwolle Strampler Waldtiere Platzhalterbild">
+  <rect width="800" height="800" fill="#FAF7F2"/>
+  <path d="M0 620 Q200 560 400 620 T800 620 L800 800 L0 800 Z" fill="#A8C5AB" opacity="0.35"/>
+  <path d="M0 680 Q200 630 400 680 T800 680 L800 800 L0 800 Z" fill="#7A9E7E" opacity="0.35"/>
+  <g transform="translate(400 340)" fill="#7A3318" opacity="0.55">
+    <circle cx="-70" cy="0" r="34"/>
+    <circle cx="70" cy="0" r="34"/>
+    <circle cx="-95" cy="-28" r="14"/>
+    <circle cx="-45" cy="-28" r="14"/>
+    <circle cx="45" cy="-28" r="14"/>
+    <circle cx="95" cy="-28" r="14"/>
+  </g>
+  <text x="400" y="470" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="34" fill="#2C2417">Strampler</text>
+  <text x="400" y="510" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="22" fill="#6B5E4E" font-style="italic">Waldtiere</text>
+  <text x="400" y="770" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#6B5A40" letter-spacing="3">BILULU · HANDGEMACHT</text>
+</svg>
