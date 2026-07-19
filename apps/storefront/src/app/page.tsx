@@ -79,7 +79,7 @@ function productToCard(product: MedusaProduct): FeaturedCard {
 
 async function loadFeaturedCards(): Promise<FeaturedCard[]> {
   try {
-    const { products } = await getProducts({ limit: 3, currency_code: "eur" });
+    const { products } = await getProducts({ limit: 3 });
     if (products.length === 0) return placeholderCards;
     const cards = products.slice(0, 3).map(productToCard);
     return cards.length >= 3 ? cards : placeholderCards;
