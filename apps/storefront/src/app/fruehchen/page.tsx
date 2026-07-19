@@ -1,22 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PantsPhoto } from "../konfigurator/hose/pants-photo";
 
+const WUNSCHGROESSE_MAILTO =
+  "mailto:info@bilulu.de?subject=Wunschgr%C3%B6%C3%9Fe%20Fr%C3%BChchen&body=Hallo%20Bilulu-Team%2C%0A%0Awir%20brauchen%20eine%20besondere%20Gr%C3%B6%C3%9Fe%3A%20%5Bbitte%20eintragen%5D%0AGewicht%20%2F%20Woche%3A%20%5Bbitte%20eintragen%5D%0AWunsch-Farben%3A%20%5Bbitte%20eintragen%5D%0A%0ADanke%20euch%21";
+
 export const metadata: Metadata = {
-  title: "Frühchenkleidung – handgemacht in kleinen Größen",
+  title: "Frühchenkleidung – handgemacht in jeder Größe",
   description:
-    "Handgenähte Kleidung in Frühchengrößen (38, 44, 50) aus weichen Naturmaterialien. Farben und Zonen individuell konfigurierbar. Für die kleinsten Wunder unter uns.",
+    "Wir nähen Frühchenkleidung in jeder Größe — Standardgrößen 32, 38, 44, 50 und Sondermaße auf Anfrage. Handgenäht aus weichen Naturmaterialien, für die kleinsten Wunder unter uns.",
   keywords: [
     "Frühchenkleidung",
     "Frühchen Hose",
     "Frühchengrößen",
+    "Frühchengröße 32",
     "Frühchengröße 38",
     "Frühchengröße 44",
     "Frühchengröße 50",
     "Frühchenkleidung handmade",
     "Kleidung für Frühgeborene",
+    "Wunschgröße Frühchen",
     "handgemachte Frühchenkleidung",
   ],
   alternates: {
@@ -25,9 +30,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "de_DE",
-    title: "Frühchenkleidung – handgemacht in kleinen Größen | Bilulu",
+    title: "Frühchenkleidung – handgemacht in jeder Größe | Bilulu",
     description:
-      "Handgenähte Hosen in Frühchengrößen 38, 44, 50 aus weichen Naturmaterialien. Farben individuell wählbar.",
+      "Handgenähte Hosen in Frühchengrößen 32, 38, 44, 50 aus weichen Naturmaterialien. Jede Sondergröße auf Anfrage.",
     url: "/fruehchen",
   },
   robots: {
@@ -36,7 +41,7 @@ export const metadata: Metadata = {
   },
 };
 
-const SIZES = ["38", "44", "50"];
+const SIZES = ["32", "38", "44", "50"];
 
 export default function FruehchenPage() {
   return (
@@ -56,29 +61,42 @@ export default function FruehchenPage() {
                 id="fruehchen-heading"
                 className="mt-3 font-display text-4xl font-semibold leading-tight text-binchen-ink sm:text-5xl lg:text-6xl"
               >
-                Handgenähte Kleidung in Frühchengrößen
+                Handgenähte Kleidung in{" "}
+                <em className="font-display not-italic text-binchen-terracotta-text">jeder</em>{" "}
+                Frühchengröße
               </h1>
               <p className="mt-6 font-body text-lg leading-relaxed text-binchen-ink-muted">
-                Wenn ein Baby zu früh kommt, ist alles anders — auch die Suche nach passender
-                Kleidung. Wir wissen, wie schwer es ist, wirklich schöne Sachen in Größen wie 38,
-                44 oder 50 zu finden. Deshalb nähen wir sie mit besonderer Sorgfalt für euch.
+                <strong className="font-semibold text-binchen-ink">
+                  Wir nähen jede Größe — egal wie klein.
+                </strong>{" "}
+                Niemand muss auf Puppenkleidung ausweichen, weil es die passende Größe im Handel
+                nicht gibt. Standardmäßig fertigen wir 32, 38, 44 und 50. Braucht ihr etwas
+                dazwischen oder darunter? Sagt uns, was ihr braucht — wir machen möglich, was
+                möglich ist.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Button asChild variant="accent" size="lg">
-                  <Link href="/konfigurator/hose">Hose selbst gestalten</Link>
+                  <a
+                    href={WUNSCHGROESSE_MAILTO}
+                    aria-label="Wunschgröße per E-Mail anfragen"
+                  >
+                    <Mail className="mr-2 h-4 w-4" aria-hidden="true" />
+                    Wunschgröße anfragen
+                  </a>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <Link href="/catalog?size=50">Kleine Größen im Shop</Link>
+                  <Link href="/konfigurator/hose">Hose selbst gestalten</Link>
                 </Button>
               </div>
               <p className="mt-6 font-body text-sm text-binchen-ink-muted">
-                Individuelle Wünsche zu Stoff oder Sondergröße?{" "}
+                Direkt in den Shop:{" "}
                 <Link
-                  href="/contact"
+                  href="/catalog?size=32"
                   className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline"
                 >
-                  Schreibt uns direkt.
+                  Frühchengrößen ansehen
                 </Link>
+                .
               </p>
             </div>
 
@@ -114,17 +132,27 @@ export default function FruehchenPage() {
         <div className="mt-6 space-y-5 font-body text-base leading-relaxed text-binchen-ink-muted">
           <p>
             Eltern von Frühgeborenen suchen oft verzweifelt nach Kleidung, die wirklich passt —
-            nicht zu weit, nicht zu groß, nicht mit harten Nähten an der zarten Haut. Was es im
-            Handel gibt, ist meist schlicht und einheitlich weiß.
+            nicht zu weit, nicht zu groß, nicht mit harten Nähten an der zarten Haut. Manche
+            greifen am Ende zu Puppenkleidung, weil es die passende Größe im Handel schlicht nicht
+            gibt. Das darf nicht sein.
           </p>
           <p>
-            Wir nähen jede Hose einzeln, in kleinen Frühchengrößen (38, 44, 50) und aus weichen
+            Wir nähen jede Hose einzeln, in Frühchengrößen ab 32 aufwärts und aus weichen
             Naturmaterialien. Auf Wunsch mit flachen Nähten außen, sanften Bündchen und in Farben,
             die Freude machen — für euch und für die kleinen Wunder, die ihr im Arm haltet.
           </p>
           <p>
-            Wenn ihr eine ganz besondere Größe braucht (z.&nbsp;B. 32), meldet euch bitte direkt
-            bei uns. Wir versuchen möglich zu machen, was möglich ist.
+            <strong className="font-semibold text-binchen-ink">
+              Und wenn ihr eine noch kleinere oder ganz besondere Größe braucht — Zwischengröße,
+              Sondermaß, alles was zwischen den Standards liegt:
+            </strong>{" "}
+            <a
+              href={WUNSCHGROESSE_MAILTO}
+              className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline"
+            >
+              schreibt uns
+            </a>
+            . Wir versuchen möglich zu machen, was möglich ist.
           </p>
         </div>
       </section>
@@ -142,7 +170,8 @@ export default function FruehchenPage() {
               Verfügbare Frühchengrößen
             </h2>
             <p className="mx-auto mt-3 max-w-xl font-body text-base text-binchen-ink-muted">
-              Standardmäßig nähen wir in diesen Größen. Sondermaße auf Anfrage.
+              Standardmäßig nähen wir in diesen Größen — jede weitere Größe (auch kleiner als 32)
+              auf Anfrage.
             </p>
           </div>
           <ul
@@ -161,6 +190,16 @@ export default function FruehchenPage() {
                 </Link>
               </li>
             ))}
+            <li>
+              <a
+                href={WUNSCHGROESSE_MAILTO}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-binchen-terracotta bg-binchen-terracotta/10 px-5 py-2 font-body text-base font-medium text-binchen-terracotta-text transition-colors hover:bg-binchen-terracotta/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage focus-visible:ring-offset-2"
+                aria-label="Wunschgröße per E-Mail anfragen"
+              >
+                <Mail className="h-4 w-4" aria-hidden="true" />
+                Wunschgröße anfragen
+              </a>
+            </li>
           </ul>
         </div>
       </section>
@@ -200,7 +239,9 @@ export default function FruehchenPage() {
                 <Link href="/konfigurator/hose">Konfigurator öffnen</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link href="/contact">Größe direkt anfragen</Link>
+                <a href={WUNSCHGROESSE_MAILTO} aria-label="Wunschgröße per E-Mail anfragen">
+                  Wunschgröße anfragen
+                </a>
               </Button>
             </div>
           </div>

@@ -159,8 +159,11 @@ export default async function HomePage() {
                 Handgemachte Kleidung für die kleinsten Wunder
               </h2>
               <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted sm:text-lg">
-                Frühchen finden im Handel kaum passende Kleidung — wir nähen jede Hose einzeln
-                in Größen 38, 44 und 50 aus weichen Naturmaterialien. Farben wählt ihr selbst.
+                <strong className="font-semibold text-binchen-ink">
+                  Wir nähen jede Größe — egal wie klein.
+                </strong>{" "}
+                Standardmäßig 32, 38, 44 und 50, Sondermaße auf Anfrage. Damit niemand mehr auf
+                Puppenkleidung ausweichen muss.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild variant="accent" size="lg">
@@ -172,11 +175,11 @@ export default async function HomePage() {
               </div>
             </div>
             <ul
-              className="grid grid-cols-3 gap-3 sm:gap-4"
+              className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
               role="list"
               aria-label="Verfügbare Frühchengrößen"
             >
-              {["38", "44", "50"].map((size) => (
+              {["32", "38", "44", "50"].map((size) => (
                 <li key={size}>
                   <Link
                     href={`/catalog?size=${size}`}

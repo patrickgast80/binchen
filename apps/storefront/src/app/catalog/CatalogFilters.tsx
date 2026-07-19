@@ -19,7 +19,7 @@ const AGE_CATEGORIES = [
   { value: "toddler", label: "Kleinkind (1–3 J)" },
 ];
 
-const FRUEHCHEN_SIZES = ["38", "44", "50"];
+const FRUEHCHEN_SIZES = ["32", "38", "44", "50"];
 
 export function CatalogFilters({ size, fabric, ageCategory, ageMin, ageMax }: CatalogFiltersProps) {
   const router = useRouter();
