@@ -12,6 +12,7 @@ export default function DatenschutzPage() {
           Sabine Vollmer<br />
           Sägmühlweg 66<br />
           67454 Haßloch<br />
+          Telefon: 0152 37328815<br />
           E-Mail:{" "}
           <a href="mailto:info@bilulu.de" className="text-binchen-terracotta-text underline">
             info@bilulu.de

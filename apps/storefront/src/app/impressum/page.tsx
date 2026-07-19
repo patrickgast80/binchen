@@ -13,6 +13,7 @@ export default function ImpressumPage() {
 
       <section className="mt-8 space-y-2 font-body text-base text-binchen-ink-muted">
         <h2 className="font-display text-xl font-semibold text-binchen-ink">Kontakt</h2>
+        <p>Telefon: 0152 37328815</p>
         <p>
           E-Mail:{" "}
           <a href="mailto:info@bilulu.de" className="text-binchen-terracotta-text underline">

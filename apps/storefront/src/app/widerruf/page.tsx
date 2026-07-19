@@ -18,7 +18,7 @@ export default function WiderrufPage() {
         </p>
         <p>
           Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (Sabine Vollmer, Sägmühlweg 66, 67454
-          Haßloch, E-Mail:{" "}
+          Haßloch, Telefon: 0152 37328815, E-Mail:{" "}
           <a href="mailto:info@bilulu.de" className="text-binchen-terracotta-text underline">
             info@bilulu.de
           </a>
@@ -83,6 +83,7 @@ export default function WiderrufPage() {
             Sabine Vollmer<br />
             Sägmühlweg 66<br />
             67454 Haßloch<br />
+            Telefon: 0152 37328815<br />
             E-Mail: info@bilulu.de
           </p>
           <p className="mt-4">

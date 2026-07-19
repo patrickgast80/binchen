@@ -34,6 +34,13 @@ export default function ContactPage() {
 
       <section className="mt-8 space-y-2 font-body text-base text-binchen-ink-muted">
         <h2 className="font-display text-xl font-semibold text-binchen-ink">
+          Per Telefon
+        </h2>
+        <p>0152 37328815</p>
+      </section>
+
+      <section className="mt-8 space-y-2 font-body text-base text-binchen-ink-muted">
+        <h2 className="font-display text-xl font-semibold text-binchen-ink">
           Per Post
         </h2>
         <p>Sabine Vollmer</p>
