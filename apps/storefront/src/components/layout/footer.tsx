@@ -9,6 +9,7 @@ const legalLinks = [
 
 const shopLinks = [
   { href: "/catalog", label: "Alle Produkte" },
+  { href: "/fruehchen", label: "Frühchen" },
   { href: "/catalog?filter=newborn", label: "Neugeborene" },
   { href: "/catalog?filter=toddler", label: "Kleinkinder" },
   { href: "/catalog?filter=gift", label: "Geschenke" },
