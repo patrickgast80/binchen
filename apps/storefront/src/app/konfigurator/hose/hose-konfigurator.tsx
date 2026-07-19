@@ -14,16 +14,22 @@ import {
   REGIONS,
   type RegionDef,
   resolveColor,
+  resolveHoseParam,
   resolveSwatchId,
   type Swatch,
 } from "./palette";
-import { PantsSvg, type PantsColors } from "./pants-svg";
+import { PantsPhoto, type PantsPhotoColors } from "./pants-photo";
 
 type Selection = Record<RegionDef["param"], string>;
 
 function buildSelection(searchParams: URLSearchParams | null): Selection {
   return REGIONS.reduce<Selection>((acc, region) => {
-    acc[region.param] = resolveSwatchId(searchParams?.get(region.param), region.defaultColor);
+    // `hose` used to be split into `links` + `rechts` — resolveHoseParam
+    // tolerates old shared links by mapping them back to a single value.
+    acc[region.param] =
+      region.param === "hose"
+        ? resolveHoseParam(searchParams, region.defaultColor)
+        : resolveSwatchId(searchParams?.get(region.param), region.defaultColor);
     return acc;
   }, {} as Selection);
 }
@@ -44,11 +50,10 @@ export function HoseKonfigurator() {
   } | null>(null);
   const [shareStatus, setShareStatus] = React.useState<"idle" | "copied">("idle");
 
-  const colors: PantsColors = React.useMemo(
+  const colors: PantsPhotoColors = React.useMemo(
     () => ({
       bund: resolveColor(selection.bund, "petrol"),
-      mainLeft: resolveColor(selection.links, "cream"),
-      mainRight: resolveColor(selection.rechts, "cream"),
+      hose: resolveColor(selection.hose, "cream"),
       buendchen: resolveColor(selection.buendchen, "petrol"),
     }),
     [selection],
@@ -57,6 +62,12 @@ export function HoseKonfigurator() {
   const updateRegion = React.useCallback(
     (region: RegionDef, swatch: Swatch) => {
       const next = new URLSearchParams(searchParams?.toString() ?? "");
+      // Whenever the user picks a new colour, drop any legacy 4-region
+      // params so the URL stays canonical (a shared link then uses `hose=…`).
+      if (region.param === "hose") {
+        next.delete("links");
+        next.delete("rechts");
+      }
       if (swatch.id === region.defaultColor) {
         next.delete(region.param);
       } else {
@@ -109,9 +120,9 @@ export function HoseKonfigurator() {
           Stell deine Hose selbst zusammen
         </h1>
         <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted sm:text-lg">
-          Wähle Farbe und Stil für Bund, beide Hauptteile und Bündchen. Deine Auswahl wird live in
-          der Vorschau gezeigt und in der Adresse gespeichert — du kannst den Link teilen und später
-          wieder öffnen.
+          Wähle Farbe und Stil für Bund, Hose und Bündchen. Deine Auswahl wird live auf einem
+          echten Hosenfoto gezeigt und in der Adresse gespeichert — du kannst den Link teilen und
+          später wieder öffnen.
         </p>
       </header>
 
@@ -124,8 +135,9 @@ export function HoseKonfigurator() {
         <p className="font-body text-sm leading-relaxed text-binchen-ink">
           <span className="font-semibold">Bald mit echten Stoff-Mustern.</span>{" "}
           <span className="text-binchen-ink-muted">
-            Derzeit zeigt dir der Konfigurator eine reine Farbvorschau. Sobald die Stoffmuster
-            eintreffen, kannst du hier echte Druckmotive auswählen.
+            Die Vorschau zeigt deine Farben auf einer echten Bilulu-Pumphose — Stofftextur, Nähte
+            und Faltenwurf bleiben sichtbar. Sobald die Stoffmuster eintreffen, kannst du hier
+            echte Druckmotive auswählen.
           </span>
         </p>
       </aside>
@@ -145,16 +157,17 @@ export function HoseKonfigurator() {
             Live-Vorschau deiner Hose
           </h2>
           <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
-            <PantsSvg
-              colors={colors}
-              title="Live-Vorschau der konfigurierten Hose"
-              className="mx-auto h-auto w-full max-w-md"
-            />
+            <div className="mx-auto w-full max-w-md">
+              <PantsPhoto
+                colors={colors}
+                title="Live-Vorschau der konfigurierten Hose auf Basis eines echten Hosenfotos"
+              />
+            </div>
           </div>
 
           {/* Selection summary + actions */}
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-2 font-body text-sm">
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-3">
               {REGIONS.map((region) => {
                 const swatchId = selection[region.param];
                 const swatch = PALETTE.find((s) => s.id === swatchId);

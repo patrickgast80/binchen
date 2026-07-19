@@ -5,7 +5,7 @@ import { HoseKonfigurator } from "./hose-konfigurator";
 export const metadata: Metadata = {
   title: "Hose-Konfigurator",
   description:
-    "Stell deine Bilulu-Hose selbst zusammen: Bund, Hauptteile und Bündchen einzeln einfärben. MVP-Farbvorschau, echte Stoffmuster folgen.",
+    "Stell deine Bilulu-Hose selbst zusammen: Bund, Hose und Bündchen einzeln einfärben. Vorschau auf einem echten Hosenfoto, echte Stoffmuster folgen.",
   alternates: {
     canonical: "/konfigurator/hose",
   },
