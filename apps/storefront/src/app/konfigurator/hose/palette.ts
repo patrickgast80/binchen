@@ -1,4 +1,4 @@
-export type RegionId = "bund" | "main-left" | "main-right" | "buendchen";
+export type RegionId = "bund" | "hose" | "buendchen";
 
 export interface Swatch {
   id: string;
@@ -9,7 +9,7 @@ export interface Swatch {
 export interface RegionDef {
   id: RegionId;
   /** URL search-param key */
-  param: "bund" | "links" | "rechts" | "buendchen";
+  param: "bund" | "hose" | "buendchen";
   label: string;
   description: string;
   defaultColor: string;
@@ -24,24 +24,17 @@ export const REGIONS: readonly RegionDef[] = [
     defaultColor: "petrol",
   },
   {
-    id: "main-left",
-    param: "links",
-    label: "Hauptteil links",
-    description: "Das linke Hosenbein, der größte Stoffanteil.",
-    defaultColor: "cream",
-  },
-  {
-    id: "main-right",
-    param: "rechts",
-    label: "Hauptteil rechts",
-    description: "Das rechte Hosenbein, der größte Stoffanteil.",
+    id: "hose",
+    param: "hose",
+    label: "Hose",
+    description: "Das Hauptteil der Hose — beide Beine.",
     defaultColor: "cream",
   },
   {
     id: "buendchen",
     param: "buendchen",
     label: "Bündchen",
-    description: "Die beiden gefütterten Bündchen am Hosensaum.",
+    description: "Die gefütterten Bündchen am Hosensaum.",
     defaultColor: "petrol",
   },
 ] as const;
@@ -76,5 +69,25 @@ export function resolveColor(id: string | null | undefined, fallback: string): s
 
 export function resolveSwatchId(id: string | null | undefined, fallback: string): string {
   if (id && SWATCH_BY_ID[id]) return id;
+  return fallback;
+}
+
+/**
+ * Read the `hose` swatch id from a URLSearchParams. Falls back to legacy
+ * 4-region links/rechts params (shipped in shared configurator links) so old
+ * URLs don't crash. When both are present but disagree we prefer `links`;
+ * `rechts` is only used when it's the only present value.
+ */
+export function resolveHoseParam(
+  searchParams: URLSearchParams | null,
+  fallback: string,
+): string {
+  if (!searchParams) return fallback;
+  const direct = searchParams.get("hose");
+  if (direct) return resolveSwatchId(direct, fallback);
+  const links = searchParams.get("links");
+  if (links) return resolveSwatchId(links, fallback);
+  const rechts = searchParams.get("rechts");
+  if (rechts) return resolveSwatchId(rechts, fallback);
   return fallback;
 }

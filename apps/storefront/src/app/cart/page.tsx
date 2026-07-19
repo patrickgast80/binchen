@@ -8,8 +8,7 @@ import { removeFromCartAction } from "./actions";
 
 interface KonfiguratorSelection {
   bundName?: string | null;
-  linksName?: string | null;
-  rechtsName?: string | null;
+  hoseName?: string | null;
   buendchenName?: string | null;
   configHref?: string | null;
 }
@@ -20,10 +19,15 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
   if ((md as { kind?: unknown }).kind !== "konfigurator-hose") return null;
   const asStr = (v: unknown) => (typeof v === "string" && v.trim() ? v : null);
   const m = md as Record<string, unknown>;
+  // Legacy carts (pre BIL-2417) stored separate linksName/rechtsName. If both
+  // match, collapse to hoseName; otherwise pick the first present so old
+  // orders still render a sensible line.
+  const legacyLinks = asStr(m.linksName);
+  const legacyRechts = asStr(m.rechtsName);
+  const hoseName = asStr(m.hoseName) ?? legacyLinks ?? legacyRechts;
   return {
     bundName: asStr(m.bundName),
-    linksName: asStr(m.linksName),
-    rechtsName: asStr(m.rechtsName),
+    hoseName,
     buendchenName: asStr(m.buendchenName),
     configHref: asStr(m.configHref),
   };
@@ -101,16 +105,10 @@ export default async function CartPage() {
                                 <dd className="font-medium text-binchen-ink">{konfig.bundName}</dd>
                               </>
                             ) : null}
-                            {konfig.linksName ? (
+                            {konfig.hoseName ? (
                               <>
-                                <dt className="text-binchen-ink-subtle">Hauptteil links:</dt>
-                                <dd className="font-medium text-binchen-ink">{konfig.linksName}</dd>
-                              </>
-                            ) : null}
-                            {konfig.rechtsName ? (
-                              <>
-                                <dt className="text-binchen-ink-subtle">Hauptteil rechts:</dt>
-                                <dd className="font-medium text-binchen-ink">{konfig.rechtsName}</dd>
+                                <dt className="text-binchen-ink-subtle">Hose:</dt>
+                                <dd className="font-medium text-binchen-ink">{konfig.hoseName}</dd>
                               </>
                             ) : null}
                             {konfig.buendchenName ? (

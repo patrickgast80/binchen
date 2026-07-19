@@ -35,21 +35,36 @@ export async function removeFromCartAction(lineId: string): Promise<void> {
 /**
  * Add a configured hose (from /konfigurator/hose) to the cart.
  *
- * Reads the four fabric selections from the form and stamps them as line-item
- * metadata so the cart line can render "Bund: Petrol · Hauptteil links: Creme …".
- * The variant is resolved server-side (env-var override or fallback to the first
- * Hose product in the catalog) so the client never handles Medusa variant ids.
+ * Reads the three fabric selections from the form (bund/hose/buendchen) and
+ * stamps them as line-item metadata so the cart line can render "Bund: Petrol
+ * · Hose: Creme · Bündchen: Petrol". The variant is resolved server-side
+ * (env-var override or fallback to the first Hose product in the catalog) so
+ * the client never handles Medusa variant ids.
+ *
+ * Legacy 4-region params (links/rechts) still round-trip via shared URLs, but
+ * the client normalises them to `hose` before submit — no legacy branch here.
  */
 export async function addConfiguredHoseToCartAction(formData: FormData): Promise<void> {
+  // Prefer the current `hose` field; fall back to legacy `links` (then
+  // `rechts`) if a stale form submits the pre-BIL-2417 field names.
+  const hoseId =
+    String(formData.get("hose") ?? "").trim() ||
+    String(formData.get("links") ?? "").trim() ||
+    String(formData.get("rechts") ?? "").trim() ||
+    null;
+  const hoseName =
+    String(formData.get("hoseName") ?? "").trim() ||
+    String(formData.get("linksName") ?? "").trim() ||
+    String(formData.get("rechtsName") ?? "").trim() ||
+    null;
+
   const selection = {
     kind: "konfigurator-hose" as const,
     bund: String(formData.get("bund") ?? "").trim() || null,
-    links: String(formData.get("links") ?? "").trim() || null,
-    rechts: String(formData.get("rechts") ?? "").trim() || null,
+    hose: hoseId,
     buendchen: String(formData.get("buendchen") ?? "").trim() || null,
     bundName: String(formData.get("bundName") ?? "").trim() || null,
-    linksName: String(formData.get("linksName") ?? "").trim() || null,
-    rechtsName: String(formData.get("rechtsName") ?? "").trim() || null,
+    hoseName,
     buendchenName: String(formData.get("buendchenName") ?? "").trim() || null,
     configHref: String(formData.get("configHref") ?? "").trim() || null,
   };

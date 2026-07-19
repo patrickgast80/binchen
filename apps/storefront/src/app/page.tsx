@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatPrice, getProducts, type MedusaProduct } from "@/lib/medusa";
-import { PantsSvg } from "./konfigurator/hose/pants-svg";
+import { PantsPhoto } from "./konfigurator/hose/pants-photo";
 
 interface FeaturedCard {
   id: string;
@@ -228,15 +228,13 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="grid items-center gap-10 rounded-3xl border border-binchen-border bg-binchen-cream-dark px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[1fr_1.4fr] lg:gap-14 lg:px-14 lg:py-14">
             <div className="mx-auto w-full max-w-xs lg:max-w-sm">
-              <PantsSvg
+              <PantsPhoto
                 colors={{
                   bund: "#7A3318",
-                  mainLeft: "#E8DDC8",
-                  mainRight: "#A8C5AB",
+                  hose: "#E8DDC8",
                   buendchen: "#5BA8AE",
                 }}
                 title="Vorschau einer individuell konfigurierten Hose"
-                className="h-auto w-full"
               />
             </div>
             <div>
@@ -250,9 +248,9 @@ export default async function HomePage() {
                 Stell deine Hose selbst zusammen
               </h2>
               <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted">
-                Bund, beide Hauptteile und Bündchen einzeln einfärben — deine Auswahl steckt im
-                Link, sodass du sie speichern oder teilen kannst. Echte Stoffmuster folgen bald, du
-                kannst die Farbvorschau aber schon jetzt ausprobieren.
+                Bund, Hose und Bündchen einzeln einfärben — auf einem echten Hosenfoto sofort sichtbar,
+                inklusive Stofftextur und Nähten. Deine Auswahl steckt im Link, sodass du sie speichern
+                oder teilen kannst. Echte Stoffmuster folgen bald.
               </p>
               <div className="mt-6">
                 <Button asChild variant="accent" size="lg">
