@@ -79,9 +79,18 @@ function productToCard(product: MedusaProduct): FeaturedCard {
 
 async function loadFeaturedCards(): Promise<FeaturedCard[]> {
   try {
-    const { products } = await getProducts({ limit: 3 });
+    // BIL-2430: pull up to 20 so the ranker below can promote the Pumphose
+    // (Konfigurator base) to the first card — it is currently the only
+    // catalogue product with real product photography, so it belongs at the
+    // top of the Homepage Feature-Karten.
+    const { products } = await getProducts({ limit: 20 });
     if (products.length === 0) return placeholderCards;
-    const cards = products.slice(0, 3).map(productToCard);
+    const ordered = [...products].sort((a, b) => {
+      const pa = /pumphose/i.test(a.title) ? 0 : 1;
+      const pb = /pumphose/i.test(b.title) ? 0 : 1;
+      return pa - pb;
+    });
+    const cards = ordered.slice(0, 3).map(productToCard);
     return cards.length >= 3 ? cards : placeholderCards;
   } catch {
     return placeholderCards;

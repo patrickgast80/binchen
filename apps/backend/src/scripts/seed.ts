@@ -168,8 +168,38 @@ export default async function seed({ container }: ExecArgs) {
   // https://bilulu.de/products/*.svg. Interim branded placeholders — CEO can
   // swap for real photos by (a) uploading a new file at the same URL, or
   // (b) editing product.thumbnail / product.images via Medusa Admin.
+  //
+  // BIL-2430: The Pumphose (Konfigurator base product) uses REAL photos from
+  // apps/storefront/public/products/pumphose/pumphose-*.jpg — the SVG rule
+  // only applies to the five seed placeholders that still lack real photos.
   const IMG_BASE = "https://bilulu.de/products"
+  const PUMPHOSE_BASE = `${IMG_BASE}/pumphose`
   const products = [
+    {
+      title: "Bilulu-Pumphose (Konfigurator)",
+      description:
+        "Unsere handgenähte Pumphose aus weichem Bio-Jersey — die Basis unseres Farb-Konfigurators. Wähle Bund, Hauptteil und Bündchen selbst. Standardgrößen 32–104, Sondermaße auf Anfrage.",
+      variants: [{ title: "Konfigurator-Basis (Größe im Warenkorb)", sku: "HOSE-KONF-BASE" }],
+      thumbnail: `${PUMPHOSE_BASE}/pumphose-01.jpg`,
+      images: [
+        `${PUMPHOSE_BASE}/pumphose-01.jpg`,
+        `${PUMPHOSE_BASE}/pumphose-05.jpg`,
+        `${PUMPHOSE_BASE}/pumphose-08.jpg`,
+        `${PUMPHOSE_BASE}/pumphose-10.jpg`,
+        `${PUMPHOSE_BASE}/pumphose-13.jpg`,
+      ],
+      meta: {
+        sizeLabel: "32-104",
+        sizeCmMin: 32,
+        sizeCmMax: 104,
+        fabric: "Bio-Baumwoll-Jersey",
+        ageMonthsMin: 0,
+        ageMonthsMax: 48,
+        ageCategory: "baby",
+        careInstructions: "30°C Schonwaschgang, liegend trocknen",
+      },
+      priceEur: 39,
+    },
     {
       title: "Bio-Baumwolle Strampler – Waldtiere",
       description: "Weicher Strampler aus 100% GOTS-zertifizierter Bio-Baumwolle mit liebevoll gestickten Waldtieren. Handgemacht in Deutschland.",

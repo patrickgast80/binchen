@@ -125,8 +125,10 @@ function isMedusaErrorBody(body: unknown): body is { type?: string; message?: st
  *
  * Preferred: `NEXT_PUBLIC_CONFIGURATOR_HOSE_VARIANT_ID` set to a real variant id
  * (Backend can dedicate a "Konfigurator-Hose" product later). Fallback: pick the
- * first available variant of the first product whose title contains "Hose", so
- * the flow works against today's seed data without extra backend work.
+ * first available variant of the first product whose title contains "Pumphose"
+ * (BIL-2430 dedicated Konfigurator base) and only then fall back to any
+ * "Hose"-titled product, so the flow works against today's seed data without
+ * extra backend work.
  */
 export async function getConfiguratorHoseVariant(): Promise<
   { variantId: string; productId: string; priceAmount: number; currency: string } | null
@@ -141,7 +143,10 @@ export async function getConfiguratorHoseVariant(): Promise<
   const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
   if (!res.ok) return null;
   const { products } = (await res.json()) as { products: MedusaProduct[] };
-  const hose = products.find((p) => /hose/i.test(p.title)) ?? products[0];
+  const hose =
+    products.find((p) => /pumphose/i.test(p.title)) ??
+    products.find((p) => /hose/i.test(p.title)) ??
+    products[0];
   if (!hose) return null;
   const variant =
     hose.variants.find((v) => (envVariant ? v.id === envVariant : v.inventory_quantity > 0)) ??
