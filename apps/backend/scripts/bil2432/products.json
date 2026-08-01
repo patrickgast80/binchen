@@ -1,0 +1,257 @@
+{
+  "_meta": {
+    "issue": "BIL-2432",
+    "author": "Backend agent",
+    "date": "2026-08-01",
+    "source_dir": "incoming-assets/neue-kleider-2026-08-01/",
+    "price_frame_note": "Endpreise gemäß §19 UStG (Kleinunternehmer, keine MwSt); Rahmen von CEO. Größenannahme: Baby/Kleinkind. Bestand=1 pro Variante (Unikate).",
+    "size_default": "0-6 Monate",
+    "photo_count": 41,
+    "product_count": 27
+  },
+  "products": [
+    {
+      "handle": "set-boho-regenbogen-creme",
+      "title": "Set Mütze + Loop-Schal \"Boho-Regenbogen\" creme",
+      "category": "sets",
+      "price_eur": 32.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Kuscheliges Set aus Mütze und Loop-Schal mit warmem Boho-Regenbogen-Print in Karamell, Marine und Beige auf cremefarbenem Grund. Innenseite in dunklem Marineblau abgefüttert - so bleibt der Kopf angenehm warm. Handgenäht mit Liebe, ein Unikat. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 0-6 Monate (Baby-Größe).",
+      "photos": [1, 2, 3, 5]
+    },
+    {
+      "handle": "muetze-winter-kinder-navy",
+      "title": "Mütze \"Winter-Kinder\" marineblau",
+      "category": "muetzen",
+      "price_eur": 16.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Zauberhafte Wintermütze aus weichem Baumwoll-Jersey in Marineblau, bedruckt mit fröhlichen Kindern in Wintermützen, Schneeflocken und rosa Herzen. Ideal für kühle Herbst- und Wintertage. Handgefertigt mit Liebe.\n\nGröße: ca. 0-6 Monate.",
+      "photos": [4, 6]
+    },
+    {
+      "handle": "muetze-boho-regenbogen-mint",
+      "title": "Mütze \"Boho-Regenbogen\" mint mit Schleife",
+      "category": "muetzen",
+      "price_eur": 17.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Süße Mütze in zartem Mintgrün mit rosa und altrosa Boho-Regenbögen und Herzen. Innenseite rosa abgefüttert für angenehmen Tragekomfort. Kleines Schleifen-Detail am Bund. Handgenäht - ein liebevolles Unikat.\n\nGröße: ca. 0-6 Monate.",
+      "photos": [7, 10]
+    },
+    {
+      "handle": "halstuch-zoo-rosa",
+      "title": "Dreieckstuch \"Kleiner Zoo\" rosa",
+      "category": "halstuecher",
+      "price_eur": 14.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Fröhliches Dreieckstuch in zartem Rosa mit süßen Zootieren - Fuchs, Löwe, Zebra und Krokodil. Mit Druckknöpfen praktisch verschließbar. Perfekt als Sabber- oder Halstuch für kleine Entdecker. Handgefertigt mit Liebe.\n\nEinheitsgröße Baby/Kleinkind.",
+      "photos": [8, 9]
+    },
+    {
+      "handle": "turban-rosen-lila",
+      "title": "Turban-Mütze \"Rosen\" lila mit Schleife",
+      "category": "muetzen",
+      "price_eur": 18.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Elegante Turban-Mütze mit romantischem Rosen-Print in Lila und Flieder, grünen Blättern und goldenen Punkten auf cremefarbenem Grund. Große dunkelviolette Schleife als Highlight. Handgenäht - ein zauberhaftes Unikat für kleine Prinzessinnen. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 0-6 Monate.",
+      "photos": [11]
+    },
+    {
+      "handle": "turban-aquarell-blueten-bordeaux",
+      "title": "Turban-Mütze \"Aquarell-Blüten\" bordeaux",
+      "category": "muetzen",
+      "price_eur": 19.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Wunderschöne Turban-Mütze aus creme Baumwoll-Jersey mit aquarelliertem Blütenmuster in Rosé, Beere und dezentem Blau, veredelt durch eine große bordeauxrote Schleife. Handgenäht mit Liebe - ein absolutes Einzelstück. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 0-6 Monate.",
+      "photos": [12, 14, 15]
+    },
+    {
+      "handle": "muetze-rosen-navy",
+      "title": "Baby-Mütze \"Rosen\" navy mit pinker Schleife",
+      "category": "muetzen",
+      "price_eur": 17.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Bezaubernde Mütze in Marineblau mit üppigen rosa und roten Rosen, veredelt durch eine große pinke Schleife. Innenseite grau meliert. Handgenäht - ein Unikat für kleine Rosenfans. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 0-6 Monate.",
+      "photos": [13]
+    },
+    {
+      "handle": "turban-pastell-aquarell",
+      "title": "Turban-Mütze \"Pastell-Aquarell\" mit rosa Schleife",
+      "category": "muetzen",
+      "price_eur": 18.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Zarte Turban-Mütze auf cremeweißem Grund mit aquarelliertem Blütenprint in Blau, Rosé und sonnigem Gelb, dazu eine puderrosa Schleife. Ideal für Frühling und Sommer. Handgefertigt mit Liebe - ein Unikat.\n\nGröße: ca. 0-6 Monate.",
+      "photos": [16, 17, 18, 20]
+    },
+    {
+      "handle": "set-marienkaefer-blau-rot",
+      "title": "Set Mütze + Halstuch \"Marienkäfer\" blau-rot",
+      "category": "sets",
+      "price_eur": 34.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Fröhliches Set aus Turban-Mütze und Halstuch in Blau mit süßen roten Marienkäfern - innen mit knalligem Rot abgefüttert. Ein absoluter Hingucker! Handgenäht mit Liebe, ein Unikat. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 0-6 Monate.",
+      "photos": [19]
+    },
+    {
+      "handle": "turban-bunte-wildblumen",
+      "title": "Turban-Mütze \"Bunte Wildblumen\"",
+      "category": "muetzen",
+      "price_eur": 19.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Aufwendig gestaltete Turban-Mütze mit farbenfrohem Wildblumen-Aquarell in Orange, Blau, Rost und Beere auf cremeweißem Grund. Ein wahres Farbwunder - handgenäht und einmalig. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 0-6 Monate.",
+      "photos": [21, 22, 24]
+    },
+    {
+      "handle": "halstuch-schmetterlinge-pusteblumen",
+      "title": "Dreieckstuch \"Schmetterlinge & Pusteblumen\" hellblau",
+      "category": "halstuecher",
+      "price_eur": 15.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Verträumtes Dreieckstuch in zartem Hellblau mit lila Schmetterlingen und Pusteblumen. Mit Druckknöpfen praktisch verschließbar. Perfekt als leichtes Halstuch für Frühling und Sommer. Handgefertigt mit Liebe.\n\nEinheitsgröße Baby/Kleinkind.",
+      "photos": [23, 26]
+    },
+    {
+      "handle": "pumphose-eukalyptus",
+      "title": "Pumphose \"Eukalyptus\" creme",
+      "category": "hosen",
+      "price_eur": 27.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Sommerliche kurze Pumphose aus weichem Baumwoll-Jersey mit filigranem Eukalyptus-Print in Blau- und Grüntönen auf cremefarbenem Grund, veredelt mit goldenen Sprenkeln. Angenehmer Bund und Bündchen. Handgenäht - ein Unikat. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [25]
+    },
+    {
+      "handle": "pumphose-regenbogen-schmetterlinge-navy",
+      "title": "Pumphose \"Regenbogen-Schmetterlinge\" navy",
+      "category": "hosen",
+      "price_eur": 28.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Zauberhafte kurze Pumphose in Marineblau mit bunten Regenbogen-Schmetterlingen und Farbklecksen - ein fröhlicher Hingucker mit kleiner rosa Schleife am Bund. Handgenäht mit Liebe. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [27]
+    },
+    {
+      "handle": "pumphose-blaetter-aquarell-creme",
+      "title": "Pumphose \"Blätter-Aquarell\" creme",
+      "category": "hosen",
+      "price_eur": 26.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Zart gemusterte kurze Pumphose in cremeweiß mit aquarellierten lila und senffarbenen Blättern und Ranken. Kleine lila Schleife am Bund. Handgenäht - ein Unikat. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [28]
+    },
+    {
+      "handle": "pumphose-rosen-rosa",
+      "title": "Pumphose \"Rosen\" rosa mit türkiser Schleife",
+      "category": "hosen",
+      "price_eur": 27.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Romantische kurze Pumphose in Altrosa mit weiß-blauen Rosen und Blüten, veredelt durch eine kleine türkise Schleife. Handgenäht - ein liebevoll gefertigtes Unikat. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [29]
+    },
+    {
+      "handle": "pumphose-wildblumen-weiss",
+      "title": "Pumphose \"Wildblumen\" creme mit Paperbag-Bund",
+      "category": "hosen",
+      "price_eur": 29.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Elegante kurze Pumphose mit modischem Paperbag-Bund. Cremeweißer Grund mit dunkelroten und rosa Blüten sowie graugrünen Blättern, dazu eine gestreifte rosa Schleife. Ein besonderes Einzelstück, handgefertigt mit Liebe. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [30]
+    },
+    {
+      "handle": "pumphose-wale-marine",
+      "title": "Pumphose \"Wale\" marineblau",
+      "category": "hosen",
+      "price_eur": 27.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Maritime kurze Pumphose in Marineblau mit weißen und dunkelroten Walen. Weiße Bündchen sorgen für den perfekten Look. Handgenäht - ein Unikat für kleine Meeresfans. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [31]
+    },
+    {
+      "handle": "pumphose-vintage-rosen",
+      "title": "Pumphose \"Vintage-Rosen\" cream mit bordeaux Bund",
+      "category": "hosen",
+      "price_eur": 29.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Nostalgisch schöne kurze Pumphose in cremeweiß mit aquarellierten Vintage-Rosen in Pfirsich, Gelb und Beere. Kontrastreicher bordeauxfarbener Bund und Bündchen setzen elegante Akzente. Handgefertigt mit Liebe - ein Unikat. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [32]
+    },
+    {
+      "handle": "pumphose-anker-sterne",
+      "title": "Pumphose \"Anker & Sterne\" marine-türkis",
+      "category": "hosen",
+      "price_eur": 26.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Maritime kurze Pumphose in marineblauen Streifen mit türkisen Ankern und Sternen. Türkise Bündchen runden den Look ab - perfekt für kleine Seebären. Handgenäht mit Liebe. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [33]
+    },
+    {
+      "handle": "pumphose-pferde-blumen",
+      "title": "Pumphose \"Pferde & Blumen\" navy mit roten Bündchen",
+      "category": "hosen",
+      "price_eur": 28.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Fröhliche kurze Pumphose in Marineblau mit braunen und weißen Pferden inmitten bunter Folklore-Blumen. Leuchtend rote Bündchen als Kontrast. Handgenäht - ein Unikat für kleine Pferdefreunde. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [34]
+    },
+    {
+      "handle": "pumphose-regenbogen-wolken",
+      "title": "Pumphose \"Regenbogen & Wolken\" navy-rosa",
+      "category": "hosen",
+      "price_eur": 27.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Traumhafte kurze Pumphose in Marineblau mit Pastell-Regenbögen, weichen Wolken und goldenen Herzen. Rosa Bündchen und Bund. Handgenäht mit Liebe - ein Unikat für kleine Regenbogenfans. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [35]
+    },
+    {
+      "handle": "pumphose-dinos-rosa-braun",
+      "title": "Pumphose \"Dinos\" rosa mit braunem Bund",
+      "category": "hosen",
+      "price_eur": 27.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Coole kurze Pumphose in Rosa mit bunten Dinosauriern - Stegosaurus, Brachiosaurus und T-Rex in Lila, Türkis und Rot. Kontrastreicher brauner Bund und Bündchen. Handgenäht mit Liebe - ein Unikat für kleine Dino-Fans. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [36]
+    },
+    {
+      "handle": "pumphose-fuechse-waldgeist",
+      "title": "Pumphose \"Füchse im Wald\" creme-oliv",
+      "category": "hosen",
+      "price_eur": 28.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Verspielte kurze Pumphose in cremeweiß mit aquarellierten Füchsen und zarten Farnen. Olivgrüne Bündchen für einen erdig-natürlichen Look. Handgenäht - ein Unikat für kleine Waldfreunde. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [37]
+    },
+    {
+      "handle": "pumphose-dinos-rosa-tuerkis",
+      "title": "Pumphose \"Dinos\" rosa mit türkisem Bund",
+      "category": "hosen",
+      "price_eur": 27.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Süße kurze Pumphose in Rosa mit bunten Dinosauriern und leuchtend türkisen Bündchen und Bund. Handgenäht mit Liebe - ein Unikat für kleine Dino-Liebhaberinnen. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [38]
+    },
+    {
+      "handle": "pumphose-wale-altrosa",
+      "title": "Pumphose \"Wale\" altrosa",
+      "category": "hosen",
+      "price_eur": 26.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Zauberhafte kurze Pumphose in weichem Altrosa mit weißen Walen und kleinen Herz-Fontänen. Weißer Bund und weiße Bündchen. Handgenäht - ein liebevoll gefertigtes Unikat. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [39]
+    },
+    {
+      "handle": "pumphose-erdbeeren",
+      "title": "Pumphose \"Erdbeeren\" beere-türkis",
+      "category": "hosen",
+      "price_eur": 27.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Fröhliche sommerliche kurze Pumphose in kräftigem Beere mit bunten Erdbeeren in Rot, Rosa und Pastell. Türkise Bündchen setzen einen frischen Akzent. Handgenäht mit Liebe - ein Unikat. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [40]
+    },
+    {
+      "handle": "pumphose-dinos-tuerkis",
+      "title": "Pumphose \"Dinos\" türkis mit orangen Bündchen",
+      "category": "hosen",
+      "price_eur": 28.90,
+      "material": "Baumwoll-Jersey",
+      "description": "Abenteuerliche kurze Pumphose in Petrol-Türkis mit realistischen Dinosauriern - Stegosaurus, Triceratops, Brachiosaurus, T-Rex und Pterodactylus - inmitten weißer Farne. Leuchtend orange Bündchen und Bund. Handgenäht - ein Unikat für kleine Paläontologen. Handarbeit, leichte Abweichungen möglich.\n\nGröße: ca. 6-12 Monate.",
+      "photos": [41]
+    }
+  ]
+}
