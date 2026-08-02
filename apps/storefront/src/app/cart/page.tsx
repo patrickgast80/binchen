@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,11 @@ interface KonfiguratorSelection {
   hoseName?: string | null;
   buendchenName?: string | null;
   configHref?: string | null;
+}
+
+interface PDPKonfiguratorSelection {
+  regions: { label: string; swatchName: string }[];
+  configHref: string | null;
 }
 
 function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null {
@@ -31,6 +37,27 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
     buendchenName: asStr(m.buendchenName),
     configHref: asStr(m.configHref),
   };
+}
+
+function pdpKonfiguratorSelection(item: CartLineItem): PDPKonfiguratorSelection | null {
+  const md = item.metadata;
+  if (!md || typeof md !== "object") return null;
+  if ((md as { kind?: unknown }).kind !== "pdp-konfigurator") return null;
+  const asStr = (v: unknown) => (typeof v === "string" && v.trim() ? v : null);
+  const m = md as Record<string, unknown>;
+  const rawRegions = Array.isArray(m.regions) ? (m.regions as unknown[]) : [];
+  const regions = rawRegions
+    .map((r) => {
+      if (!r || typeof r !== "object") return null;
+      const rec = r as Record<string, unknown>;
+      const label = asStr(rec.label);
+      const swatchName = asStr(rec.swatchName) ?? asStr(rec.swatchId);
+      if (!label || !swatchName) return null;
+      return { label, swatchName };
+    })
+    .filter((r): r is { label: string; swatchName: string } => r !== null);
+  if (regions.length === 0) return null;
+  return { regions, configHref: asStr(m.configHref) };
 }
 
 export const metadata: Metadata = {
@@ -69,6 +96,7 @@ export default async function CartPage() {
             <ul role="list" className="divide-y divide-binchen-border border-y border-binchen-border">
               {items.map((item) => {
                 const konfig = konfiguratorSelection(item);
+                const pdpKonfig = pdpKonfiguratorSelection(item);
                 const displayTitle = konfig ? "Konfigurator-Hose" : item.title;
                 return (
                   <li key={item.id} className="flex gap-4 py-6">
@@ -91,6 +119,10 @@ export default async function CartPage() {
                         {konfig ? (
                           <p className="mt-0.5 font-body text-sm text-binchen-ink-muted">
                             Deine Konfiguration
+                          </p>
+                        ) : pdpKonfig ? (
+                          <p className="mt-0.5 font-body text-sm text-binchen-ink-muted">
+                            Anfertigung nach Wunsch
                           </p>
                         ) : item.subtitle ? (
                           <p className="mt-0.5 font-body text-sm text-binchen-ink-muted">
@@ -118,6 +150,15 @@ export default async function CartPage() {
                               </>
                             ) : null}
                           </dl>
+                        ) : pdpKonfig ? (
+                          <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-body text-xs text-binchen-ink-muted">
+                            {pdpKonfig.regions.map((r) => (
+                              <React.Fragment key={r.label}>
+                                <dt className="text-binchen-ink-subtle">{r.label}:</dt>
+                                <dd className="font-medium text-binchen-ink">{r.swatchName}</dd>
+                              </React.Fragment>
+                            ))}
+                          </dl>
                         ) : (
                           <p className="mt-1 font-body text-xs text-binchen-ink-subtle">
                             Unikat — Stückzahl auf 1 begrenzt
@@ -129,6 +170,13 @@ export default async function CartPage() {
                             className="mt-2 inline-block font-body text-xs font-medium text-binchen-terracotta-text underline-offset-4 hover:underline"
                           >
                             Konfiguration anpassen
+                          </Link>
+                        ) : pdpKonfig?.configHref ? (
+                          <Link
+                            href={pdpKonfig.configHref}
+                            className="mt-2 inline-block font-body text-xs font-medium text-binchen-terracotta-text underline-offset-4 hover:underline"
+                          >
+                            Stoffwahl anpassen
                           </Link>
                         ) : null}
                       </div>

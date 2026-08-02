@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatPrice, getProduct, type MedusaProductVariant } from "@/lib/medusa";
 import { addToCartFromFormAction } from "@/app/cart/actions";
+import { profileFor } from "@/lib/pdp-konfigurator";
+import { PDPKonfigurator } from "./pdp-konfigurator";
 
 interface PageProps {
   params: { id: string };
@@ -51,6 +53,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const defaultVariant = availableVariants[0] ?? product.variants[0] ?? null;
   const defaultPrice = defaultVariant ? variantPrice(defaultVariant) : null;
   const heroImage = product.thumbnail ?? product.images?.[0]?.url ?? null;
+  // BIL-2433: only offer the Stoff-Konfigurator for single-variant handmade
+  // Unikate (BIL-2432 imports). Multi-variant seed products keep the variant
+  // radio so the customer doesn't lose the size picker.
+  const konfiguratorProfile =
+    product.variants.length === 1 ? profileFor(product) : null;
 
   return (
     <article className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
@@ -106,9 +113,17 @@ export default async function ProductDetailPage({ params }: PageProps) {
           )}
 
           {defaultPrice && (
-            <p className="mt-4 font-display text-2xl font-semibold text-binchen-ink">
-              {formatPrice(defaultPrice.amount, defaultPrice.currency)}
-            </p>
+            <div className="mt-4">
+              <p className="font-display text-2xl font-semibold text-binchen-ink">
+                {formatPrice(defaultPrice.amount, defaultPrice.currency)}
+              </p>
+              <p className="mt-1 font-body text-xs text-binchen-ink-muted">
+                inkl. MwSt. · zzgl.{" "}
+                <Link href="/agb" className="underline-offset-2 hover:underline">
+                  Versand
+                </Link>
+              </p>
+            </div>
           )}
 
           {product.metadata?.sizeLabel && (
@@ -127,7 +142,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </div>
           )}
 
-          {allSoldOut ? (
+          {allSoldOut && (
             <div className="mt-8 rounded-lg border border-binchen-border bg-binchen-cream-dark p-4">
               <p className="font-body text-sm text-binchen-ink-muted">
                 Dieses Stück ist derzeit ausverkauft. Schau gerne wieder vorbei.
@@ -138,7 +153,17 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 </Button>
               </div>
             </div>
-          ) : (
+          )}
+
+          {!allSoldOut && konfiguratorProfile && defaultVariant && (
+            <PDPKonfigurator
+              productId={product.id}
+              variantId={defaultVariant.id}
+              profile={konfiguratorProfile}
+            />
+          )}
+
+          {!allSoldOut && !konfiguratorProfile && (
             <form action={addToCartFromFormAction} className="mt-8 space-y-5">
               {availableVariants.length > 1 ? (
                 <fieldset>
