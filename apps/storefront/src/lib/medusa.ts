@@ -67,6 +67,12 @@ export interface ProductsResponse {
   offset: number;
 }
 
+// BIL-2438: Medusa v2 only returns `variant.calculated_price` when the request
+// carries a pricing context (region_id) AND explicitly asks for the field via
+// `fields=*variants.calculated_price`. Without both, storefront cards see
+// `calculated_price === undefined` and render no price → PAngV compliance gap.
+const PRODUCT_PRICE_FIELDS = "*variants.calculated_price";
+
 export async function getProducts(params: {
   size?: string;
   fabric?: string;
@@ -84,14 +90,16 @@ export async function getProducts(params: {
   // BIL-2413: do NOT set currency_code on /store/products. Medusa v2 (2.15.5)
   // rejects the field with 400 "Unrecognized fields: 'currency_code'" and the
   // fallback below would then silently render an empty catalog. Prices are
-  // resolved via the region_id (or the publishable key's default region).
+  // resolved via the region_id passed here (falling back to the DE region).
   const url = new URL(`${BACKEND_URL}/store/products`);
   if (params.size) url.searchParams.set("size", params.size);
   if (params.fabric) url.searchParams.set("fabric", params.fabric);
   if (params.age_category) url.searchParams.set("age_category", params.age_category);
   if (params.age_min) url.searchParams.set("age_min", params.age_min);
   if (params.age_max) url.searchParams.set("age_max", params.age_max);
-  if (params.region_id) url.searchParams.set("region_id", params.region_id);
+  const regionId = params.region_id ?? (await getDefaultRegionId());
+  if (regionId) url.searchParams.set("region_id", regionId);
+  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
   url.searchParams.set("limit", String(params.limit ?? 20));
   url.searchParams.set("offset", String(params.offset ?? 0));
 
@@ -140,6 +148,11 @@ export async function getConfiguratorHoseVariant(): Promise<
   if (!BACKEND_URL) return null;
   const url = new URL(`${BACKEND_URL}/store/products`);
   url.searchParams.set("limit", "20");
+  // BIL-2438: pull calculated_price via pricing context so the konfigurator
+  // teaser price is a real number, not the legacy zero-fallback.
+  const regionId = await getDefaultRegionId();
+  if (regionId) url.searchParams.set("region_id", regionId);
+  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
   const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
   if (!res.ok) return null;
   const { products } = (await res.json()) as { products: MedusaProduct[] };
@@ -161,7 +174,7 @@ export async function getConfiguratorHoseVariant(): Promise<
   };
 }
 
-function variantPriceOrNull(
+export function variantPriceOrNull(
   variant: MedusaProductVariant,
 ): { amount: number; currency: string } | null {
   const calc = variant.calculated_price?.calculated_amount;
@@ -173,9 +186,31 @@ function variantPriceOrNull(
   return { amount, currency };
 }
 
+/**
+ * BIL-2438: pick the display price for a product card. Prefers the first
+ * in-stock variant so we never advertise the price of a sold-out size, then
+ * falls back to any variant so single-variant Unikate still show a price
+ * while sold out. Returns null only when no variant carries a resolvable
+ * amount (e.g. missing pricing context → callers should show no price rather
+ * than "NaN €").
+ */
+export function productDisplayPrice(
+  product: MedusaProduct,
+): { amount: number; currency: string } | null {
+  const available = product.variants.find((v) => v.inventory_quantity > 0);
+  const chosen = available ?? product.variants[0];
+  if (!chosen) return null;
+  return variantPriceOrNull(chosen);
+}
+
 export async function getProduct(id: string): Promise<MedusaProduct | null> {
   if (!BACKEND_URL) return null;
   const url = new URL(`${BACKEND_URL}/store/products/${id}`);
+  // BIL-2438: same pricing-context contract as getProducts — without region_id
+  // + fields=*variants.calculated_price the PDP variant carries no price.
+  const regionId = await getDefaultRegionId();
+  if (regionId) url.searchParams.set("region_id", regionId);
+  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
   const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
   if (res.status === 404) return null;
   if (!res.ok) return null;

@@ -265,10 +265,17 @@ export default async function HomePage() {
                       {product.description}
                     </p>
                   )}
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="font-body text-base font-semibold text-binchen-ink">
-                      {product.price ?? ""}
-                    </span>
+                  <div className="mt-4 flex items-end justify-between gap-3">
+                    {product.price ? (
+                      <p className="font-display text-lg font-semibold text-binchen-ink">
+                        {product.price}
+                        <span className="ml-2 align-middle font-body text-xs font-normal text-binchen-ink-muted">
+                          inkl. MwSt.
+                        </span>
+                      </p>
+                    ) : (
+                      <span aria-hidden="true" />
+                    )}
                     <Button asChild variant="default" size="sm">
                       <Link href="/catalog" aria-label={`${product.name} in der Kollektion ansehen`}>
                         Ansehen

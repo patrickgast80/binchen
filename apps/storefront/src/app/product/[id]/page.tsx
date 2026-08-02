@@ -106,9 +106,17 @@ export default async function ProductDetailPage({ params }: PageProps) {
           )}
 
           {defaultPrice && (
-            <p className="mt-4 font-display text-2xl font-semibold text-binchen-ink">
-              {formatPrice(defaultPrice.amount, defaultPrice.currency)}
-            </p>
+            <div className="mt-4">
+              <p className="font-display text-2xl font-semibold text-binchen-ink">
+                {formatPrice(defaultPrice.amount, defaultPrice.currency)}
+              </p>
+              <p className="mt-1 font-body text-xs text-binchen-ink-muted">
+                inkl. MwSt. · zzgl.{" "}
+                <Link href="/agb" className="underline-offset-2 hover:underline">
+                  Versand
+                </Link>
+              </p>
+            </div>
           )}
 
           {product.metadata?.sizeLabel && (

@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getProducts } from "@/lib/medusa";
+import { formatPrice, getProducts, productDisplayPrice } from "@/lib/medusa";
 import { CatalogFilters } from "./CatalogFilters";
 
 export const metadata: Metadata = {
@@ -109,6 +109,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Sear
                   {products.map((product) => {
                     const isSoldOut = product.variants.every((v) => v.inventory_quantity === 0);
                     const isFruehchen = hasFruehchenSize(product.metadata?.sizeLabel);
+                    const price = productDisplayPrice(product);
                     return (
                       <li key={product.id}>
                         <Card className="group overflow-hidden transition-shadow hover:shadow-md">
@@ -147,6 +148,14 @@ export default async function CatalogPage({ searchParams }: { searchParams: Sear
                             {product.metadata?.sizeLabel && (
                               <p className="mt-1 font-body text-sm text-binchen-ink-muted">
                                 Größe: {product.metadata.sizeLabel}
+                              </p>
+                            )}
+                            {price && (
+                              <p className="mt-3 font-display text-lg font-semibold text-binchen-ink">
+                                {formatPrice(price.amount, price.currency)}
+                                <span className="ml-2 align-middle font-body text-xs font-normal text-binchen-ink-muted">
+                                  inkl. MwSt.
+                                </span>
                               </p>
                             )}
                             <div className="mt-4">
