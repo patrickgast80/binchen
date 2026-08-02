@@ -61,7 +61,12 @@ export default defineConfig({
         ],
       },
     },
-    // file-local is a file provider — override to pass custom upload_dir and backend_url
+    // file-local is a file provider — override to pass custom upload_dir and backend_url.
+    // BIL-2434: backend_url must include the `/static` prefix so the URLs returned by
+    // `POST /admin/uploads` resolve against the /static/[filename] route we register
+    // in src/api/static/[filename]/route.ts. Without it uploads succeed but the URL
+    // returned (bare-backend + filename) 404s because Medusa v2 has no built-in
+    // static file server for the file-local provider.
     {
       resolve: "@medusajs/medusa/file",
       options: {
@@ -71,7 +76,7 @@ export default defineConfig({
             id: "local",
             options: {
               upload_dir: "uploads",
-              backend_url: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
+              backend_url: `${process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"}/static`,
             },
           },
         ],
