@@ -122,7 +122,10 @@ function buildPhotoIndex() {
 }
 
 async function createProduct(token, product, imageUrls, ctx) {
-  const priceCents = Math.round(product.price_eur * 100);
+  // Medusa v2 stores prices in MAJOR units (EUR), not cents — do NOT multiply by 100.
+  // (BIL-2439: earlier version wrote 2790 for 27,90 €, causing 2790 € in the shop.)
+  const priceAmount = product.price_eur;
+  if (priceAmount > 500) log(`WARN ${product.handle}: price ${priceAmount} EUR looks too high — did someone re-introduce *100?`);
   const payload = {
     title: product.title,
     handle: product.handle,
@@ -140,7 +143,7 @@ async function createProduct(token, product, imageUrls, ctx) {
         sku: `BIL-2432-${product.handle}`,
         manage_inventory: true,
         options: { Default: "Standard" },
-        prices: [{ amount: priceCents, currency_code: "eur" }],
+        prices: [{ amount: priceAmount, currency_code: "eur" }],
       },
     ],
     metadata: {
