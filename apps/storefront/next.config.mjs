@@ -24,6 +24,14 @@ const nextConfig = {
         hostname: "bilulu.de",
       },
       {
+        // BIL-2432: product images live at https://api.bilulu.de/static/* (see
+        // apps/backend/src/api/static/[filename]/route.ts). Without this
+        // remotePattern, next/image 400s "url parameter is not allowed" and
+        // the entire imported catalog renders as blank tiles.
+        protocol: "https",
+        hostname: "api.bilulu.de",
+      },
+      {
         protocol: "https",
         hostname: "binchen.vercel.app",
       },
