@@ -235,13 +235,13 @@ export default async function HomePage() {
             <li key={product.id}>
               <Card className="group overflow-hidden transition-shadow hover:shadow-md">
                 {/* Product image */}
-                <div className="relative aspect-square overflow-hidden bg-binchen-border">
+                <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-binchen-cream to-binchen-cream-dark">
                   {product.image ? (
                     <Image
                       src={product.image}
                       alt={product.alt}
                       fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                   ) : (

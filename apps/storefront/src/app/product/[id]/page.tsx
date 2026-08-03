@@ -75,7 +75,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
-        <div className="relative aspect-square overflow-hidden rounded-2xl bg-binchen-border">
+        <div className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-binchen-cream to-binchen-cream-dark">
           {heroImage ? (
             <Image
               src={heroImage}
@@ -83,7 +83,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
+              className="object-contain p-4 sm:p-6"
             />
           ) : (
             <div className="flex h-full items-center justify-center">

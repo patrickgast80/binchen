@@ -72,14 +72,14 @@ export default async function CartPage() {
                 const displayTitle = konfig ? "Konfigurator-Hose" : item.title;
                 return (
                   <li key={item.id} className="flex gap-4 py-6">
-                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded bg-binchen-border sm:h-24 sm:w-24">
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded bg-gradient-to-br from-binchen-cream to-binchen-cream-dark sm:h-24 sm:w-24">
                       {item.thumbnail ? (
                         <Image
                           src={item.thumbnail}
                           alt={displayTitle}
                           fill
                           sizes="96px"
-                          className="object-cover"
+                          className="object-contain p-1"
                         />
                       ) : null}
                     </div>
