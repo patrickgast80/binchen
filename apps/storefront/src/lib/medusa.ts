@@ -208,6 +208,42 @@ export async function getConfiguratorTurbanVariant(): Promise<
   };
 }
 
+/**
+ * Resolve the base variant used by the Mützen-Konfigurator (BIL-2445) — same
+ * strategy as Hose/Turban: `NEXT_PUBLIC_CONFIGURATOR_MUETZE_VARIANT_ID` wins,
+ * otherwise the first "Mütze"-titled product that is NOT a Turban (the Turban
+ * has its own configurator and its titles also contain "Mütze").
+ */
+export async function getConfiguratorMuetzeVariant(): Promise<
+  { variantId: string; productId: string; priceAmount: number; currency: string } | null
+> {
+  const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_MUETZE_VARIANT_ID?.trim();
+  if (!BACKEND_URL) return null;
+  const url = new URL(`${BACKEND_URL}/store/products`);
+  url.searchParams.set("limit", "50");
+  const regionId = await getDefaultRegionId();
+  if (regionId) url.searchParams.set("region_id", regionId);
+  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
+  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
+  if (!res.ok) return null;
+  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const muetze = products.find(
+    (p) => /m(ü|ue)tze/i.test(p.title) && !/turban/i.test(p.title),
+  );
+  if (!muetze) return null;
+  const variant =
+    muetze.variants.find((v) => (envVariant ? v.id === envVariant : v.inventory_quantity > 0)) ??
+    muetze.variants[0];
+  if (!variant) return null;
+  const price = variantPriceOrNull(variant);
+  return {
+    variantId: envVariant || variant.id,
+    productId: muetze.id,
+    priceAmount: price?.amount ?? 0,
+    currency: price?.currency ?? "EUR",
+  };
+}
+
 export function variantPriceOrNull(
   variant: MedusaProductVariant,
 ): { amount: number; currency: string } | null {

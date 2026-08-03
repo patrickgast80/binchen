@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -7,53 +7,50 @@ import { Check, RotateCcw, Share2, ShoppingBag } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { addConfiguredTurbanToCartAction } from "@/app/cart/actions";
+import { addConfiguredMuetzeToCartAction } from "@/app/cart/actions";
 
 import {
   PALETTE,
-  TURBAN_REGIONS,
-  type TurbanRegionDef,
+  MUETZE_REGIONS,
+  type MuetzeRegionDef,
   resolveColor,
   resolveSwatchId,
   type Swatch,
 } from "./palette";
-import { TurbanPhoto, type TurbanPhotoColors } from "./turban-photo";
+import { MuetzePhoto, type MuetzePhotoColors } from "./muetze-photo";
 
-type Selection = Record<TurbanRegionDef["param"], string>;
+type Selection = Record<MuetzeRegionDef["param"], string>;
 
 function buildSelection(searchParams: URLSearchParams | null): Selection {
-  return TURBAN_REGIONS.reduce<Selection>((acc, region) => {
+  return MUETZE_REGIONS.reduce<Selection>((acc, region) => {
     acc[region.param] = resolveSwatchId(searchParams?.get(region.param), region.defaultColor);
     return acc;
   }, {} as Selection);
 }
 
 function isDefaultSelection(selection: Selection): boolean {
-  return TURBAN_REGIONS.every((region) => selection[region.param] === region.defaultColor);
+  return MUETZE_REGIONS.every((region) => selection[region.param] === region.defaultColor);
 }
 
-export function TurbanKonfigurator() {
+export function MuetzeKonfigurator() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const selection = React.useMemo(() => buildSelection(searchParams), [searchParams]);
-  const [lastChanged, setLastChanged] = React.useState<{
-    region: string;
-    swatch: string;
-  } | null>(null);
+  const [lastChanged, setLastChanged] = React.useState<{ region: string; swatch: string } | null>(null);
   const [shareStatus, setShareStatus] = React.useState<"idle" | "copied">("idle");
 
-  const colors: TurbanPhotoColors = React.useMemo(
+  const colors: MuetzePhotoColors = React.useMemo(
     () => ({
-      turban: resolveColor(selection.turban, "cream"),
-      schleife: resolveColor(selection.schleife, "terracotta"),
+      muetze: resolveColor(selection.muetze, "sage"),
+      futter: resolveColor(selection.futter, "powder-pink"),
     }),
     [selection],
   );
 
   const updateRegion = React.useCallback(
-    (region: TurbanRegionDef, swatch: Swatch) => {
+    (region: MuetzeRegionDef, swatch: Swatch) => {
       const next = new URLSearchParams(searchParams?.toString() ?? "");
       if (swatch.id === region.defaultColor) {
         next.delete(region.param);
@@ -70,7 +67,7 @@ export function TurbanKonfigurator() {
 
   const handleReset = React.useCallback(() => {
     router.replace(pathname, { scroll: false });
-    setLastChanged({ region: "Konfiguration", swatch: "zurückgesetzt" });
+    setLastChanged({ region: "Konfiguration", swatch: "zurueckgesetzt" });
     setShareStatus("idle");
   }, [pathname, router]);
 
@@ -79,11 +76,11 @@ export function TurbanKonfigurator() {
     const url = window.location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Meine Bilulu-Turban-Mütze", url });
+        await navigator.share({ title: "Meine Bilulu-Muetze", url });
         return;
       }
     } catch {
-      // Nutzer hat Share-Dialog abgebrochen — fällt unten auf Clipboard zurück.
+      // abgebrochen
     }
     try {
       await navigator.clipboard.writeText(url);
@@ -98,22 +95,19 @@ export function TurbanKonfigurator() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 sm:pt-12 lg:px-8">
-      {/* Page header */}
       <header className="max-w-3xl">
         <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta-text">
           Konfigurator · MVP
         </p>
         <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-binchen-ink sm:text-4xl lg:text-5xl">
-          Stell deine Turban-Mütze selbst zusammen
+          Stell deine Bilulu-Muetze selbst zusammen
         </h1>
         <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted sm:text-lg">
-          Wähle Farbe und Stil für Turban und Schleife. Deine Auswahl wird live auf einem echten
-          Mützenfoto gezeigt und in der Adresse gespeichert — du kannst den Link teilen und später
-          wieder öffnen.
+          Waehl Farbe fuer Mueetzenstoff und Futter. Die Vorschau zeigt deine Auswahl live auf
+          einem echten Produktfoto. Den Link kannst du teilen und spaeter wieder oeffnen.
         </p>
       </header>
 
-      {/* Hinweis-Banner */}
       <aside
         role="note"
         aria-label="Hinweis zum Konfigurator"
@@ -122,61 +116,53 @@ export function TurbanKonfigurator() {
         <p className="font-body text-sm leading-relaxed text-binchen-ink">
           <span className="font-semibold">Bald mit echten Stoff-Mustern.</span>{" "}
           <span className="text-binchen-ink-muted">
-            Die Vorschau zeigt deine Farben auf einer echten Bilulu-Turban-Mütze — Stofftextur,
-            Raffung und Nähte bleiben sichtbar. Sobald die Stoffmuster eintreffen, kannst du hier
-            echte Druckmotive auswählen.
+            Sobald die Stoffmuster eintreffen, kannst du hier echte Druckmotive auswaehlen.
+            Derzeit zeigen wir Volltonfarben auf einer echten Bilulu-Muetze.
           </span>
         </p>
       </aside>
 
-      {/* Frühchen-Hinweis */}
       <aside
         role="note"
-        aria-label="Hinweis zu Frühchengrößen"
+        aria-label="Hinweis zu Fruehchengroessen"
         className="mt-4 rounded-xl border border-binchen-terracotta/40 bg-binchen-terracotta/10 px-4 py-3 sm:px-5 sm:py-4"
       >
         <p className="font-body text-sm leading-relaxed text-binchen-ink">
-          <span className="font-semibold text-binchen-terracotta-text">Auch für Frühchen.</span>{" "}
+          <span className="font-semibold text-binchen-terracotta-text">Auch fuer Fruehchen.</span>{" "}
           <span className="text-binchen-ink-muted">
-            Wir nähen auch Mützchen in Frühchengrößen — Sondermaße auf Anfrage. Mehr Infos auf{" "}
+            Wir naehen auch Muetzchen in Fruehchengroessen — Sondermasse auf Anfrage. Mehr Infos auf{" "}
             <Link
               href="/fruehchen"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
-              der Frühchen-Seite
+              der Fruehchen-Seite
             </Link>
             .
           </span>
         </p>
       </aside>
 
-      {/* Live region for screen readers */}
       <span aria-live="polite" aria-atomic="true" className="sr-only">
         {lastChanged ? `${lastChanged.region}: ${lastChanged.swatch}` : ""}
       </span>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-14">
-        {/* Live preview */}
-        <section
-          aria-labelledby="preview-heading"
-          className="lg:sticky lg:top-24 lg:self-start"
-        >
+        <section aria-labelledby="preview-heading" className="lg:sticky lg:top-24 lg:self-start">
           <h2 id="preview-heading" className="sr-only">
-            Live-Vorschau deiner Turban-Mütze
+            Live-Vorschau deiner Muetze
           </h2>
           <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
-              <TurbanPhoto
+              <MuetzePhoto
                 colors={colors}
-                title="Live-Vorschau der konfigurierten Turban-Mütze auf Basis eines echten Produktfotos"
+                title="Live-Vorschau der konfigurierten Bilulu-Muetze auf Basis eines echten Produktfotos"
               />
             </div>
           </div>
 
-          {/* Selection summary + actions */}
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-2">
-              {TURBAN_REGIONS.map((region) => {
+              {MUETZE_REGIONS.map((region) => {
                 const swatchId = selection[region.param];
                 const swatch = PALETTE.find((s) => s.id === swatchId);
                 return (
@@ -194,13 +180,7 @@ export function TurbanKonfigurator() {
             </dl>
 
             <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleShare}
-                aria-live="polite"
-              >
+              <Button type="button" variant="outline" size="sm" onClick={handleShare} aria-live="polite">
                 {shareStatus === "copied" ? (
                   <>
                     <Check className="h-4 w-4" aria-hidden="true" />
@@ -216,20 +196,19 @@ export function TurbanKonfigurator() {
               {showReset && (
                 <Button type="button" variant="ghost" size="sm" onClick={handleReset}>
                   <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                  Zurücksetzen
+                  Zuruecksetzen
                 </Button>
               )}
             </div>
           </div>
         </section>
 
-        {/* Palette controls */}
         <section aria-labelledby="palette-heading" className="space-y-8">
           <h2 id="palette-heading" className="sr-only">
-            Farbpalette für jede Region
+            Farbpalette fuer jede Region
           </h2>
 
-          {TURBAN_REGIONS.map((region) => {
+          {MUETZE_REGIONS.map((region) => {
             const activeId = selection[region.param];
             return (
               <fieldset
@@ -242,7 +221,7 @@ export function TurbanKonfigurator() {
                 <p className="font-body text-sm text-binchen-ink-muted">{region.description}</p>
                 <div
                   role="radiogroup"
-                  aria-label={`Farbe für ${region.label}`}
+                  aria-label={`Farbe fuer ${region.label}`}
                   className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-6"
                 >
                   {PALETTE.map((swatch) => {
@@ -264,9 +243,7 @@ export function TurbanKonfigurator() {
                           aria-hidden="true"
                           className={cn(
                             "relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-transform group-hover:scale-105 sm:h-11 sm:w-11",
-                            isActive
-                              ? "border-binchen-ink shadow-inner"
-                              : "border-binchen-border",
+                            isActive ? "border-binchen-ink shadow-inner" : "border-binchen-border",
                           )}
                           style={{ backgroundColor: swatch.hex }}
                         >
@@ -290,20 +267,16 @@ export function TurbanKonfigurator() {
           })}
 
           <form
-            action={addConfiguredTurbanToCartAction}
+            action={addConfiguredMuetzeToCartAction}
             className="rounded-2xl border border-binchen-sage/40 bg-binchen-cream p-5 sm:p-6"
           >
-            {TURBAN_REGIONS.map((region) => {
+            {MUETZE_REGIONS.map((region) => {
               const swatchId = selection[region.param];
               const swatch = PALETTE.find((s) => s.id === swatchId);
               return (
                 <React.Fragment key={region.param}>
                   <input type="hidden" name={region.param} value={swatchId} />
-                  <input
-                    type="hidden"
-                    name={`${region.param}Name`}
-                    value={swatch?.name ?? ""}
-                  />
+                  <input type="hidden" name={`${region.param}Name`} value={swatch?.name ?? ""} />
                 </React.Fragment>
               );
             })}
@@ -312,7 +285,7 @@ export function TurbanKonfigurator() {
               name="configHref"
               value={(() => {
                 const q = searchParams?.toString() ?? "";
-                return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/turban";
+                return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/muetze";
               })()}
             />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -321,7 +294,7 @@ export function TurbanKonfigurator() {
                   Deine Konfiguration in den Warenkorb
                 </p>
                 <p className="mt-1 font-body text-sm text-binchen-ink-muted">
-                  Handgenäht auf Bestellung. Preis + Versand siehst du im Warenkorb.
+                  Handgenaecht auf Bestellung. Preis + Versand siehst du im Warenkorb.
                 </p>
               </div>
               <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto">
@@ -332,28 +305,28 @@ export function TurbanKonfigurator() {
           </form>
 
           <p className="font-body text-sm text-binchen-ink-muted">
-            Du möchtest lieber eine Hose oder eine Mütze gestalten?{" "}
+            Du moechtest lieber eine Hose oder einen Turban gestalten?{" "}
             <Link
               href="/konfigurator/hose"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
-              Zum Hose-Konfigurator
+              Hose-Konfigurator
             </Link>{" "}
             ·{" "}
             <Link
-              href="/konfigurator/muetze"
+              href="/konfigurator/turban"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
-              Zum Mützen-Konfigurator
+              Turban-Konfigurator
             </Link>
-            . Fragen zu Stoffen oder Sondermaßen?{" "}
+            . Fragen zu Stoffen?{" "}
             <Link
               href="/contact"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
               Schreib uns
-            </Link>{" "}
-            mit deinem Konfigurations-Link — wir melden uns mit verfügbaren Stoffen.
+            </Link>
+            .
           </p>
         </section>
       </div>
@@ -361,12 +334,10 @@ export function TurbanKonfigurator() {
   );
 }
 
-/** Helle Farben bekommen dunkles Häkchen, dunkle Farben helles. */
 function swatchTextColor(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
-  // Perceived luminance per Rec. 709
   const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
   return lum > 0.6 ? "#2C2417" : "#FAF7F2";
 }

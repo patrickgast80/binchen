@@ -345,12 +345,19 @@ export function HoseKonfigurator() {
           </form>
 
           <p className="font-body text-sm text-binchen-ink-muted">
-            Du möchtest lieber eine Turban-Mütze gestalten?{" "}
+            Du möchtest lieber eine Turban-Mütze oder eine Mütze gestalten?{" "}
             <Link
               href="/konfigurator/turban"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
               Zum Turban-Konfigurator
+            </Link>{" "}
+            ·{" "}
+            <Link
+              href="/konfigurator/muetze"
+              className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
+            >
+              Zum Mützen-Konfigurator
             </Link>
             . Fragen zu Stoffen oder Sondermaßen?{" "}
             <Link

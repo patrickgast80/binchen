@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import {
   addLineItem,
   getConfiguratorHoseVariant,
+  getConfiguratorMuetzeVariant,
   getConfiguratorTurbanVariant,
   removeLineItem,
 } from "@/lib/medusa";
@@ -122,6 +123,41 @@ export async function addConfiguredTurbanToCartAction(formData: FormData): Promi
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
     redirect("/konfigurator/turban?error=add_failed");
+  }
+
+  revalidatePath("/cart");
+  redirect("/cart?added=konfigurator");
+}
+
+/**
+ * Add a configured Mütze (from /konfigurator/muetze) to the cart.
+ * Same shape as Hose/Turban: selections become line-item metadata so the cart
+ * line renders "Mütze: Salbei · Futter: Puderrosa"; the variant is resolved
+ * server-side (env override or first non-Turban Mütze product).
+ */
+export async function addConfiguredMuetzeToCartAction(formData: FormData): Promise<void> {
+  const selection = {
+    kind: "konfigurator-muetze" as const,
+    muetze: String(formData.get("muetze") ?? "").trim() || null,
+    futter: String(formData.get("futter") ?? "").trim() || null,
+    muetzeName: String(formData.get("muetzeName") ?? "").trim() || null,
+    futterName: String(formData.get("futterName") ?? "").trim() || null,
+    configHref: String(formData.get("configHref") ?? "").trim() || null,
+  };
+
+  const target = await getConfiguratorMuetzeVariant();
+  if (!target) {
+    redirect("/konfigurator/muetze?error=variant_unavailable");
+  }
+
+  const cart = await ensureCart();
+  if (!cart) {
+    redirect("/konfigurator/muetze?error=cart_unavailable");
+  }
+
+  const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
+  if (!added) {
+    redirect("/konfigurator/muetze?error=add_failed");
   }
 
   revalidatePath("/cart");

@@ -43,6 +43,14 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
     return { title: "Konfigurator-Turban", entries, configHref: asStr(m.configHref) };
   }
 
+  if (kind === "konfigurator-muetze") {
+    const entries = [
+      { label: "Mütze", value: asStr(m.muetzeName) },
+      { label: "Futter", value: asStr(m.futterName) },
+    ].filter((e): e is { label: string; value: string } => e.value !== null);
+    return { title: "Konfigurator-Mütze", entries, configHref: asStr(m.configHref) };
+  }
+
   return null;
 }
 
