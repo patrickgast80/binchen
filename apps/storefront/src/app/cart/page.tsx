@@ -51,6 +51,13 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
     return { title: "Konfigurator-Mütze", entries, configHref: asStr(m.configHref) };
   }
 
+  if (kind === "konfigurator-dreieckstuch") {
+    const entries = [
+      { label: "Tuch", value: asStr(m.tuchName) },
+    ].filter((e): e is { label: string; value: string } => e.value !== null);
+    return { title: "Konfigurator-Dreieckstuch", entries, configHref: asStr(m.configHref) };
+  }
+
   return null;
 }
 

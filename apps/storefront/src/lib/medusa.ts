@@ -244,6 +244,39 @@ export async function getConfiguratorMuetzeVariant(): Promise<
   };
 }
 
+/**
+ * Resolve the base variant used by the Dreieckstuch-Konfigurator (BIL-2446)
+ * — same strategy as the other three: env override wins, otherwise the first
+ * "Dreieckstuch"-titled product in the catalog.
+ */
+export async function getConfiguratorDreieckstuchVariant(): Promise<
+  { variantId: string; productId: string; priceAmount: number; currency: string } | null
+> {
+  const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_DREIECKSTUCH_VARIANT_ID?.trim();
+  if (!BACKEND_URL) return null;
+  const url = new URL(`${BACKEND_URL}/store/products`);
+  url.searchParams.set("limit", "50");
+  const regionId = await getDefaultRegionId();
+  if (regionId) url.searchParams.set("region_id", regionId);
+  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
+  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
+  if (!res.ok) return null;
+  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const tuch = products.find((p) => /dreieckstuch/i.test(p.title));
+  if (!tuch) return null;
+  const variant =
+    tuch.variants.find((v) => (envVariant ? v.id === envVariant : v.inventory_quantity > 0)) ??
+    tuch.variants[0];
+  if (!variant) return null;
+  const price = variantPriceOrNull(variant);
+  return {
+    variantId: envVariant || variant.id,
+    productId: tuch.id,
+    priceAmount: price?.amount ?? 0,
+    currency: price?.currency ?? "EUR",
+  };
+}
+
 export function variantPriceOrNull(
   variant: MedusaProductVariant,
 ): { amount: number; currency: string } | null {

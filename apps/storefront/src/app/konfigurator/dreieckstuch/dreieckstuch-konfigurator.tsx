@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -7,50 +7,51 @@ import { Check, RotateCcw, Share2, ShoppingBag } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { addConfiguredMuetzeToCartAction } from "@/app/cart/actions";
+import { addConfiguredDreieckstuchToCartAction } from "@/app/cart/actions";
 
 import {
   PALETTE,
-  MUETZE_REGIONS,
-  type MuetzeRegionDef,
+  DREIECKSTUCH_REGIONS,
+  type DreieckstuchRegionDef,
   resolveColor,
   resolveSwatchId,
   type Swatch,
 } from "./palette";
-import { MuetzePhoto, type MuetzePhotoColors } from "./muetze-photo";
+import { DreieckstuchPhoto, type DreieckstuchPhotoColors } from "./dreieckstuch-photo";
 
-type Selection = Record<MuetzeRegionDef["param"], string>;
+type Selection = Record<DreieckstuchRegionDef["param"], string>;
 
 function buildSelection(searchParams: URLSearchParams | null): Selection {
-  return MUETZE_REGIONS.reduce<Selection>((acc, region) => {
+  return DREIECKSTUCH_REGIONS.reduce<Selection>((acc, region) => {
     acc[region.param] = resolveSwatchId(searchParams?.get(region.param), region.defaultColor);
     return acc;
   }, {} as Selection);
 }
 
 function isDefaultSelection(selection: Selection): boolean {
-  return MUETZE_REGIONS.every((region) => selection[region.param] === region.defaultColor);
+  return DREIECKSTUCH_REGIONS.every((region) => selection[region.param] === region.defaultColor);
 }
 
-export function MuetzeKonfigurator() {
+export function DreieckstuchKonfigurator() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const selection = React.useMemo(() => buildSelection(searchParams), [searchParams]);
-  const [lastChanged, setLastChanged] = React.useState<{ region: string; swatch: string } | null>(null);
+  const [lastChanged, setLastChanged] = React.useState<{ region: string; swatch: string } | null>(
+    null,
+  );
   const [shareStatus, setShareStatus] = React.useState<"idle" | "copied">("idle");
 
-  const colors: MuetzePhotoColors = React.useMemo(
+  const colors: DreieckstuchPhotoColors = React.useMemo(
     () => ({
-      muetze: resolveColor(selection.muetze, "sage"),
-      futter: resolveColor(selection.futter, "powder-pink"),
+      tuch: resolveColor(selection.tuch, "powder-pink"),
     }),
     [selection],
   );
 
   const updateRegion = React.useCallback(
-    (region: MuetzeRegionDef, swatch: Swatch) => {
+    (region: DreieckstuchRegionDef, swatch: Swatch) => {
       const next = new URLSearchParams(searchParams?.toString() ?? "");
       if (swatch.id === region.defaultColor) {
         next.delete(region.param);
@@ -67,7 +68,7 @@ export function MuetzeKonfigurator() {
 
   const handleReset = React.useCallback(() => {
     router.replace(pathname, { scroll: false });
-    setLastChanged({ region: "Konfiguration", swatch: "zurueckgesetzt" });
+    setLastChanged({ region: "Konfiguration", swatch: "zurückgesetzt" });
     setShareStatus("idle");
   }, [pathname, router]);
 
@@ -76,7 +77,7 @@ export function MuetzeKonfigurator() {
     const url = window.location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Meine Bilulu-Muetze", url });
+        await navigator.share({ title: "Mein Bilulu-Dreieckstuch", url });
         return;
       }
     } catch {
@@ -100,11 +101,12 @@ export function MuetzeKonfigurator() {
           Konfigurator · MVP
         </p>
         <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-binchen-ink sm:text-4xl lg:text-5xl">
-          Stell deine Bilulu-Muetze selbst zusammen
+          Stell dein Bilulu-Dreieckstuch selbst zusammen
         </h1>
         <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted sm:text-lg">
-          Waehl Farbe fuer Mueetzenstoff und Futter. Die Vorschau zeigt deine Auswahl live auf
-          einem echten Produktfoto. Den Link kannst du teilen und spaeter wieder oeffnen.
+          Wähle die Farbe für den Hauptstoff. Die Vorschau zeigt deine Auswahl live auf einem
+          echten Produktfoto — Stofftextur und Nähte bleiben sichtbar. Den Link kannst du teilen
+          und später wieder öffnen.
         </p>
       </header>
 
@@ -116,28 +118,8 @@ export function MuetzeKonfigurator() {
         <p className="font-body text-sm leading-relaxed text-binchen-ink">
           <span className="font-semibold">Bald mit echten Stoff-Mustern.</span>{" "}
           <span className="text-binchen-ink-muted">
-            Sobald die Stoffmuster eintreffen, kannst du hier echte Druckmotive auswaehlen.
-            Derzeit zeigen wir Volltonfarben auf einer echten Bilulu-Muetze.
-          </span>
-        </p>
-      </aside>
-
-      <aside
-        role="note"
-        aria-label="Hinweis zu Fruehchengroessen"
-        className="mt-4 rounded-xl border border-binchen-terracotta/40 bg-binchen-terracotta/10 px-4 py-3 sm:px-5 sm:py-4"
-      >
-        <p className="font-body text-sm leading-relaxed text-binchen-ink">
-          <span className="font-semibold text-binchen-terracotta-text">Auch fuer Fruehchen.</span>{" "}
-          <span className="text-binchen-ink-muted">
-            Wir naehen auch Muetzchen in Fruehchengroessen — Sondermasse auf Anfrage. Mehr Infos auf{" "}
-            <Link
-              href="/fruehchen"
-              className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
-            >
-              der Fruehchen-Seite
-            </Link>
-            .
+            Derzeit zeigen wir Volltonfarben auf einem echten Bilulu-Dreieckstuch. Sobald die
+            Stoffmuster eintreffen, kannst du hier auch Druckmotive auswählen.
           </span>
         </p>
       </aside>
@@ -149,20 +131,20 @@ export function MuetzeKonfigurator() {
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-14">
         <section aria-labelledby="preview-heading" className="lg:sticky lg:top-24 lg:self-start">
           <h2 id="preview-heading" className="sr-only">
-            Live-Vorschau deiner Muetze
+            Live-Vorschau deines Dreieckstuchs
           </h2>
           <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
-              <MuetzePhoto
+              <DreieckstuchPhoto
                 colors={colors}
-                title="Live-Vorschau der konfigurierten Bilulu-Muetze auf Basis eines echten Produktfotos"
+                title="Live-Vorschau des konfigurierten Bilulu-Dreieckstuchs auf Basis eines echten Produktfotos"
               />
             </div>
           </div>
 
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-2">
-              {MUETZE_REGIONS.map((region) => {
+              {DREIECKSTUCH_REGIONS.map((region) => {
                 const swatchId = selection[region.param];
                 const swatch = PALETTE.find((s) => s.id === swatchId);
                 return (
@@ -196,7 +178,7 @@ export function MuetzeKonfigurator() {
               {showReset && (
                 <Button type="button" variant="ghost" size="sm" onClick={handleReset}>
                   <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                  Zuruecksetzen
+                  Zurücksetzen
                 </Button>
               )}
             </div>
@@ -205,10 +187,10 @@ export function MuetzeKonfigurator() {
 
         <section aria-labelledby="palette-heading" className="space-y-8">
           <h2 id="palette-heading" className="sr-only">
-            Farbpalette fuer jede Region
+            Farbpalette für jede Region
           </h2>
 
-          {MUETZE_REGIONS.map((region) => {
+          {DREIECKSTUCH_REGIONS.map((region) => {
             const activeId = selection[region.param];
             return (
               <fieldset
@@ -221,7 +203,7 @@ export function MuetzeKonfigurator() {
                 <p className="font-body text-sm text-binchen-ink-muted">{region.description}</p>
                 <div
                   role="radiogroup"
-                  aria-label={`Farbe fuer ${region.label}`}
+                  aria-label={`Farbe für ${region.label}`}
                   className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-6"
                 >
                   {PALETTE.map((swatch) => {
@@ -267,10 +249,10 @@ export function MuetzeKonfigurator() {
           })}
 
           <form
-            action={addConfiguredMuetzeToCartAction}
+            action={addConfiguredDreieckstuchToCartAction}
             className="rounded-2xl border border-binchen-sage/40 bg-binchen-cream p-5 sm:p-6"
           >
-            {MUETZE_REGIONS.map((region) => {
+            {DREIECKSTUCH_REGIONS.map((region) => {
               const swatchId = selection[region.param];
               const swatch = PALETTE.find((s) => s.id === swatchId);
               return (
@@ -285,7 +267,7 @@ export function MuetzeKonfigurator() {
               name="configHref"
               value={(() => {
                 const q = searchParams?.toString() ?? "";
-                return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/muetze";
+                return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/dreieckstuch";
               })()}
             />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -294,7 +276,7 @@ export function MuetzeKonfigurator() {
                   Deine Konfiguration in den Warenkorb
                 </p>
                 <p className="mt-1 font-body text-sm text-binchen-ink-muted">
-                  Handgenaecht auf Bestellung. Preis + Versand siehst du im Warenkorb.
+                  Handgenäht auf Bestellung. Preis + Versand siehst du im Warenkorb.
                 </p>
               </div>
               <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto">
@@ -305,7 +287,7 @@ export function MuetzeKonfigurator() {
           </form>
 
           <p className="font-body text-sm text-binchen-ink-muted">
-            Du moechtest lieber eine Hose, einen Turban oder ein Dreieckstuch gestalten?{" "}
+            Du möchtest lieber eine Hose, einen Turban oder eine Mütze gestalten?{" "}
             <Link
               href="/konfigurator/hose"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
@@ -321,10 +303,10 @@ export function MuetzeKonfigurator() {
             </Link>{" "}
             ·{" "}
             <Link
-              href="/konfigurator/dreieckstuch"
+              href="/konfigurator/muetze"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
-              Dreieckstuch-Konfigurator
+              Mützen-Konfigurator
             </Link>
             . Fragen zu Stoffen?{" "}
             <Link

@@ -332,7 +332,7 @@ export function TurbanKonfigurator() {
           </form>
 
           <p className="font-body text-sm text-binchen-ink-muted">
-            Du möchtest lieber eine Hose oder eine Mütze gestalten?{" "}
+            Du möchtest lieber eine Hose, eine Mütze oder ein Dreieckstuch gestalten?{" "}
             <Link
               href="/konfigurator/hose"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
@@ -345,6 +345,13 @@ export function TurbanKonfigurator() {
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
               Zum Mützen-Konfigurator
+            </Link>{" "}
+            ·{" "}
+            <Link
+              href="/konfigurator/dreieckstuch"
+              className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
+            >
+              Zum Dreieckstuch-Konfigurator
             </Link>
             . Fragen zu Stoffen oder Sondermaßen?{" "}
             <Link

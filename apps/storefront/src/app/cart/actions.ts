@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   addLineItem,
+  getConfiguratorDreieckstuchVariant,
   getConfiguratorHoseVariant,
   getConfiguratorMuetzeVariant,
   getConfiguratorTurbanVariant,
@@ -158,6 +159,39 @@ export async function addConfiguredMuetzeToCartAction(formData: FormData): Promi
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
     redirect("/konfigurator/muetze?error=add_failed");
+  }
+
+  revalidatePath("/cart");
+  redirect("/cart?added=konfigurator");
+}
+
+/**
+ * Add a configured Dreieckstuch (from /konfigurator/dreieckstuch) to the cart.
+ * Single-zone konfigurator — one fabric selection becomes line-item metadata
+ * so the cart line renders "Tuch: Puderrosa"; the variant is resolved
+ * server-side (env override or first Dreieckstuch product).
+ */
+export async function addConfiguredDreieckstuchToCartAction(formData: FormData): Promise<void> {
+  const selection = {
+    kind: "konfigurator-dreieckstuch" as const,
+    tuch: String(formData.get("tuch") ?? "").trim() || null,
+    tuchName: String(formData.get("tuchName") ?? "").trim() || null,
+    configHref: String(formData.get("configHref") ?? "").trim() || null,
+  };
+
+  const target = await getConfiguratorDreieckstuchVariant();
+  if (!target) {
+    redirect("/konfigurator/dreieckstuch?error=variant_unavailable");
+  }
+
+  const cart = await ensureCart();
+  if (!cart) {
+    redirect("/konfigurator/dreieckstuch?error=cart_unavailable");
+  }
+
+  const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
+  if (!added) {
+    redirect("/konfigurator/dreieckstuch?error=add_failed");
   }
 
   revalidatePath("/cart");
