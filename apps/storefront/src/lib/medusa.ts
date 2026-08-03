@@ -174,6 +174,40 @@ export async function getConfiguratorHoseVariant(): Promise<
   };
 }
 
+/**
+ * Resolve the base variant used by the Turban-Konfigurator — same strategy as
+ * the Hose: `NEXT_PUBLIC_CONFIGURATOR_TURBAN_VARIANT_ID` wins, otherwise the
+ * first available variant of the first "Turban"-titled product so the flow
+ * works against today's catalog without extra backend work.
+ */
+export async function getConfiguratorTurbanVariant(): Promise<
+  { variantId: string; productId: string; priceAmount: number; currency: string } | null
+> {
+  const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_TURBAN_VARIANT_ID?.trim();
+  if (!BACKEND_URL) return null;
+  const url = new URL(`${BACKEND_URL}/store/products`);
+  url.searchParams.set("limit", "50");
+  const regionId = await getDefaultRegionId();
+  if (regionId) url.searchParams.set("region_id", regionId);
+  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
+  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
+  if (!res.ok) return null;
+  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const turban = products.find((p) => /turban/i.test(p.title));
+  if (!turban) return null;
+  const variant =
+    turban.variants.find((v) => (envVariant ? v.id === envVariant : v.inventory_quantity > 0)) ??
+    turban.variants[0];
+  if (!variant) return null;
+  const price = variantPriceOrNull(variant);
+  return {
+    variantId: envVariant || variant.id,
+    productId: turban.id,
+    priceAmount: price?.amount ?? 0,
+    currency: price?.currency ?? "EUR",
+  };
+}
+
 export function variantPriceOrNull(
   variant: MedusaProductVariant,
 ): { amount: number; currency: string } | null {

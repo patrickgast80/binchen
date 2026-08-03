@@ -2,7 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { addLineItem, getConfiguratorHoseVariant, removeLineItem } from "@/lib/medusa";
+import {
+  addLineItem,
+  getConfiguratorHoseVariant,
+  getConfiguratorTurbanVariant,
+  removeLineItem,
+} from "@/lib/medusa";
 import { ensureCart, loadCart } from "@/lib/cart-cookie";
 
 export async function addToCartAction(variantId: string, quantity = 1): Promise<void> {
@@ -82,6 +87,41 @@ export async function addConfiguredHoseToCartAction(formData: FormData): Promise
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
     redirect("/konfigurator/hose?error=add_failed");
+  }
+
+  revalidatePath("/cart");
+  redirect("/cart?added=konfigurator");
+}
+
+/**
+ * Add a configured Turban-Mütze (from /konfigurator/turban) to the cart.
+ * Same shape as the Hose action: fabric selections become line-item metadata
+ * so the cart line renders "Turban: Creme · Schleife: Terrakotta"; the variant
+ * is resolved server-side (env override or first Turban product).
+ */
+export async function addConfiguredTurbanToCartAction(formData: FormData): Promise<void> {
+  const selection = {
+    kind: "konfigurator-turban" as const,
+    turban: String(formData.get("turban") ?? "").trim() || null,
+    schleife: String(formData.get("schleife") ?? "").trim() || null,
+    turbanName: String(formData.get("turbanName") ?? "").trim() || null,
+    schleifeName: String(formData.get("schleifeName") ?? "").trim() || null,
+    configHref: String(formData.get("configHref") ?? "").trim() || null,
+  };
+
+  const target = await getConfiguratorTurbanVariant();
+  if (!target) {
+    redirect("/konfigurator/turban?error=variant_unavailable");
+  }
+
+  const cart = await ensureCart();
+  if (!cart) {
+    redirect("/konfigurator/turban?error=cart_unavailable");
+  }
+
+  const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
+  if (!added) {
+    redirect("/konfigurator/turban?error=add_failed");
   }
 
   revalidatePath("/cart");

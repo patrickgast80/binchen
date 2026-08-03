@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,30 +8,42 @@ import { formatPrice, lineItemSubtotal, type CartLineItem } from "@/lib/medusa";
 import { removeFromCartAction } from "./actions";
 
 interface KonfiguratorSelection {
-  bundName?: string | null;
-  hoseName?: string | null;
-  buendchenName?: string | null;
+  /** Cart-line display title, e.g. "Konfigurator-Hose" */
+  title: string;
+  /** Label/value pairs rendered as the selection summary */
+  entries: { label: string; value: string }[];
   configHref?: string | null;
 }
 
 function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null {
   const md = item.metadata;
   if (!md || typeof md !== "object") return null;
-  if ((md as { kind?: unknown }).kind !== "konfigurator-hose") return null;
+  const kind = (md as { kind?: unknown }).kind;
   const asStr = (v: unknown) => (typeof v === "string" && v.trim() ? v : null);
   const m = md as Record<string, unknown>;
-  // Legacy carts (pre BIL-2417) stored separate linksName/rechtsName. If both
-  // match, collapse to hoseName; otherwise pick the first present so old
-  // orders still render a sensible line.
-  const legacyLinks = asStr(m.linksName);
-  const legacyRechts = asStr(m.rechtsName);
-  const hoseName = asStr(m.hoseName) ?? legacyLinks ?? legacyRechts;
-  return {
-    bundName: asStr(m.bundName),
-    hoseName,
-    buendchenName: asStr(m.buendchenName),
-    configHref: asStr(m.configHref),
-  };
+
+  if (kind === "konfigurator-hose") {
+    // Legacy carts (pre BIL-2417) stored separate linksName/rechtsName. If both
+    // match, collapse to hoseName; otherwise pick the first present so old
+    // orders still render a sensible line.
+    const hoseName = asStr(m.hoseName) ?? asStr(m.linksName) ?? asStr(m.rechtsName);
+    const entries = [
+      { label: "Bund", value: asStr(m.bundName) },
+      { label: "Hose", value: hoseName },
+      { label: "Bündchen", value: asStr(m.buendchenName) },
+    ].filter((e): e is { label: string; value: string } => e.value !== null);
+    return { title: "Konfigurator-Hose", entries, configHref: asStr(m.configHref) };
+  }
+
+  if (kind === "konfigurator-turban") {
+    const entries = [
+      { label: "Turban", value: asStr(m.turbanName) },
+      { label: "Schleife", value: asStr(m.schleifeName) },
+    ].filter((e): e is { label: string; value: string } => e.value !== null);
+    return { title: "Konfigurator-Turban", entries, configHref: asStr(m.configHref) };
+  }
+
+  return null;
 }
 
 export const metadata: Metadata = {
@@ -69,7 +82,7 @@ export default async function CartPage() {
             <ul role="list" className="divide-y divide-binchen-border border-y border-binchen-border">
               {items.map((item) => {
                 const konfig = konfiguratorSelection(item);
-                const displayTitle = konfig ? "Konfigurator-Hose" : item.title;
+                const displayTitle = konfig ? konfig.title : item.title;
                 return (
                   <li key={item.id} className="flex gap-4 py-6">
                     <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded bg-gradient-to-br from-binchen-cream to-binchen-cream-dark sm:h-24 sm:w-24">
@@ -99,24 +112,12 @@ export default async function CartPage() {
                         ) : null}
                         {konfig ? (
                           <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-body text-xs text-binchen-ink-muted">
-                            {konfig.bundName ? (
-                              <>
-                                <dt className="text-binchen-ink-subtle">Bund:</dt>
-                                <dd className="font-medium text-binchen-ink">{konfig.bundName}</dd>
-                              </>
-                            ) : null}
-                            {konfig.hoseName ? (
-                              <>
-                                <dt className="text-binchen-ink-subtle">Hose:</dt>
-                                <dd className="font-medium text-binchen-ink">{konfig.hoseName}</dd>
-                              </>
-                            ) : null}
-                            {konfig.buendchenName ? (
-                              <>
-                                <dt className="text-binchen-ink-subtle">Bündchen:</dt>
-                                <dd className="font-medium text-binchen-ink">{konfig.buendchenName}</dd>
-                              </>
-                            ) : null}
+                            {konfig.entries.map((entry) => (
+                              <React.Fragment key={entry.label}>
+                                <dt className="text-binchen-ink-subtle">{entry.label}:</dt>
+                                <dd className="font-medium text-binchen-ink">{entry.value}</dd>
+                              </React.Fragment>
+                            ))}
                           </dl>
                         ) : (
                           <p className="mt-1 font-body text-xs text-binchen-ink-subtle">

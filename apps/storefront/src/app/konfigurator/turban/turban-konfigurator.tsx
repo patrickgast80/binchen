@@ -7,38 +7,32 @@ import { Check, RotateCcw, Share2, ShoppingBag } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { addConfiguredHoseToCartAction } from "@/app/cart/actions";
+import { addConfiguredTurbanToCartAction } from "@/app/cart/actions";
 
 import {
   PALETTE,
-  REGIONS,
-  type RegionDef,
+  TURBAN_REGIONS,
+  type TurbanRegionDef,
   resolveColor,
-  resolveHoseParam,
   resolveSwatchId,
   type Swatch,
 } from "./palette";
-import { PantsPhoto, type PantsPhotoColors } from "./pants-photo";
+import { TurbanPhoto, type TurbanPhotoColors } from "./turban-photo";
 
-type Selection = Record<RegionDef["param"], string>;
+type Selection = Record<TurbanRegionDef["param"], string>;
 
 function buildSelection(searchParams: URLSearchParams | null): Selection {
-  return REGIONS.reduce<Selection>((acc, region) => {
-    // `hose` used to be split into `links` + `rechts` — resolveHoseParam
-    // tolerates old shared links by mapping them back to a single value.
-    acc[region.param] =
-      region.param === "hose"
-        ? resolveHoseParam(searchParams, region.defaultColor)
-        : resolveSwatchId(searchParams?.get(region.param), region.defaultColor);
+  return TURBAN_REGIONS.reduce<Selection>((acc, region) => {
+    acc[region.param] = resolveSwatchId(searchParams?.get(region.param), region.defaultColor);
     return acc;
   }, {} as Selection);
 }
 
 function isDefaultSelection(selection: Selection): boolean {
-  return REGIONS.every((region) => selection[region.param] === region.defaultColor);
+  return TURBAN_REGIONS.every((region) => selection[region.param] === region.defaultColor);
 }
 
-export function HoseKonfigurator() {
+export function TurbanKonfigurator() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -50,24 +44,17 @@ export function HoseKonfigurator() {
   } | null>(null);
   const [shareStatus, setShareStatus] = React.useState<"idle" | "copied">("idle");
 
-  const colors: PantsPhotoColors = React.useMemo(
+  const colors: TurbanPhotoColors = React.useMemo(
     () => ({
-      bund: resolveColor(selection.bund, "petrol"),
-      hose: resolveColor(selection.hose, "cream"),
-      buendchen: resolveColor(selection.buendchen, "petrol"),
+      turban: resolveColor(selection.turban, "cream"),
+      schleife: resolveColor(selection.schleife, "terracotta"),
     }),
     [selection],
   );
 
   const updateRegion = React.useCallback(
-    (region: RegionDef, swatch: Swatch) => {
+    (region: TurbanRegionDef, swatch: Swatch) => {
       const next = new URLSearchParams(searchParams?.toString() ?? "");
-      // Whenever the user picks a new colour, drop any legacy 4-region
-      // params so the URL stays canonical (a shared link then uses `hose=…`).
-      if (region.param === "hose") {
-        next.delete("links");
-        next.delete("rechts");
-      }
       if (swatch.id === region.defaultColor) {
         next.delete(region.param);
       } else {
@@ -92,7 +79,7 @@ export function HoseKonfigurator() {
     const url = window.location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Meine Bilulu-Hose", url });
+        await navigator.share({ title: "Meine Bilulu-Turban-Mütze", url });
         return;
       }
     } catch {
@@ -117,12 +104,12 @@ export function HoseKonfigurator() {
           Konfigurator · MVP
         </p>
         <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-binchen-ink sm:text-4xl lg:text-5xl">
-          Stell deine Hose selbst zusammen
+          Stell deine Turban-Mütze selbst zusammen
         </h1>
         <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted sm:text-lg">
-          Wähle Farbe und Stil für Bund, Hose und Bündchen. Deine Auswahl wird live auf einem
-          echten Hosenfoto gezeigt und in der Adresse gespeichert — du kannst den Link teilen und
-          später wieder öffnen.
+          Wähle Farbe und Stil für Turban und Schleife. Deine Auswahl wird live auf einem echten
+          Mützenfoto gezeigt und in der Adresse gespeichert — du kannst den Link teilen und später
+          wieder öffnen.
         </p>
       </header>
 
@@ -135,8 +122,8 @@ export function HoseKonfigurator() {
         <p className="font-body text-sm leading-relaxed text-binchen-ink">
           <span className="font-semibold">Bald mit echten Stoff-Mustern.</span>{" "}
           <span className="text-binchen-ink-muted">
-            Die Vorschau zeigt deine Farben auf einer echten Bilulu-Pumphose — Stofftextur, Nähte
-            und Faltenwurf bleiben sichtbar. Sobald die Stoffmuster eintreffen, kannst du hier
+            Die Vorschau zeigt deine Farben auf einer echten Bilulu-Turban-Mütze — Stofftextur,
+            Raffung und Nähte bleiben sichtbar. Sobald die Stoffmuster eintreffen, kannst du hier
             echte Druckmotive auswählen.
           </span>
         </p>
@@ -151,7 +138,7 @@ export function HoseKonfigurator() {
         <p className="font-body text-sm leading-relaxed text-binchen-ink">
           <span className="font-semibold text-binchen-terracotta-text">Auch für Frühchen.</span>{" "}
           <span className="text-binchen-ink-muted">
-            Wir nähen in Frühchengrößen 38, 44 und 50 — Sondermaße auf Anfrage. Mehr Infos auf{" "}
+            Wir nähen auch Mützchen in Frühchengrößen — Sondermaße auf Anfrage. Mehr Infos auf{" "}
             <Link
               href="/fruehchen"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
@@ -175,21 +162,21 @@ export function HoseKonfigurator() {
           className="lg:sticky lg:top-24 lg:self-start"
         >
           <h2 id="preview-heading" className="sr-only">
-            Live-Vorschau deiner Hose
+            Live-Vorschau deiner Turban-Mütze
           </h2>
           <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
-              <PantsPhoto
+              <TurbanPhoto
                 colors={colors}
-                title="Live-Vorschau der konfigurierten Hose auf Basis eines echten Hosenfotos"
+                title="Live-Vorschau der konfigurierten Turban-Mütze auf Basis eines echten Produktfotos"
               />
             </div>
           </div>
 
           {/* Selection summary + actions */}
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-3">
-              {REGIONS.map((region) => {
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-2">
+              {TURBAN_REGIONS.map((region) => {
                 const swatchId = selection[region.param];
                 const swatch = PALETTE.find((s) => s.id === swatchId);
                 return (
@@ -242,7 +229,7 @@ export function HoseKonfigurator() {
             Farbpalette für jede Region
           </h2>
 
-          {REGIONS.map((region) => {
+          {TURBAN_REGIONS.map((region) => {
             const activeId = selection[region.param];
             return (
               <fieldset
@@ -303,10 +290,10 @@ export function HoseKonfigurator() {
           })}
 
           <form
-            action={addConfiguredHoseToCartAction}
+            action={addConfiguredTurbanToCartAction}
             className="rounded-2xl border border-binchen-sage/40 bg-binchen-cream p-5 sm:p-6"
           >
-            {REGIONS.map((region) => {
+            {TURBAN_REGIONS.map((region) => {
               const swatchId = selection[region.param];
               const swatch = PALETTE.find((s) => s.id === swatchId);
               return (
@@ -325,7 +312,7 @@ export function HoseKonfigurator() {
               name="configHref"
               value={(() => {
                 const q = searchParams?.toString() ?? "";
-                return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/hose";
+                return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/turban";
               })()}
             />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -345,12 +332,12 @@ export function HoseKonfigurator() {
           </form>
 
           <p className="font-body text-sm text-binchen-ink-muted">
-            Du möchtest lieber eine Turban-Mütze gestalten?{" "}
+            Du möchtest lieber eine Hose gestalten?{" "}
             <Link
-              href="/konfigurator/turban"
+              href="/konfigurator/hose"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
-              Zum Turban-Konfigurator
+              Zum Hose-Konfigurator
             </Link>
             . Fragen zu Stoffen oder Sondermaßen?{" "}
             <Link
