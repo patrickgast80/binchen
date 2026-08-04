@@ -1,5 +1,5 @@
 # Build context: repo root
-# dockerfilePath: ./apps/backend/Dockerfile  (used by both Railway and Render)
+# dockerfilePath: ./apps/backend/Dockerfile  (used by the Coolify build)
 FROM node:20-alpine AS builder
 WORKDIR /app
 RUN npm install -g pnpm@9.0.0

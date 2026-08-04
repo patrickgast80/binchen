@@ -56,5 +56,5 @@ git revert <BIL-2396 commit sha>
 
 That alone will not re-enable Vercel/Render/Railway deploys — those platforms
 must also be reconnected to the GitHub repo from their respective dashboards
-(a **board/CEO action**, not agent-actionable — see BIL-2391 for Railway and
-the parent BIL-2396 for Vercel/Render).
+(a **board/CEO action**, not agent-actionable). Railway was disconnected on
+2026-08-04 (BIL-2391); Vercel/Render disconnects are tracked in BIL-2396.

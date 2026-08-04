@@ -18,9 +18,6 @@ build/
 # Vercel
 .vercel/
 
-# Railway
-.railway/
-
 # OS
 .DS_Store
 Thumbs.db
