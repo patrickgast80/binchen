@@ -1,0 +1,26 @@
+{
+  "_description": "Per-photo transforms for orientation unification. Photo indexes are 1-based, matching apps/backend/scripts/bil2432/products.json.",
+  "_orientation_policy": {
+    "muetzen_flatlay_bow": "bow points RIGHT (mirror lefties)",
+    "muetzen_mannequin": "left as-is; mannequin faces reader",
+    "pumphosen": "waistband on TOP (rotate 90° if needed)",
+    "halstuecher_dreieckstuecher": "tip points DOWN or DOWN-RIGHT",
+    "sets_flatlay": "left as-is; mirroring can misplace label"
+  },
+  "mirror": {
+    "7":  true,
+    "10": true,
+    "15": true,
+    "22": true
+  },
+  "rotate": {
+    "33": -90
+  },
+  "_notes": {
+    "7":  "Turban mint boho — bow was LEFT, mirror to RIGHT",
+    "10": "Turban mint boho pink schleife — bow was LEFT, mirror to RIGHT",
+    "15": "Turban creme with bordeaux bow — bow was LEFT, mirror to RIGHT",
+    "22": "Turban wildblumen flat — flip for consistency with 7/10/15",
+    "33": "Pumphose Anker — waistband was on RIGHT, rotate CCW so it sits on TOP like all other pumphosen"
+  }
+}
