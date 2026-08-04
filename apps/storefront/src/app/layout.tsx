@@ -4,7 +4,10 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CookieConsent } from "@/components/cookie-consent/cookie-consent";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://bilulu.de";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Bilulu Handmade – Baby & Kinderkleidung",
     template: "%s | Bilulu Handmade",

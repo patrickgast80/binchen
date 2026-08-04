@@ -15,9 +15,12 @@ import {
   type TurbanRegionDef,
   resolveColor,
   resolveSwatchId,
+  swatchChipStyle,
   type Swatch,
 } from "./palette";
 import { TurbanPhoto, type TurbanPhotoColors } from "./turban-photo";
+import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
+import { SavedConfigsSection } from "../_shared/saved-configs-section";
 
 type Selection = Record<TurbanRegionDef["param"], string>;
 
@@ -221,6 +224,15 @@ export function TurbanKonfigurator() {
               )}
             </div>
           </div>
+
+          <SavedConfigsSection
+            konfigurator="turban"
+            selection={selection}
+            href={(() => {
+              const q = searchParams?.toString() ?? "";
+              return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/turban";
+            })()}
+          />
         </section>
 
         {/* Palette controls */}
@@ -229,6 +241,8 @@ export function TurbanKonfigurator() {
             Farbpalette für jede Region
           </h2>
 
+          {/* Desktop palette — on mobile the sticky bottom-sheet below owns the same picker */}
+          <div className="hidden space-y-8 md:block">
           {TURBAN_REGIONS.map((region) => {
             const activeId = selection[region.param];
             return (
@@ -268,7 +282,7 @@ export function TurbanKonfigurator() {
                               ? "border-binchen-ink shadow-inner"
                               : "border-binchen-border",
                           )}
-                          style={{ backgroundColor: swatch.hex }}
+                          style={swatchChipStyle(swatch)}
                         >
                           {isActive && (
                             <Check
@@ -288,6 +302,7 @@ export function TurbanKonfigurator() {
               </fieldset>
             );
           })}
+          </div>
 
           <form
             action={addConfiguredTurbanToCartAction}
@@ -364,6 +379,14 @@ export function TurbanKonfigurator() {
           </p>
         </section>
       </div>
+
+      <MobilePaletteSheet
+        regions={TURBAN_REGIONS}
+        selection={selection}
+        onSelect={(region, swatch) =>
+          updateRegion(region as TurbanRegionDef, swatch)
+        }
+      />
     </div>
   );
 }

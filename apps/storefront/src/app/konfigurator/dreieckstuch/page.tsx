@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
 
+import { buildKonfigMetadata } from "../_shared/metadata";
 import { DreieckstuchKonfigurator } from "./dreieckstuch-konfigurator";
 
-export const metadata: Metadata = {
-  title: "Dreieckstuch-Konfigurator",
-  description:
-    "Stell dein Bilulu-Dreieckstuch selbst zusammen: Farbe für den Hauptstoff wählen. Vorschau auf einem echten Produktfoto.",
-  alternates: {
-    canonical: "/konfigurator/dreieckstuch",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+const TITLE = "Dreieckstuch-Konfigurator";
+const DESCRIPTION =
+  "Stell dein Bilulu-Dreieckstuch selbst zusammen: Farbe für den Hauptstoff wählen. Vorschau auf einem echten Produktfoto.";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}): Metadata {
+  return buildKonfigMetadata("dreieckstuch", searchParams, {
+    title: TITLE,
+    description: DESCRIPTION,
+  });
+}
 
 export default function DreieckstuchKonfiguratorPage() {
   return <DreieckstuchKonfigurator />;

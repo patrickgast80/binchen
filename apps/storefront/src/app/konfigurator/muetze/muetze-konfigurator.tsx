@@ -15,9 +15,12 @@ import {
   type MuetzeRegionDef,
   resolveColor,
   resolveSwatchId,
+  swatchChipStyle,
   type Swatch,
 } from "./palette";
 import { MuetzePhoto, type MuetzePhotoColors } from "./muetze-photo";
+import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
+import { SavedConfigsSection } from "../_shared/saved-configs-section";
 
 type Selection = Record<MuetzeRegionDef["param"], string>;
 
@@ -201,6 +204,15 @@ export function MuetzeKonfigurator() {
               )}
             </div>
           </div>
+
+          <SavedConfigsSection
+            konfigurator="muetze"
+            selection={selection}
+            href={(() => {
+              const q = searchParams?.toString() ?? "";
+              return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/muetze";
+            })()}
+          />
         </section>
 
         <section aria-labelledby="palette-heading" className="space-y-8">
@@ -208,6 +220,8 @@ export function MuetzeKonfigurator() {
             Farbpalette fuer jede Region
           </h2>
 
+          {/* Desktop palette — on mobile the sticky bottom-sheet below owns the same picker */}
+          <div className="hidden space-y-8 md:block">
           {MUETZE_REGIONS.map((region) => {
             const activeId = selection[region.param];
             return (
@@ -245,7 +259,7 @@ export function MuetzeKonfigurator() {
                             "relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-transform group-hover:scale-105 sm:h-11 sm:w-11",
                             isActive ? "border-binchen-ink shadow-inner" : "border-binchen-border",
                           )}
-                          style={{ backgroundColor: swatch.hex }}
+                          style={swatchChipStyle(swatch)}
                         >
                           {isActive && (
                             <Check
@@ -265,6 +279,7 @@ export function MuetzeKonfigurator() {
               </fieldset>
             );
           })}
+          </div>
 
           <form
             action={addConfiguredMuetzeToCartAction}
@@ -337,6 +352,14 @@ export function MuetzeKonfigurator() {
           </p>
         </section>
       </div>
+
+      <MobilePaletteSheet
+        regions={MUETZE_REGIONS}
+        selection={selection}
+        onSelect={(region, swatch) =>
+          updateRegion(region as MuetzeRegionDef, swatch)
+        }
+      />
     </div>
   );
 }

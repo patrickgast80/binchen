@@ -19,6 +19,8 @@ import {
   type Swatch,
 } from "./palette";
 import { PantsPhoto, type PantsPhotoColors } from "./pants-photo";
+import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
+import { SavedConfigsSection } from "../_shared/saved-configs-section";
 
 type Selection = Record<RegionDef["param"], string>;
 
@@ -234,6 +236,15 @@ export function HoseKonfigurator() {
               )}
             </div>
           </div>
+
+          <SavedConfigsSection
+            konfigurator="hose"
+            selection={selection}
+            href={(() => {
+              const q = searchParams?.toString() ?? "";
+              return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/hose";
+            })()}
+          />
         </section>
 
         {/* Palette controls */}
@@ -242,6 +253,8 @@ export function HoseKonfigurator() {
             Farbpalette für jede Region
           </h2>
 
+          {/* Desktop palette — on mobile the sticky bottom-sheet below owns the same picker */}
+          <div className="hidden space-y-8 md:block">
           {REGIONS.map((region) => {
             const activeId = selection[region.param];
             return (
@@ -301,6 +314,7 @@ export function HoseKonfigurator() {
               </fieldset>
             );
           })}
+          </div>
 
           <form
             action={addConfiguredHoseToCartAction}
@@ -377,6 +391,14 @@ export function HoseKonfigurator() {
           </p>
         </section>
       </div>
+
+      <MobilePaletteSheet
+        regions={REGIONS}
+        selection={selection}
+        onSelect={(region, swatch) =>
+          updateRegion(region as RegionDef, swatch)
+        }
+      />
     </div>
   );
 }

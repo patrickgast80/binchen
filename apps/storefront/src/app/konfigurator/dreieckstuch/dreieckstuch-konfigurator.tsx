@@ -15,9 +15,12 @@ import {
   type DreieckstuchRegionDef,
   resolveColor,
   resolveSwatchId,
+  swatchChipStyle,
   type Swatch,
 } from "./palette";
 import { DreieckstuchPhoto, type DreieckstuchPhotoColors } from "./dreieckstuch-photo";
+import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
+import { SavedConfigsSection } from "../_shared/saved-configs-section";
 
 type Selection = Record<DreieckstuchRegionDef["param"], string>;
 
@@ -183,6 +186,15 @@ export function DreieckstuchKonfigurator() {
               )}
             </div>
           </div>
+
+          <SavedConfigsSection
+            konfigurator="dreieckstuch"
+            selection={selection}
+            href={(() => {
+              const q = searchParams?.toString() ?? "";
+              return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/dreieckstuch";
+            })()}
+          />
         </section>
 
         <section aria-labelledby="palette-heading" className="space-y-8">
@@ -190,6 +202,8 @@ export function DreieckstuchKonfigurator() {
             Farbpalette für jede Region
           </h2>
 
+          {/* Desktop palette — on mobile the sticky bottom-sheet below owns the same picker */}
+          <div className="hidden space-y-8 md:block">
           {DREIECKSTUCH_REGIONS.map((region) => {
             const activeId = selection[region.param];
             return (
@@ -227,7 +241,7 @@ export function DreieckstuchKonfigurator() {
                             "relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-transform group-hover:scale-105 sm:h-11 sm:w-11",
                             isActive ? "border-binchen-ink shadow-inner" : "border-binchen-border",
                           )}
-                          style={{ backgroundColor: swatch.hex }}
+                          style={swatchChipStyle(swatch)}
                         >
                           {isActive && (
                             <Check
@@ -247,6 +261,7 @@ export function DreieckstuchKonfigurator() {
               </fieldset>
             );
           })}
+          </div>
 
           <form
             action={addConfiguredDreieckstuchToCartAction}
@@ -319,6 +334,14 @@ export function DreieckstuchKonfigurator() {
           </p>
         </section>
       </div>
+
+      <MobilePaletteSheet
+        regions={DREIECKSTUCH_REGIONS}
+        selection={selection}
+        onSelect={(region, swatch) =>
+          updateRegion(region as DreieckstuchRegionDef, swatch)
+        }
+      />
     </div>
   );
 }

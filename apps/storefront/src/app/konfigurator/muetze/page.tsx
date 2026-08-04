@@ -1,21 +1,21 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 
+import { buildKonfigMetadata } from "../_shared/metadata";
 import { MuetzeKonfigurator } from "./muetze-konfigurator";
 
-export const metadata: Metadata = {
-  title: "Muetze-Konfigurator",
-  description:
-    "Stell deine Bilulu-Muetze selbst zusammen: Hauptstoff und Futter einzeln einf\u00e4rben. Vorschau auf einem echten Muetzenfoto.",
-  alternates: {
-    canonical: "/konfigurator/muetze",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+const TITLE = "Muetze-Konfigurator";
+const DESCRIPTION =
+  "Stell deine Bilulu-Muetze selbst zusammen: Hauptstoff und Futter einzeln einfärben. Vorschau auf einem echten Muetzenfoto.";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}): Metadata {
+  return buildKonfigMetadata("muetze", searchParams, { title: TITLE, description: DESCRIPTION });
+}
 
 export default function MuetzeKonfiguratorPage() {
   return <MuetzeKonfigurator />;
