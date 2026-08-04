@@ -53,7 +53,7 @@ export function SavedConfigsSection({
       save({ name, href, thumbnail });
       setFlash("Konfiguration gemerkt");
       window.setTimeout(() => setFlash(null), 2200);
-    } catch (err) {
+    } catch {
       // Canvas errors (e.g. image load fail) — surface a non-blocking hint.
       setFlash("Speichern fehlgeschlagen — bitte nochmal");
       window.setTimeout(() => setFlash(null), 3000);
