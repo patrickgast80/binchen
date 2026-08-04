@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   addLineItem,
+  getConfiguratorBodyVariant,
   getConfiguratorDreieckstuchVariant,
   getConfiguratorHoseVariant,
   getConfiguratorMuetzeVariant,
@@ -159,6 +160,44 @@ export async function addConfiguredMuetzeToCartAction(formData: FormData): Promi
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
     redirect("/konfigurator/muetze?error=add_failed");
+  }
+
+  revalidatePath("/cart");
+  redirect("/cart?added=konfigurator");
+}
+
+/**
+ * Add a configured Body (from /konfigurator/body) to the cart.
+ * Three-zone konfigurator (Hauptteil, Halsbündchen, Ärmelbündchen) — selections
+ * become line-item metadata so the cart renders "Hauptteil: Creme · Halsbündchen:
+ * Salbei · Ärmelbündchen: Salbei"; the variant is resolved server-side (env
+ * override or first Body product in the catalog).
+ */
+export async function addConfiguredBodyToCartAction(formData: FormData): Promise<void> {
+  const selection = {
+    kind: "konfigurator-body" as const,
+    hauptteil: String(formData.get("hauptteil") ?? "").trim() || null,
+    halsbund: String(formData.get("halsbund") ?? "").trim() || null,
+    aermelbund: String(formData.get("aermelbund") ?? "").trim() || null,
+    hauptteilName: String(formData.get("hauptteilName") ?? "").trim() || null,
+    halsbundName: String(formData.get("halsbundName") ?? "").trim() || null,
+    aermelbundName: String(formData.get("aermelbundName") ?? "").trim() || null,
+    configHref: String(formData.get("configHref") ?? "").trim() || null,
+  };
+
+  const target = await getConfiguratorBodyVariant();
+  if (!target) {
+    redirect("/konfigurator/body?error=variant_unavailable");
+  }
+
+  const cart = await ensureCart();
+  if (!cart) {
+    redirect("/konfigurator/body?error=cart_unavailable");
+  }
+
+  const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
+  if (!added) {
+    redirect("/konfigurator/body?error=add_failed");
   }
 
   revalidatePath("/cart");

@@ -1,6 +1,6 @@
 import { PALETTE } from "../hose/palette";
 
-export type KonfiguratorId = "hose" | "turban" | "muetze" | "dreieckstuch";
+export type KonfiguratorId = "hose" | "turban" | "muetze" | "dreieckstuch" | "body";
 
 export interface KonfigMaskEntry {
   /** URL search-param key the konfigurator uses for this region. */
@@ -119,15 +119,51 @@ const DREIECKSTUCH: KonfigRegistryEntry = {
   ],
 };
 
+const BODY: KonfigRegistryEntry = {
+  id: "body",
+  path: "/konfigurator/body",
+  productLabel: "Body",
+  basePhoto: "/konfigurator/body-foto/base.webp",
+  width: 900,
+  height: 737,
+  regions: [
+    {
+      param: "hauptteil",
+      src: "/konfigurator/body-foto/mask-hauptteil.webp",
+      label: "Hauptteil",
+      defaultColor: "cream",
+    },
+    {
+      param: "halsbund",
+      src: "/konfigurator/body-foto/mask-halsbund.webp",
+      label: "Halsbündchen",
+      defaultColor: "sage",
+    },
+    {
+      param: "aermelbund",
+      src: "/konfigurator/body-foto/mask-aermelbund.webp",
+      label: "Ärmelbündchen",
+      defaultColor: "sage",
+    },
+  ],
+};
+
 export const KONFIG_REGISTRY: Record<KonfiguratorId, KonfigRegistryEntry> = {
   hose: HOSE,
   turban: TURBAN,
   muetze: MUETZE,
   dreieckstuch: DREIECKSTUCH,
+  body: BODY,
 };
 
 export function isKonfiguratorId(v: string): v is KonfiguratorId {
-  return v === "hose" || v === "turban" || v === "muetze" || v === "dreieckstuch";
+  return (
+    v === "hose" ||
+    v === "turban" ||
+    v === "muetze" ||
+    v === "dreieckstuch" ||
+    v === "body"
+  );
 }
 
 /** Resolves a swatch id → hex, falling back to the region default and then cream. */

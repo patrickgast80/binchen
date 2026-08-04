@@ -277,6 +277,42 @@ export async function getConfiguratorDreieckstuchVariant(): Promise<
   };
 }
 
+/**
+ * Resolve the base variant used by the Body-Konfigurator (BIL-2455) — same
+ * strategy as the other four: `NEXT_PUBLIC_CONFIGURATOR_BODY_VARIANT_ID` wins,
+ * otherwise the first "Body"-titled product (accepts "Bodysuit" or "Kurzarm-Body"
+ * as long as the title contains "Body"). The Turban's title also contains
+ * "Mütze" — the analogous risk here is a title like "Body-Warmer" but we don't
+ * ship any such product; the first-match rule remains safe until we do.
+ */
+export async function getConfiguratorBodyVariant(): Promise<
+  { variantId: string; productId: string; priceAmount: number; currency: string } | null
+> {
+  const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_BODY_VARIANT_ID?.trim();
+  if (!BACKEND_URL) return null;
+  const url = new URL(`${BACKEND_URL}/store/products`);
+  url.searchParams.set("limit", "50");
+  const regionId = await getDefaultRegionId();
+  if (regionId) url.searchParams.set("region_id", regionId);
+  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
+  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
+  if (!res.ok) return null;
+  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const body = products.find((p) => /body/i.test(p.title));
+  if (!body) return null;
+  const variant =
+    body.variants.find((v) => (envVariant ? v.id === envVariant : v.inventory_quantity > 0)) ??
+    body.variants[0];
+  if (!variant) return null;
+  const price = variantPriceOrNull(variant);
+  return {
+    variantId: envVariant || variant.id,
+    productId: body.id,
+    priceAmount: price?.amount ?? 0,
+    currency: price?.currency ?? "EUR",
+  };
+}
+
 export function variantPriceOrNull(
   variant: MedusaProductVariant,
 ): { amount: number; currency: string } | null {

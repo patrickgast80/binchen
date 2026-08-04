@@ -64,10 +64,12 @@ const TILES: readonly Tile[] = [
     image: { src: "/konfigurator/dreieckstuch-foto/base.webp", width: 900, height: 482 },
   },
   {
-    status: "upcoming",
+    status: "live",
+    href: "/konfigurator/body",
     name: "Body",
-    tagline: "Hauptteil, Halsbündchen und Ärmelbündchen.",
-    zones: "geplant: 3 Zonen",
+    tagline: "Hauptteil, Halsbündchen und Ärmelbündchen einzeln einfärben.",
+    zones: "3 Zonen",
+    image: { src: "/konfigurator/body-foto/base.webp", width: 900, height: 737 },
   },
   {
     status: "upcoming",

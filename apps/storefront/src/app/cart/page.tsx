@@ -58,6 +58,15 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
     return { title: "Konfigurator-Dreieckstuch", entries, configHref: asStr(m.configHref) };
   }
 
+  if (kind === "konfigurator-body") {
+    const entries = [
+      { label: "Hauptteil", value: asStr(m.hauptteilName) },
+      { label: "Halsbündchen", value: asStr(m.halsbundName) },
+      { label: "Ärmelbündchen", value: asStr(m.aermelbundName) },
+    ].filter((e): e is { label: string; value: string } => e.value !== null);
+    return { title: "Konfigurator-Body", entries, configHref: asStr(m.configHref) };
+  }
+
   return null;
 }
 
