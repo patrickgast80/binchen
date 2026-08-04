@@ -1,9 +1,18 @@
+import type { CSSProperties } from "react";
+
 export type RegionId = "bund" | "hose" | "buendchen";
 
 export interface Swatch {
   id: string;
   name: string;
   hex: string;
+  /**
+   * Optional square, tileable fabric photo (>=512px, ideally 1024px, seamless).
+   * When set, the swatch chip renders the photo; hex remains the fallback
+   * (and the underlying tint reference for check-mark contrast).
+   * Assets tracked in BIL-2451.
+   */
+  textureSrc?: string;
 }
 
 export interface RegionDef {
@@ -61,6 +70,24 @@ export const PALETTE: readonly Swatch[] = [
 export const SWATCH_BY_ID: Record<string, Swatch> = Object.fromEntries(
   PALETTE.map((s) => [s.id, s]),
 );
+
+/**
+ * CSS for the round swatch chip in the picker. When a fabric photo is
+ * attached the chip renders the photo (with hex as paint-fallback for slow
+ * networks and broken URLs); otherwise the chip is a plain hex fill.
+ */
+export function swatchChipStyle(swatch: Swatch): CSSProperties {
+  if (!swatch.textureSrc) {
+    return { backgroundColor: swatch.hex };
+  }
+  return {
+    backgroundColor: swatch.hex,
+    backgroundImage: `url(${swatch.textureSrc})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  };
+}
 
 export function resolveColor(id: string | null | undefined, fallback: string): string {
   if (!id) return SWATCH_BY_ID[fallback]?.hex ?? "#FAF7F2";

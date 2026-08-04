@@ -1,6 +1,12 @@
-import { PALETTE, resolveColor, resolveSwatchId, type Swatch } from "../hose/palette";
+import {
+  PALETTE,
+  resolveColor,
+  resolveSwatchId,
+  swatchChipStyle,
+  type Swatch,
+} from "../hose/palette";
 
-export { PALETTE, resolveColor, resolveSwatchId };
+export { PALETTE, resolveColor, resolveSwatchId, swatchChipStyle };
 export type { Swatch };
 
 export type DreieckstuchRegionParam = "tuch";
