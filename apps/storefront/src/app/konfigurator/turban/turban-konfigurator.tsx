@@ -100,7 +100,7 @@ export function TurbanKonfigurator() {
   const showReset = !isDefaultSelection(selection);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 sm:pt-12 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 pb-[280px] pt-8 sm:px-6 sm:pt-12 md:pb-20 lg:px-8">
       {/* Page header */}
       <header className="max-w-3xl">
         <p className="font-body text-sm font-medium uppercase tracking-widest text-binchen-terracotta-text">

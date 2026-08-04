@@ -58,9 +58,10 @@ export function MobilePaletteSheet({
     <div
       className={cn(
         "md:hidden",
-        // Sticky bottom sheet — sits above the fold on mobile so users can act
-        // without scrolling. Live-Preview keeps the top ~50% of the viewport.
-        "sticky bottom-0 z-30 -mx-4 mt-6",
+        // Fixed bottom-sheet — always pinned to viewport bottom on mobile so
+        // the picker is one thumb-swipe away regardless of scroll position.
+        // z-30 keeps it below the cookie consent (z-50) but above page content.
+        "fixed inset-x-0 bottom-0 z-30",
         "rounded-t-2xl border-t border-binchen-border bg-binchen-cream shadow-[0_-8px_24px_-12px_rgba(44,36,23,0.25)]",
         // Reserve room so the bottom of the palette isn't behind the iOS home indicator.
         "pb-[env(safe-area-inset-bottom,0px)]",
