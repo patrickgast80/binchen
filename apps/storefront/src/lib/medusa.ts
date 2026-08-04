@@ -280,10 +280,10 @@ export async function getConfiguratorDreieckstuchVariant(): Promise<
 /**
  * Resolve the base variant used by the Body-Konfigurator (BIL-2455) — same
  * strategy as the other four: `NEXT_PUBLIC_CONFIGURATOR_BODY_VARIANT_ID` wins,
- * otherwise the first "Body"-titled product (accepts "Bodysuit" or "Kurzarm-Body"
- * as long as the title contains "Body"). The Turban's title also contains
- * "Mütze" — the analogous risk here is a title like "Body-Warmer" but we don't
- * ship any such product; the first-match rule remains safe until we do.
+ * otherwise the first product whose title contains "body" as a whole word
+ * (word boundary `\b`). BIL-2458 added the base "Body" product; the seed
+ * "Jersey Bodysuits Set" collides on `/body/i` but not on `/\bbody\b/i` —
+ * mirrors the Mütze-vs-Turban disambiguation used above.
  */
 export async function getConfiguratorBodyVariant(): Promise<
   { variantId: string; productId: string; priceAmount: number; currency: string } | null
@@ -298,7 +298,7 @@ export async function getConfiguratorBodyVariant(): Promise<
   const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
   if (!res.ok) return null;
   const { products } = (await res.json()) as { products: MedusaProduct[] };
-  const body = products.find((p) => /body/i.test(p.title));
+  const body = products.find((p) => /\bbody\b/i.test(p.title));
   if (!body) return null;
   const variant =
     body.variants.find((v) => (envVariant ? v.id === envVariant : v.inventory_quantity > 0)) ??
