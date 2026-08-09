@@ -10,15 +10,16 @@ import { cn } from "@/lib/utils";
 import { addConfiguredHoseToCartAction } from "@/app/cart/actions";
 
 import {
-  PALETTE,
   REGIONS,
   type RegionDef,
-  resolveColor,
   resolveHoseParam,
+  resolveSwatch,
   resolveSwatchId,
+  swatchChipStyle,
+  swatchesForRegion,
   type Swatch,
 } from "./palette";
-import { PantsPhoto, type PantsPhotoColors } from "./pants-photo";
+import { PantsPhoto, type PantsPhotoPaints } from "./pants-photo";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
 
@@ -52,14 +53,17 @@ export function HoseKonfigurator() {
   } | null>(null);
   const [shareStatus, setShareStatus] = React.useState<"idle" | "copied">("idle");
 
-  const colors: PantsPhotoColors = React.useMemo(
-    () => ({
-      bund: resolveColor(selection.bund, "petrol"),
-      hose: resolveColor(selection.hose, "cream"),
-      buendchen: resolveColor(selection.buendchen, "petrol"),
-    }),
-    [selection],
-  );
+  const paints: PantsPhotoPaints = React.useMemo(() => {
+    const toPaint = (id: string, fallback: string) => {
+      const s = resolveSwatch(id, fallback);
+      return { hex: s.hex, textureSrc: s.textureSrc };
+    };
+    return {
+      bund: toPaint(selection.bund, "petrol"),
+      hose: toPaint(selection.hose, "cream"),
+      buendchen: toPaint(selection.buendchen, "petrol"),
+    };
+  }, [selection]);
 
   const updateRegion = React.useCallback(
     (region: RegionDef, swatch: Swatch) => {
@@ -182,7 +186,7 @@ export function HoseKonfigurator() {
           <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
               <PantsPhoto
-                colors={colors}
+                paints={paints}
                 title="Live-Vorschau der konfigurierten Hose auf Basis eines echten Hosenfotos"
               />
             </div>
@@ -193,7 +197,7 @@ export function HoseKonfigurator() {
             <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-3">
               {REGIONS.map((region) => {
                 const swatchId = selection[region.param];
-                const swatch = PALETTE.find((s) => s.id === swatchId);
+                const swatch = resolveSwatch(swatchId, region.defaultColor);
                 return (
                   <div key={region.id} className="flex items-center gap-2">
                     <span
@@ -271,7 +275,7 @@ export function HoseKonfigurator() {
                   aria-label={`Farbe für ${region.label}`}
                   className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-6"
                 >
-                  {PALETTE.map((swatch) => {
+                  {swatchesForRegion(region).map((swatch) => {
                     const isActive = swatch.id === activeId;
                     return (
                       <button
@@ -294,7 +298,7 @@ export function HoseKonfigurator() {
                               ? "border-binchen-ink shadow-inner"
                               : "border-binchen-border",
                           )}
-                          style={{ backgroundColor: swatch.hex }}
+                          style={swatchChipStyle(swatch)}
                         >
                           {isActive && (
                             <Check
@@ -322,14 +326,14 @@ export function HoseKonfigurator() {
           >
             {REGIONS.map((region) => {
               const swatchId = selection[region.param];
-              const swatch = PALETTE.find((s) => s.id === swatchId);
+              const swatch = resolveSwatch(swatchId, region.defaultColor);
               return (
                 <React.Fragment key={region.param}>
                   <input type="hidden" name={region.param} value={swatchId} />
                   <input
                     type="hidden"
                     name={`${region.param}Name`}
-                    value={swatch?.name ?? ""}
+                    value={swatch.name}
                   />
                 </React.Fragment>
               );

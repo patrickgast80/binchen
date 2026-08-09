@@ -10,15 +10,15 @@ import { cn } from "@/lib/utils";
 import { addConfiguredDreieckstuchToCartAction } from "@/app/cart/actions";
 
 import {
-  PALETTE,
   DREIECKSTUCH_REGIONS,
   type DreieckstuchRegionDef,
-  resolveColor,
+  resolveSwatch,
   resolveSwatchId,
   swatchChipStyle,
+  swatchesForRegion,
   type Swatch,
 } from "./palette";
-import { DreieckstuchPhoto, type DreieckstuchPhotoColors } from "./dreieckstuch-photo";
+import { DreieckstuchPhoto, type DreieckstuchPhotoPaints } from "./dreieckstuch-photo";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
 
@@ -46,12 +46,10 @@ export function DreieckstuchKonfigurator() {
   );
   const [shareStatus, setShareStatus] = React.useState<"idle" | "copied">("idle");
 
-  const colors: DreieckstuchPhotoColors = React.useMemo(
-    () => ({
-      tuch: resolveColor(selection.tuch, "powder-pink"),
-    }),
-    [selection],
-  );
+  const paints: DreieckstuchPhotoPaints = React.useMemo(() => {
+    const s = resolveSwatch(selection.tuch, "powder-pink");
+    return { tuch: { hex: s.hex, textureSrc: s.textureSrc } };
+  }, [selection]);
 
   const updateRegion = React.useCallback(
     (region: DreieckstuchRegionDef, swatch: Swatch) => {
@@ -139,7 +137,7 @@ export function DreieckstuchKonfigurator() {
           <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
               <DreieckstuchPhoto
-                colors={colors}
+                paints={paints}
                 title="Live-Vorschau des konfigurierten Bilulu-Dreieckstuchs auf Basis eines echten Produktfotos"
               />
             </div>
@@ -149,7 +147,7 @@ export function DreieckstuchKonfigurator() {
             <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-2">
               {DREIECKSTUCH_REGIONS.map((region) => {
                 const swatchId = selection[region.param];
-                const swatch = PALETTE.find((s) => s.id === swatchId);
+                const swatch = resolveSwatch(swatchId, region.defaultColor);
                 return (
                   <div key={region.id} className="flex items-center gap-2">
                     <span
@@ -220,7 +218,7 @@ export function DreieckstuchKonfigurator() {
                   aria-label={`Farbe für ${region.label}`}
                   className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-6"
                 >
-                  {PALETTE.map((swatch) => {
+                  {swatchesForRegion(region).map((swatch) => {
                     const isActive = swatch.id === activeId;
                     return (
                       <button
@@ -269,11 +267,11 @@ export function DreieckstuchKonfigurator() {
           >
             {DREIECKSTUCH_REGIONS.map((region) => {
               const swatchId = selection[region.param];
-              const swatch = PALETTE.find((s) => s.id === swatchId);
+              const swatch = resolveSwatch(swatchId, region.defaultColor);
               return (
                 <React.Fragment key={region.param}>
                   <input type="hidden" name={region.param} value={swatchId} />
-                  <input type="hidden" name={`${region.param}Name`} value={swatch?.name ?? ""} />
+                  <input type="hidden" name={`${region.param}Name`} value={swatch.name} />
                 </React.Fragment>
               );
             })}

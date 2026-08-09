@@ -1,12 +1,14 @@
 import * as React from "react";
 
-export interface TurbanPhotoColors {
-  turban: string;
-  schleife: string;
+import { ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
+
+export interface TurbanPhotoPaints {
+  turban: ZonePaint;
+  schleife: ZonePaint;
 }
 
 interface TurbanPhotoProps {
-  colors: TurbanPhotoColors;
+  paints: TurbanPhotoPaints;
   title?: string;
   className?: string;
 }
@@ -15,9 +17,9 @@ interface TurbanPhotoProps {
  * Fotorealistische Konfigurator-Vorschau: die echte Turban-Mütze „Rosen"
  * (freigestellt, entsättigt) als Basis, überlagert mit zwei einfärbbaren
  * Zonen (Hauptstoff + Schleife). Gleiches Prinzip wie PantsPhoto: die Zone
- * wird per CSS `mask-image` ausgeschnitten und die Farbe per
- * `mix-blend-mode: multiply` über die Graustufen gelegt, sodass Stofftextur,
- * Raffung und Nähte sichtbar bleiben.
+ * wird per CSS `mask-image` ausgeschnitten und die Füllung (Farbe oder
+ * Stoffdruck) per `mix-blend-mode: multiply` über die Graustufen gelegt,
+ * sodass Stofftextur, Raffung und Nähte sichtbar bleiben.
  *
  * Assets werden von scripts/bil2444-build-turban-assets.mjs aus dem Produktfoto
  * turban-rosen-01.jpeg erzeugt und liegen unter /konfigurator/turban-foto/.
@@ -27,7 +29,7 @@ const ASSET_BASE = "/konfigurator/turban-foto";
 const ASSET_W = 900;
 const ASSET_H = 796;
 
-export function TurbanPhoto({ colors, title = "Turban-Vorschau", className }: TurbanPhotoProps) {
+export function TurbanPhoto({ paints, title = "Turban-Vorschau", className }: TurbanPhotoProps) {
   return (
     <div
       role="img"
@@ -62,27 +64,8 @@ export function TurbanPhoto({ colors, title = "Turban-Vorschau", className }: Tu
         }}
       />
 
-      <ZoneOverlay src={`${ASSET_BASE}/mask-turban.webp`} color={colors.turban} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-schleife.webp`} color={colors.schleife} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-turban.webp`} paint={paints.turban} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-schleife.webp`} paint={paints.schleife} />
     </div>
   );
-}
-
-function ZoneOverlay({ src, color }: { src: string; color: string }) {
-  const maskStyles: React.CSSProperties & Record<string, string | number> = {
-    position: "absolute",
-    inset: 0,
-    backgroundColor: color,
-    mixBlendMode: "multiply",
-    pointerEvents: "none",
-    maskImage: `url(${src})`,
-    WebkitMaskImage: `url(${src})`,
-    maskMode: "alpha",
-    WebkitMaskMode: "alpha",
-    maskRepeat: "no-repeat",
-    WebkitMaskRepeat: "no-repeat",
-    maskSize: "100% 100%",
-    WebkitMaskSize: "100% 100%",
-  };
-  return <div aria-hidden="true" style={maskStyles} />;
 }

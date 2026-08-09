@@ -1,12 +1,23 @@
 import {
+  FABRICS,
   PALETTE,
   resolveColor,
+  resolveSwatch,
   resolveSwatchId,
   swatchChipStyle,
+  swatchesForRegion,
   type Swatch,
 } from "../hose/palette";
 
-export { PALETTE, resolveColor, resolveSwatchId, swatchChipStyle };
+export {
+  FABRICS,
+  PALETTE,
+  resolveColor,
+  resolveSwatch,
+  resolveSwatchId,
+  swatchChipStyle,
+  swatchesForRegion,
+};
 export type { Swatch };
 
 export type BodyRegionParam = "hauptteil" | "halsbund" | "aermelbund";
@@ -17,6 +28,7 @@ export interface BodyRegionDef {
   label: string;
   description: string;
   defaultColor: string;
+  allowsFabrics?: boolean;
 }
 
 export const BODY_REGIONS: readonly BodyRegionDef[] = [
@@ -26,6 +38,7 @@ export const BODY_REGIONS: readonly BodyRegionDef[] = [
     label: "Hauptteil",
     description: "Der Rumpf des Bodys — Vorder- und Rückseite, inkl. Ärmel.",
     defaultColor: "cream",
+    allowsFabrics: true,
   },
   {
     id: "halsbund",

@@ -103,10 +103,10 @@ export default function FruehchenPage() {
             <div className="relative">
               <div className="mx-auto w-full max-w-sm rounded-2xl border border-binchen-border bg-binchen-cream p-6">
                 <PantsPhoto
-                  colors={{
-                    bund: "#5BA8AE",
-                    hose: "#F5E9D5",
-                    buendchen: "#7A3318",
+                  paints={{
+                    bund: { hex: "#5BA8AE" },
+                    hose: { hex: "#F5E9D5" },
+                    buendchen: { hex: "#7A3318" },
                   }}
                   title="Beispiel einer handgenähten Bilulu-Pumphose in Frühchengröße"
                 />
@@ -211,10 +211,10 @@ export default function FruehchenPage() {
         <div className="grid items-center gap-10 rounded-3xl border border-binchen-border bg-binchen-cream-dark px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[1fr_1.4fr] lg:gap-14 lg:px-14 lg:py-14">
           <div className="mx-auto w-full max-w-xs lg:max-w-sm">
             <PantsPhoto
-              colors={{
-                bund: "#E8DDC8",
-                hose: "#5BA8AE",
-                buendchen: "#E8DDC8",
+              paints={{
+                bund: { hex: "#E8DDC8" },
+                hose: { hex: "#5BA8AE" },
+                buendchen: { hex: "#E8DDC8" },
               }}
               title="Vorschau: Hose mit sanftem Bund und farbigem Hauptteil"
             />

@@ -10,15 +10,15 @@ import { cn } from "@/lib/utils";
 import { addConfiguredTurbanToCartAction } from "@/app/cart/actions";
 
 import {
-  PALETTE,
   TURBAN_REGIONS,
   type TurbanRegionDef,
-  resolveColor,
+  resolveSwatch,
   resolveSwatchId,
   swatchChipStyle,
+  swatchesForRegion,
   type Swatch,
 } from "./palette";
-import { TurbanPhoto, type TurbanPhotoColors } from "./turban-photo";
+import { TurbanPhoto, type TurbanPhotoPaints } from "./turban-photo";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
 
@@ -47,13 +47,16 @@ export function TurbanKonfigurator() {
   } | null>(null);
   const [shareStatus, setShareStatus] = React.useState<"idle" | "copied">("idle");
 
-  const colors: TurbanPhotoColors = React.useMemo(
-    () => ({
-      turban: resolveColor(selection.turban, "cream"),
-      schleife: resolveColor(selection.schleife, "terracotta"),
-    }),
-    [selection],
-  );
+  const paints: TurbanPhotoPaints = React.useMemo(() => {
+    const toPaint = (id: string, fallback: string) => {
+      const s = resolveSwatch(id, fallback);
+      return { hex: s.hex, textureSrc: s.textureSrc };
+    };
+    return {
+      turban: toPaint(selection.turban, "cream"),
+      schleife: toPaint(selection.schleife, "terracotta"),
+    };
+  }, [selection]);
 
   const updateRegion = React.useCallback(
     (region: TurbanRegionDef, swatch: Swatch) => {
@@ -170,7 +173,7 @@ export function TurbanKonfigurator() {
           <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
               <TurbanPhoto
-                colors={colors}
+                paints={paints}
                 title="Live-Vorschau der konfigurierten Turban-Mütze auf Basis eines echten Produktfotos"
               />
             </div>
@@ -181,7 +184,7 @@ export function TurbanKonfigurator() {
             <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-2">
               {TURBAN_REGIONS.map((region) => {
                 const swatchId = selection[region.param];
-                const swatch = PALETTE.find((s) => s.id === swatchId);
+                const swatch = resolveSwatch(swatchId, region.defaultColor);
                 return (
                   <div key={region.id} className="flex items-center gap-2">
                     <span
@@ -259,7 +262,7 @@ export function TurbanKonfigurator() {
                   aria-label={`Farbe für ${region.label}`}
                   className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-6"
                 >
-                  {PALETTE.map((swatch) => {
+                  {swatchesForRegion(region).map((swatch) => {
                     const isActive = swatch.id === activeId;
                     return (
                       <button
@@ -310,14 +313,14 @@ export function TurbanKonfigurator() {
           >
             {TURBAN_REGIONS.map((region) => {
               const swatchId = selection[region.param];
-              const swatch = PALETTE.find((s) => s.id === swatchId);
+              const swatch = resolveSwatch(swatchId, region.defaultColor);
               return (
                 <React.Fragment key={region.param}>
                   <input type="hidden" name={region.param} value={swatchId} />
                   <input
                     type="hidden"
                     name={`${region.param}Name`}
-                    value={swatch?.name ?? ""}
+                    value={swatch.name}
                   />
                 </React.Fragment>
               );

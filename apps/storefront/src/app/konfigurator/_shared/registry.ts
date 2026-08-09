@@ -1,4 +1,7 @@
-import { PALETTE } from "../hose/palette";
+import { FABRICS, PALETTE } from "../hose/palette";
+
+/** Uni palette + board-delivered fabric prints, in one flat lookup. */
+const ALL_SWATCHES = [...PALETTE, ...FABRICS];
 
 export type KonfiguratorId = "hose" | "turban" | "muetze" | "dreieckstuch" | "body";
 
@@ -169,14 +172,14 @@ export function isKonfiguratorId(v: string): v is KonfiguratorId {
 /** Resolves a swatch id → hex, falling back to the region default and then cream. */
 export function swatchHexOrDefault(id: string | null | undefined, fallback: string): string {
   const byId: Record<string, string> = {};
-  for (const s of PALETTE) byId[s.id] = s.hex;
+  for (const s of ALL_SWATCHES) byId[s.id] = s.hex;
   return byId[id ?? ""] ?? byId[fallback] ?? "#FAF7F2";
 }
 
 /** Resolves a swatch id → human name, falling back to the region default. */
 export function swatchNameOrDefault(id: string | null | undefined, fallback: string): string {
   const byId: Record<string, string> = {};
-  for (const s of PALETTE) byId[s.id] = s.name;
+  for (const s of ALL_SWATCHES) byId[s.id] = s.name;
   return byId[id ?? ""] ?? byId[fallback] ?? "Creme";
 }
 

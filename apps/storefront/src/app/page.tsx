@@ -304,10 +304,10 @@ export default async function HomePage() {
           <div className="grid items-center gap-10 rounded-3xl border border-binchen-border bg-binchen-cream-dark px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[1fr_1.4fr] lg:gap-14 lg:px-14 lg:py-14">
             <div className="mx-auto w-full max-w-xs lg:max-w-sm">
               <PantsPhoto
-                colors={{
-                  bund: "#7A3318",
-                  hose: "#E8DDC8",
-                  buendchen: "#5BA8AE",
+                paints={{
+                  bund: { hex: "#7A3318" },
+                  hose: { hex: "#E8DDC8" },
+                  buendchen: { hex: "#5BA8AE" },
                 }}
                 title="Vorschau einer individuell konfigurierten Hose"
               />

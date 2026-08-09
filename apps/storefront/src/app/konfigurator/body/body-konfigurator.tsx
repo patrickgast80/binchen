@@ -10,15 +10,15 @@ import { cn } from "@/lib/utils";
 import { addConfiguredBodyToCartAction } from "@/app/cart/actions";
 
 import {
-  PALETTE,
   BODY_REGIONS,
   type BodyRegionDef,
-  resolveColor,
+  resolveSwatch,
   resolveSwatchId,
   swatchChipStyle,
+  swatchesForRegion,
   type Swatch,
 } from "./palette";
-import { BodyPhoto, type BodyPhotoColors } from "./body-photo";
+import { BodyPhoto, type BodyPhotoPaints } from "./body-photo";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
 
@@ -44,14 +44,17 @@ export function BodyKonfigurator() {
   const [lastChanged, setLastChanged] = React.useState<{ region: string; swatch: string } | null>(null);
   const [shareStatus, setShareStatus] = React.useState<"idle" | "copied">("idle");
 
-  const colors: BodyPhotoColors = React.useMemo(
-    () => ({
-      hauptteil: resolveColor(selection.hauptteil, "cream"),
-      halsbund: resolveColor(selection.halsbund, "sage"),
-      aermelbund: resolveColor(selection.aermelbund, "sage"),
-    }),
-    [selection],
-  );
+  const paints: BodyPhotoPaints = React.useMemo(() => {
+    const toPaint = (id: string, fallback: string) => {
+      const s = resolveSwatch(id, fallback);
+      return { hex: s.hex, textureSrc: s.textureSrc };
+    };
+    return {
+      hauptteil: toPaint(selection.hauptteil, "cream"),
+      halsbund: toPaint(selection.halsbund, "sage"),
+      aermelbund: toPaint(selection.aermelbund, "sage"),
+    };
+  }, [selection]);
 
   const updateRegion = React.useCallback(
     (region: BodyRegionDef, swatch: Swatch) => {
@@ -159,7 +162,7 @@ export function BodyKonfigurator() {
           <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
               <BodyPhoto
-                colors={colors}
+                paints={paints}
                 title="Live-Vorschau des konfigurierten Bilulu-Bodys"
               />
             </div>
@@ -169,7 +172,7 @@ export function BodyKonfigurator() {
             <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-2">
               {BODY_REGIONS.map((region) => {
                 const swatchId = selection[region.param];
-                const swatch = PALETTE.find((s) => s.id === swatchId);
+                const swatch = resolveSwatch(swatchId, region.defaultColor);
                 return (
                   <div key={region.id} className="flex items-center gap-2">
                     <span
@@ -240,7 +243,7 @@ export function BodyKonfigurator() {
                   aria-label={`Farbe für ${region.label}`}
                   className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-6"
                 >
-                  {PALETTE.map((swatch) => {
+                  {swatchesForRegion(region).map((swatch) => {
                     const isActive = swatch.id === activeId;
                     return (
                       <button
@@ -289,11 +292,11 @@ export function BodyKonfigurator() {
           >
             {BODY_REGIONS.map((region) => {
               const swatchId = selection[region.param];
-              const swatch = PALETTE.find((s) => s.id === swatchId);
+              const swatch = resolveSwatch(swatchId, region.defaultColor);
               return (
                 <React.Fragment key={region.param}>
                   <input type="hidden" name={region.param} value={swatchId} />
-                  <input type="hidden" name={`${region.param}Name`} value={swatch?.name ?? ""} />
+                  <input type="hidden" name={`${region.param}Name`} value={swatch.name} />
                 </React.Fragment>
               );
             })}

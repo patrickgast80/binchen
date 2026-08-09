@@ -4,7 +4,12 @@ import * as React from "react";
 import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { PALETTE, type Swatch } from "../hose/palette";
+import {
+  resolveSwatch,
+  swatchChipStyle,
+  swatchesForRegion,
+  type Swatch,
+} from "../hose/palette";
 
 export interface MobileRegion {
   /** Matches the URL search-param key (e.g. "bund", "turban", "tuch"). */
@@ -12,6 +17,8 @@ export interface MobileRegion {
   label: string;
   description: string;
   defaultColor: string;
+  /** When true, this region's picker includes fabric-print swatches. */
+  allowsFabrics?: boolean;
 }
 
 interface MobilePaletteSheetProps {
@@ -85,7 +92,7 @@ export function MobilePaletteSheet({
           {regions.map((region, idx) => {
             const isActive = idx === activeIdx;
             const swatchId = selection[region.param];
-            const swatch = PALETTE.find((s) => s.id === swatchId);
+            const swatch = resolveSwatch(swatchId, region.defaultColor);
             return (
               <button
                 key={region.param}
@@ -108,7 +115,7 @@ export function MobilePaletteSheet({
                 <span
                   aria-hidden="true"
                   className="h-4 w-4 shrink-0 rounded-full border border-binchen-border/70"
-                  style={{ backgroundColor: swatch?.hex ?? "#FAF7F2" }}
+                  style={swatchChipStyle(swatch)}
                 />
                 <span className="whitespace-nowrap font-medium">{region.label}</span>
               </button>
@@ -149,7 +156,7 @@ export function MobilePaletteSheet({
                 aria-label={`Farbe für ${region.label}`}
                 className="grid grid-cols-6 gap-2"
               >
-                {PALETTE.map((swatch) => {
+                {swatchesForRegion(region).map((swatch) => {
                   const isActive = swatch.id === activeId;
                   return (
                     <button
@@ -171,7 +178,7 @@ export function MobilePaletteSheet({
                           "relative flex h-11 w-11 items-center justify-center rounded-full border-2 transition-transform",
                           isActive ? "border-binchen-ink shadow-inner" : "border-binchen-border",
                         )}
-                        style={{ backgroundColor: swatch.hex }}
+                        style={swatchChipStyle(swatch)}
                       >
                         {isActive && (
                           <Check

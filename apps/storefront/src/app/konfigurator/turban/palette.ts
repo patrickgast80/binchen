@@ -1,12 +1,23 @@
 import {
+  FABRICS,
   PALETTE,
   resolveColor,
+  resolveSwatch,
   resolveSwatchId,
   swatchChipStyle,
+  swatchesForRegion,
   type Swatch,
 } from "../hose/palette";
 
-export { PALETTE, resolveColor, resolveSwatchId, swatchChipStyle };
+export {
+  FABRICS,
+  PALETTE,
+  resolveColor,
+  resolveSwatch,
+  resolveSwatchId,
+  swatchChipStyle,
+  swatchesForRegion,
+};
 export type { Swatch };
 
 export type TurbanRegionParam = "turban" | "schleife";
@@ -18,6 +29,7 @@ export interface TurbanRegionDef {
   label: string;
   description: string;
   defaultColor: string;
+  allowsFabrics?: boolean;
 }
 
 export const TURBAN_REGIONS: readonly TurbanRegionDef[] = [
@@ -27,6 +39,7 @@ export const TURBAN_REGIONS: readonly TurbanRegionDef[] = [
     label: "Turban",
     description: "Der Hauptstoff der Mütze — vorn gerafft, hinten glatt.",
     defaultColor: "cream",
+    allowsFabrics: true,
   },
   {
     id: "schleife",

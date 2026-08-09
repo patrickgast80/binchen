@@ -10,15 +10,15 @@ import { cn } from "@/lib/utils";
 import { addConfiguredMuetzeToCartAction } from "@/app/cart/actions";
 
 import {
-  PALETTE,
   MUETZE_REGIONS,
   type MuetzeRegionDef,
-  resolveColor,
+  resolveSwatch,
   resolveSwatchId,
   swatchChipStyle,
+  swatchesForRegion,
   type Swatch,
 } from "./palette";
-import { MuetzePhoto, type MuetzePhotoColors } from "./muetze-photo";
+import { MuetzePhoto, type MuetzePhotoPaints } from "./muetze-photo";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
 
@@ -44,13 +44,16 @@ export function MuetzeKonfigurator() {
   const [lastChanged, setLastChanged] = React.useState<{ region: string; swatch: string } | null>(null);
   const [shareStatus, setShareStatus] = React.useState<"idle" | "copied">("idle");
 
-  const colors: MuetzePhotoColors = React.useMemo(
-    () => ({
-      muetze: resolveColor(selection.muetze, "sage"),
-      futter: resolveColor(selection.futter, "powder-pink"),
-    }),
-    [selection],
-  );
+  const paints: MuetzePhotoPaints = React.useMemo(() => {
+    const toPaint = (id: string, fallback: string) => {
+      const s = resolveSwatch(id, fallback);
+      return { hex: s.hex, textureSrc: s.textureSrc };
+    };
+    return {
+      muetze: toPaint(selection.muetze, "sage"),
+      futter: toPaint(selection.futter, "powder-pink"),
+    };
+  }, [selection]);
 
   const updateRegion = React.useCallback(
     (region: MuetzeRegionDef, swatch: Swatch) => {
@@ -157,7 +160,7 @@ export function MuetzeKonfigurator() {
           <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
               <MuetzePhoto
-                colors={colors}
+                paints={paints}
                 title="Live-Vorschau der konfigurierten Bilulu-Muetze auf Basis eines echten Produktfotos"
               />
             </div>
@@ -167,7 +170,7 @@ export function MuetzeKonfigurator() {
             <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-2">
               {MUETZE_REGIONS.map((region) => {
                 const swatchId = selection[region.param];
-                const swatch = PALETTE.find((s) => s.id === swatchId);
+                const swatch = resolveSwatch(swatchId, region.defaultColor);
                 return (
                   <div key={region.id} className="flex items-center gap-2">
                     <span
@@ -238,7 +241,7 @@ export function MuetzeKonfigurator() {
                   aria-label={`Farbe fuer ${region.label}`}
                   className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-6"
                 >
-                  {PALETTE.map((swatch) => {
+                  {swatchesForRegion(region).map((swatch) => {
                     const isActive = swatch.id === activeId;
                     return (
                       <button
@@ -287,11 +290,11 @@ export function MuetzeKonfigurator() {
           >
             {MUETZE_REGIONS.map((region) => {
               const swatchId = selection[region.param];
-              const swatch = PALETTE.find((s) => s.id === swatchId);
+              const swatch = resolveSwatch(swatchId, region.defaultColor);
               return (
                 <React.Fragment key={region.param}>
                   <input type="hidden" name={region.param} value={swatchId} />
-                  <input type="hidden" name={`${region.param}Name`} value={swatch?.name ?? ""} />
+                  <input type="hidden" name={`${region.param}Name`} value={swatch.name} />
                 </React.Fragment>
               );
             })}

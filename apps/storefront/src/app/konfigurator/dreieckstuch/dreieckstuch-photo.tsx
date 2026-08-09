@@ -1,11 +1,13 @@
 import * as React from "react";
 
-export interface DreieckstuchPhotoColors {
-  tuch: string;
+import { ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
+
+export interface DreieckstuchPhotoPaints {
+  tuch: ZonePaint;
 }
 
 interface DreieckstuchPhotoProps {
-  colors: DreieckstuchPhotoColors;
+  paints: DreieckstuchPhotoPaints;
   title?: string;
   className?: string;
 }
@@ -14,7 +16,8 @@ interface DreieckstuchPhotoProps {
  * Fotorealistische Konfigurator-Vorschau: das echte Bilulu-Dreieckstuch
  * "Kleiner Zoo" (freigestellt, entsättigt) als Basis, überlagert mit einer
  * einfärbbaren Zone (Hauptstoff). Prinzip wie TurbanPhoto/MuetzePhoto:
- * mix-blend-mode: multiply über Graustufen-Basis.
+ * mix-blend-mode: multiply über Graustufen-Basis. Der Hauptstoff kann einen
+ * Stoffdruck rendern.
  *
  * Assets werden von scripts/bil2446-build-dreieckstuch-assets.mjs erzeugt.
  */
@@ -23,7 +26,7 @@ const ASSET_W = 900;
 const ASSET_H = 482;
 
 export function DreieckstuchPhoto({
-  colors,
+  paints,
   title = "Dreieckstuch-Vorschau",
   className,
 }: DreieckstuchPhotoProps) {
@@ -58,26 +61,7 @@ export function DreieckstuchPhoto({
           pointerEvents: "none",
         }}
       />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-tuch.webp`} color={colors.tuch} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-tuch.webp`} paint={paints.tuch} />
     </div>
   );
-}
-
-function ZoneOverlay({ src, color }: { src: string; color: string }) {
-  const maskStyles: React.CSSProperties & Record<string, string | number> = {
-    position: "absolute",
-    inset: 0,
-    backgroundColor: color,
-    mixBlendMode: "multiply",
-    pointerEvents: "none",
-    maskImage: `url(${src})`,
-    WebkitMaskImage: `url(${src})`,
-    maskMode: "alpha",
-    WebkitMaskMode: "alpha",
-    maskRepeat: "no-repeat",
-    WebkitMaskRepeat: "no-repeat",
-    maskSize: "100% 100%",
-    WebkitMaskSize: "100% 100%",
-  };
-  return <div aria-hidden="true" style={maskStyles} />;
 }

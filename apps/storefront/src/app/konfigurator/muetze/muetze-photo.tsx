@@ -1,12 +1,14 @@
-﻿import * as React from "react";
+import * as React from "react";
 
-export interface MuetzePhotoColors {
-  muetze: string;
-  futter: string;
+import { ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
+
+export interface MuetzePhotoPaints {
+  muetze: ZonePaint;
+  futter: ZonePaint;
 }
 
 interface MuetzePhotoProps {
-  colors: MuetzePhotoColors;
+  paints: MuetzePhotoPaints;
   title?: string;
   className?: string;
 }
@@ -15,7 +17,8 @@ interface MuetzePhotoProps {
  * Fotorealistische Konfigurator-Vorschau: die echte Bilulu-Muetze "Boho-Regenbogen"
  * (freigestellt, entsaettigt) als Basis, ueberlagert mit zwei einfaerbbaren
  * Zonen (Hauptstoff + Futter). Gleiches Prinzip wie TurbanPhoto:
- * mix-blend-mode: multiply ueber Graustufen-Basis.
+ * mix-blend-mode: multiply ueber Graustufen-Basis. Der Hauptstoff kann
+ * einen Stoffdruck rendern.
  *
  * Assets werden von scripts/bil2445-build-muetze-assets.mjs erzeugt.
  */
@@ -23,7 +26,7 @@ const ASSET_BASE = "/konfigurator/muetze-foto";
 const ASSET_W = 900;
 const ASSET_H = 917;
 
-export function MuetzePhoto({ colors, title = "Muetze-Vorschau", className }: MuetzePhotoProps) {
+export function MuetzePhoto({ paints, title = "Muetze-Vorschau", className }: MuetzePhotoProps) {
   return (
     <div
       role="img"
@@ -55,27 +58,8 @@ export function MuetzePhoto({ colors, title = "Muetze-Vorschau", className }: Mu
           pointerEvents: "none",
         }}
       />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-muetze.webp`} color={colors.muetze} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-futter.webp`} color={colors.futter} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-muetze.webp`} paint={paints.muetze} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-futter.webp`} paint={paints.futter} />
     </div>
   );
-}
-
-function ZoneOverlay({ src, color }: { src: string; color: string }) {
-  const maskStyles: React.CSSProperties & Record<string, string | number> = {
-    position: "absolute",
-    inset: 0,
-    backgroundColor: color,
-    mixBlendMode: "multiply",
-    pointerEvents: "none",
-    maskImage: `url(${src})`,
-    WebkitMaskImage: `url(${src})`,
-    maskMode: "alpha",
-    WebkitMaskMode: "alpha",
-    maskRepeat: "no-repeat",
-    WebkitMaskRepeat: "no-repeat",
-    maskSize: "100% 100%",
-    WebkitMaskSize: "100% 100%",
-  };
-  return <div aria-hidden="true" style={maskStyles} />;
 }
