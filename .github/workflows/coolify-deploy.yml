@@ -1,13 +1,12 @@
 name: Coolify Deploy (fallback)
 
-# Fallback trigger: Coolify's GitHub App webhook has never fired on this repo
-# (see BIL-2397). Until that is fixed, this workflow POSTs to the Coolify deploy
-# API on every push to main so prod does not go stale again.
+# SECONDARY deploy path. The primary auto-deploy is a host-side poller on the
+# Coolify server (cron as user `deploy`, see infra/RUNBOOK.md "Auto-Deploy"
+# and infra/hetzner/binchen-autodeploy-poll.sh) — it needs no GitHub secret.
 #
-# Requires the repo secret `COOLIFY_PAT` (mint via CEO). Storefront and backend
-# UUIDs live in infra/.vault/coolify-pat.env and are safe to inline here.
-#
-# If the secret is missing, the job skips cleanly — no CI failure noise.
+# This workflow only becomes active if the repo secret `COOLIFY_PAT` is set
+# (never happened as of BIL-2459; mint via CEO). If the secret is missing, the
+# job skips cleanly — the poller covers auto-deploy, so no CI failure noise.
 
 on:
   push:
@@ -40,7 +39,7 @@ jobs:
           COOLIFY_PAT: ${{ secrets.COOLIFY_PAT }}
         run: |
           set -euo pipefail
-          curl -sS -X POST \
+          curl -sSf -X POST \
             -H "Authorization: Bearer $COOLIFY_PAT" \
             "https://coolify.bilulu.de/api/v1/deploy?uuid=f12ixtdbpa4bl8ks7qe1ln19&force=false"
           echo ""
@@ -51,7 +50,7 @@ jobs:
           COOLIFY_PAT: ${{ secrets.COOLIFY_PAT }}
         run: |
           set -euo pipefail
-          curl -sS -X POST \
+          curl -sSf -X POST \
             -H "Authorization: Bearer $COOLIFY_PAT" \
             "https://coolify.bilulu.de/api/v1/deploy?uuid=k3apwpfen4qlb1hc1jdnli6f&force=false"
           echo ""

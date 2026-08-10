@@ -247,3 +247,48 @@ same pattern (labelled issue + workflow-run email) is used by the TLS
 monitor -- one playbook covers both. If a paged SLA is needed later,
 Better Stack's free tier gives 10 monitors and can co-exist alongside this
 workflow as a second source (same note as the TLS section above).
+
+---
+
+## Auto-Deploy: push auf main → Coolify (BIL-2459)
+
+**Primärpfad:** Host-seitiger Poller auf `deploy@188.245.40.74` (der Coolify-
+Host selbst). `crontab -l` als `deploy` läuft alle 5 Minuten:
+`/home/deploy/bin/binchen-autodeploy-poll.sh` — vergleicht per anonymem
+`git ls-remote` (Repo ist public) den `main`-HEAD mit dem zuletzt getriggerten
+SHA (`/home/deploy/.binchen-autodeploy-last`) und POSTet bei Abweichung genau
+**einen** Deploy pro App (Storefront + Backend) an die Coolify-API. Kein
+Retry-Loop (Board-Zwei-Strike-Regel): schlägt ein Build fehl, gibt es erst
+beim nächsten Push einen neuen Versuch.
+
+Kanonische Script-Kopie: `infra/hetzner/binchen-autodeploy-poll.sh`.
+Secrets: `/home/deploy/.binchen-autodeploy.env` (600, COOLIFY_PAT + App-UUIDs).
+Log: `/home/deploy/binchen-autodeploy.log` (eine Zeile pro Deploy-POST).
+
+**Warum kein GitHub-Weg?** Coolifys GitHub-App-Webhook hat auf diesem Repo nie
+gefeuert (BIL-2397), und das Actions-Secret `COOLIFY_PAT` wurde nie gesetzt —
+`coolify-deploy.yml` hat deshalb monatelang grün geskippt, ohne zu deployen
+(Root Cause des Stale-Prod-Vorfalls BIL-2459). Der Workflow bleibt als
+Fallback bestehen und wird aktiv, sobald ein CEO das Secret doch setzt.
+
+### Playbook: Prod scheint stale (Route auf main fehlt live)
+
+1. Deployte Version prüfen:
+   ```
+   ssh deploy@188.245.40.74 'cat /home/deploy/.binchen-autodeploy-last; tail -5 /home/deploy/binchen-autodeploy.log'
+   git ls-remote https://github.com/patrickgast80/binchen.git refs/heads/main
+   ```
+2. SHAs gleich, aber Route fehlt → Build-Problem, Coolify-Deployment-Logs
+   ansehen (`https://coolify.bilulu.de`, Apps `f12ixtdb…`/`k3apwpfe…`).
+3. SHAs verschieden und Log ohne neue Zeile → Cron/Poller prüfen:
+   ```
+   ssh deploy@188.245.40.74 'crontab -l | grep autodeploy; tail /home/deploy/binchen-autodeploy.cron.log'
+   ```
+4. Manueller Fallback (PAT aus `infra/.vault/coolify-pat.env`):
+   ```
+   curl -X POST -H "Authorization: Bearer $COOLIFY_PAT" \
+     "https://coolify.bilulu.de/api/v1/deploy?uuid=<app-uuid>&force=false"
+   ```
+
+**Rollback des Pollers:**
+`ssh deploy@188.245.40.74 'crontab -l | grep -v binchen-autodeploy-poll | crontab -'`
