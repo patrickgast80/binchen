@@ -132,22 +132,6 @@ export function HoseKonfigurator() {
         </p>
       </header>
 
-      {/* Hinweis-Banner */}
-      <aside
-        role="note"
-        aria-label="Hinweis zum Konfigurator"
-        className="mt-8 rounded-xl border border-binchen-border bg-binchen-cream-dark px-4 py-3 sm:px-5 sm:py-4"
-      >
-        <p className="font-body text-sm leading-relaxed text-binchen-ink">
-          <span className="font-semibold">Bald mit echten Stoff-Mustern.</span>{" "}
-          <span className="text-binchen-ink-muted">
-            Die Vorschau zeigt deine Farben auf einer echten Bilulu-Pumphose — Stofftextur, Nähte
-            und Faltenwurf bleiben sichtbar. Sobald die Stoffmuster eintreffen, kannst du hier
-            echte Druckmotive auswählen.
-          </span>
-        </p>
-      </aside>
-
       {/* Frühchen-Hinweis */}
       <aside
         role="note"
@@ -363,26 +347,12 @@ export function HoseKonfigurator() {
           </form>
 
           <p className="font-body text-sm text-binchen-ink-muted">
-            Du möchtest lieber eine Turban-Mütze, eine Mütze oder ein Dreieckstuch gestalten?{" "}
-            <Link
-              href="/konfigurator/turban"
-              className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
-            >
-              Zum Turban-Konfigurator
-            </Link>{" "}
-            ·{" "}
+            Du möchtest lieber eine Mütze gestalten?{" "}
             <Link
               href="/konfigurator/muetze"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
               Zum Mützen-Konfigurator
-            </Link>{" "}
-            ·{" "}
-            <Link
-              href="/konfigurator/dreieckstuch"
-              className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
-            >
-              Zum Dreieckstuch-Konfigurator
             </Link>
             . Fragen zu Stoffen oder Sondermaßen?{" "}
             <Link

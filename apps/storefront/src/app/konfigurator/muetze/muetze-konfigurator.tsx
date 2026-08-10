@@ -116,22 +116,8 @@ export function MuetzeKonfigurator() {
 
       <aside
         role="note"
-        aria-label="Hinweis zum Konfigurator"
-        className="mt-8 rounded-xl border border-binchen-border bg-binchen-cream-dark px-4 py-3 sm:px-5 sm:py-4"
-      >
-        <p className="font-body text-sm leading-relaxed text-binchen-ink">
-          <span className="font-semibold">Bald mit echten Stoff-Mustern.</span>{" "}
-          <span className="text-binchen-ink-muted">
-            Sobald die Stoffmuster eintreffen, kannst du hier echte Druckmotive auswaehlen.
-            Derzeit zeigen wir Volltonfarben auf einer echten Bilulu-Muetze.
-          </span>
-        </p>
-      </aside>
-
-      <aside
-        role="note"
         aria-label="Hinweis zu Fruehchengroessen"
-        className="mt-4 rounded-xl border border-binchen-terracotta/40 bg-binchen-terracotta/10 px-4 py-3 sm:px-5 sm:py-4"
+        className="mt-8 rounded-xl border border-binchen-terracotta/40 bg-binchen-terracotta/10 px-4 py-3 sm:px-5 sm:py-4"
       >
         <p className="font-body text-sm leading-relaxed text-binchen-ink">
           <span className="font-semibold text-binchen-terracotta-text">Auch fuer Fruehchen.</span>{" "}
@@ -323,26 +309,12 @@ export function MuetzeKonfigurator() {
           </form>
 
           <p className="font-body text-sm text-binchen-ink-muted">
-            Du moechtest lieber eine Hose, einen Turban oder ein Dreieckstuch gestalten?{" "}
+            Du moechtest lieber eine Hose gestalten?{" "}
             <Link
               href="/konfigurator/hose"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
               Hose-Konfigurator
-            </Link>{" "}
-            ·{" "}
-            <Link
-              href="/konfigurator/turban"
-              className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
-            >
-              Turban-Konfigurator
-            </Link>{" "}
-            ·{" "}
-            <Link
-              href="/konfigurator/dreieckstuch"
-              className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
-            >
-              Dreieckstuch-Konfigurator
             </Link>
             . Fragen zu Stoffen?{" "}
             <Link

@@ -21,29 +21,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/konfigurator/turban`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
       url: `${BASE_URL}/konfigurator/muetze`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.8,
     },
-    {
-      url: `${BASE_URL}/konfigurator/dreieckstuch`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/konfigurator/body`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
+    // Board-Descope BIL-2460 2026-08-10: /konfigurator/{turban,dreieckstuch,body}
+    // aus dem Sitemap entfernt (Fokus Hose + Mütze). Routen bleiben im Repo aktiv.
     { url: `${BASE_URL}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE_URL}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/impressum`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
