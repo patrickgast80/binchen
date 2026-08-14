@@ -150,7 +150,7 @@ function pageHtml(garment, searchParams) {
   return `<!doctype html><html><head>
     <meta charset="utf-8"><title>${garment}</title>
     <style>
-      html,body{margin:0;padding:0;background:#faf7f2;font-family:system-ui;}
+      html,body{margin:0;padding:0;background:#C8C8C6;font-family:system-ui;}
       .wrap{max-width:520px;margin:24px auto;padding:16px;}
       .frame{position:relative;width:100%;aspect-ratio:${layout.w}/${layout.h};isolation:isolate;}
       .frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;user-select:none;pointer-events:none;}
