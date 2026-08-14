@@ -2,9 +2,25 @@
  * BIL-2445 — preprocess muetze-boho-mint-01.jpeg into the Foto-Konfigurator assets.
  *
  * Outputs (all under public/konfigurator/muetze-foto/):
- *   base.webp        — desaturated Mütze on transparent bg
+ *   base.webp        — achromatic shading map of the Mütze on transparent bg
+ *   highlight.webp   — sheen layer for `mix-blend-mode: screen`
  *   mask-muetze.webp — alpha mask for the patterned main fabric (mint boho print)
  *   mask-futter.webp — alpha mask for the solid altrosa lining (folded out on the left)
+ *
+ * BIL-2461, second pass — KNOWN LIMIT ON THIS GARMENT
+ * ---------------------------------------------------
+ * The Hose recovers real fold shading because its print is small dark motifs
+ * on white, which a max filter can see past. The boho rainbows here are ~120 px
+ * — larger than any local filter window that would still leave shading intact —
+ * and they mix white stars WITH dark motifs, so neither max, min nor (verified)
+ * repeated-median separates print from fold. Anything that removes the pattern
+ * on this photo also removes the drape, including the gathered centre band.
+ *
+ * So the Mütze base is deliberately a broad dome gradient, and its depth comes
+ * from the explicitly synthesised cues instead: silhouette occlusion, the brim
+ * seam valley, grain and the sheen layer. Recovering true fold structure needs
+ * a source photo of this hat in a PLAIN fabric — that belongs to the reshoot
+ * work in BIL-2462, not here.
  *
  * Like the turban bow, the lining is segmented by COLOUR: it is the only large
  * solid dusty-pink region (r ≫ g). The boho print contains pink rainbow motifs
@@ -24,6 +40,18 @@ import sharp from "sharp";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 
+import {
+  applyEdgeShadow,
+  applyGrain,
+  applySeamShadow,
+  boundaryBetween,
+  buildHighlight,
+  estimateIllumination,
+  grayToRGBA,
+  normalizeShadingZoned,
+  smoothBinary,
+} from "./lib/konfigurator-shading.mjs";
+
 const SRC = "public/products/muetze/muetze-boho-mint-01.jpeg";
 const OUT_DIR = "public/konfigurator/muetze-foto";
 const DEBUG = process.argv.includes("--debug");
@@ -31,11 +59,19 @@ await mkdir(OUT_DIR, { recursive: true });
 
 // data = unaltered raw pixels — needed for background + lining segmentation
 // which reads exact colour values.
-// blurred = heavily blurred copy used only for the base gray. Blurring first
-// erases the boho print pattern so the base can be near-uniform light gray
-// (BIL-2461: board wanted "farb- und musterlos"), leaving only fold shading.
+//
+// deprinted = libvips median filter. Unlike the pumphose floral (dark motifs
+// on white, where a max filter recovers the fabric), the boho print mixes
+// WHITE stars with DARK rainbow motifs on mid-tone mint, so neither a max nor
+// a min filter finds the fabric. A median does: the motifs are a minority
+// inside a 25 px window, the mint is the mode. Blurring — what the first
+// BIL-2461 pass did — averages the motifs IN instead, which is why the base
+// then had to be crushed into a 30-level ramp to hide them, and why the
+// preview ended up looking like flat vector shapes.
 const { data, info } = await sharp(SRC).raw().toBuffer({ resolveWithObject: true });
-const blurred = (await sharp(SRC).blur(28).raw().toBuffer({ resolveWithObject: true })).data;
+const deprinted = (
+  await sharp(SRC).median(25).raw().toBuffer({ resolveWithObject: true })
+).data;
 const W = info.width;
 const H = info.height;
 const N = W * H;
@@ -186,58 +222,67 @@ for (let p = 0; p < N; p++) {
 }
 console.log("futter hole-fill:", filled, "px");
 
-// -- 3. Compose raw buffers -------------------------------------------------
-// BIL-2461: near-white base range so the boho print luminance from the source
-// is muted into faint fold shading only. Multiply-blend of any tint over this
-// base reproduces ~86..98% of the tint's own colour.
-const BASE_MIN = 220;
-const BASE_MAX = 250;
-const lumBlurredOf = (i) =>
-  0.2126 * blurred[i] + 0.7152 * blurred[i + 1] + 0.0722 * blurred[i + 2];
+// -- 2b. Clean up both contours ---------------------------------------------
+// Colour segmentation on a JPEG leaves a stair-stepped silhouette and a spur
+// or two where a print motif touched the threshold. Blur-and-rethreshold both
+// maps so the outline and the lining edge read as cut-and-sewn fabric.
+{
+  const garment = new Uint8Array(N);
+  for (let p = 0; p < N; p++) if (!isBg[p]) garment[p] = 1;
+  const cleaned = smoothBinary(garment, W, H, { radius: 8, iterations: 2 });
+  for (let p = 0; p < N; p++) isBg[p] = cleaned[p] ? 0 : 1;
+}
+{
+  const cleaned = smoothBinary(isFutter, W, H, { radius: 6, iterations: 2 });
+  for (let p = 0; p < N; p++) isFutter[p] = cleaned[p] && !isBg[p] ? 1 : 0;
+}
 
-const baseRGBA = Buffer.alloc(N * 4);
+// -- 3. Compose raw buffers -------------------------------------------------
 const maskMuetze = Buffer.alloc(N);
 const maskFutter = Buffer.alloc(N);
-
+const isShell = new Uint8Array(N);
 for (let p = 0; p < N; p++) {
-  if (isBg[p]) continue; // transparent
-  const i = p * 3;
-  const lum = lumBlurredOf(i);
-  const gray = Math.round(BASE_MIN + (lum / 255) * (BASE_MAX - BASE_MIN));
-  const o = p * 4;
-  baseRGBA[o] = gray;
-  baseRGBA[o + 1] = gray;
-  baseRGBA[o + 2] = gray;
-  baseRGBA[o + 3] = 255;
+  if (isBg[p]) continue;
   if (isFutter[p]) maskFutter[p] = 255;
-  else maskMuetze[p] = 255;
+  else { maskMuetze[p] = 255; isShell[p] = 1; }
 }
 
-// BIL-2461: bake a thin darker seam line along the futter/hauptstoff boundary
-// into the base. Reads as a sewn edge once tints are applied; ~180 gray gives
-// a subtle multiply-darkening without a hard black outline.
-const SEAM_GRAY = 180;
-for (let y = 1; y < H - 1; y++) {
-  for (let x = 1; x < W - 1; x++) {
-    const p = y * W + x;
-    if (isBg[p] || !isFutter[p]) continue;
-    // Edge = at least one 4-neighbour is non-futter garment.
-    const edge =
-      (!isFutter[p - 1] && !isBg[p - 1]) ||
-      (!isFutter[p + 1] && !isBg[p + 1]) ||
-      (!isFutter[p - W] && !isBg[p - W]) ||
-      (!isFutter[p + W] && !isBg[p + W]);
-    if (!edge) continue;
-    for (const q of [p, p - 1, p + 1, p - W, p + W]) {
-      if (isBg[q]) continue;
-      const o = q * 4;
-      const g = Math.min(baseRGBA[o], SEAM_GRAY);
-      baseRGBA[o] = g;
-      baseRGBA[o + 1] = g;
-      baseRGBA[o + 2] = g;
-    }
-  }
-}
+// Illumination from the de-printed copy: "plain" mode, because the median pass
+// above has already removed the pattern, so no max filter is wanted here.
+// smooth 70 is heavy on purpose: the boho rainbows are ~120 px motifs, far too
+// large for the median to erase outright, so anything less leaves them as
+// camouflage-like blotches. The hat is a smooth dome anyway — its honest
+// signal is one broad light gradient, and the depth comes from the edge
+// occlusion and brim seam below.
+const illum = estimateIllumination(deprinted, W, H, isBg, {
+  mode: "plain",
+  smooth: 70,
+  erode: 4,
+});
+
+// Zoned: the mint shell and the dusty-pink lining are different materials, so
+// a global stretch would leave the lining permanently darker than the shell
+// and the same chosen colour would render differently in the two zones.
+const { gray, unit } = normalizeShadingZoned(
+  illum, W, H, isBg,
+  [isFutter, isShell],
+  { shadow: 172, lit: 252 },
+);
+
+applyEdgeShadow(gray, W, H, isBg, { radius: 16, strength: 0.16 });
+
+// Seam valley along the real lining/shell boundary — the hat's brim rolls
+// over here, so it is the one place the garment genuinely has depth.
+const seam = boundaryBetween(maskFutter, maskMuetze, W, H, isBg);
+applySeamShadow(gray, W, H, isBg, seam, { radius: 9, strength: 0.2, highlight: 0.03 });
+
+applyGrain(gray, W, H, isBg, { amp: 3.2, cell: 2, seed: 2445 });
+
+const baseRGBA = grayToRGBA(gray, W, H, isBg);
+const highlightRGBA = grayToRGBA(
+  buildHighlight(unit, W, H, isBg, { start: 0.72, gain: 0.3 }),
+  W, H, isBg,
+);
 
 // -- 4. Feather the futter/body boundary ------------------------------------
 // 2px linear feather so the recolour seam doesn't ring.
@@ -285,8 +330,14 @@ const extract = { left: cropL, top: cropT, width: cropW, height: cropH };
 await sharp(baseRGBA, { raw: { width: W, height: H, channels: 4 } })
   .extract(extract)
   .resize({ width: TARGET_W })
-  .webp({ quality: 82, alphaQuality: 90 })
+  .webp({ quality: 86, alphaQuality: 90 })
   .toFile(path.join(OUT_DIR, "base.webp"));
+
+await sharp(highlightRGBA, { raw: { width: W, height: H, channels: 4 } })
+  .extract(extract)
+  .resize({ width: TARGET_W })
+  .webp({ quality: 80, alphaQuality: 90 })
+  .toFile(path.join(OUT_DIR, "highlight.webp"));
 
 async function saveMask(buf, name) {
   const rgba = Buffer.alloc(N * 4);

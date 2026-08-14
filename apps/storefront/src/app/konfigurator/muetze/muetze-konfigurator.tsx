@@ -143,7 +143,7 @@ export function MuetzeKonfigurator() {
           <h2 id="preview-heading" className="sr-only">
             Live-Vorschau deiner Muetze
           </h2>
-          <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark p-6 sm:p-10">
+          <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-studio p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
               <MuetzePhoto
                 paints={paints}

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
+import { SheenOverlay, ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
 
 export interface MuetzePhotoPaints {
   muetze: ZonePaint;
@@ -24,7 +24,7 @@ interface MuetzePhotoProps {
  */
 const ASSET_BASE = "/konfigurator/muetze-foto";
 const ASSET_W = 900;
-const ASSET_H = 918;
+const ASSET_H = 920;
 
 export function MuetzePhoto({ paints, title = "Muetze-Vorschau", className }: MuetzePhotoProps) {
   return (
@@ -36,6 +36,9 @@ export function MuetzePhoto({ paints, title = "Muetze-Vorschau", className }: Mu
         position: "relative",
         width: "100%",
         aspectRatio: `${ASSET_W} / ${ASSET_H}`,
+        // Keep multiply/screen confined to this stack instead of blending with
+        // whatever page background happens to sit behind the preview.
+        isolation: "isolate",
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -60,6 +63,7 @@ export function MuetzePhoto({ paints, title = "Muetze-Vorschau", className }: Mu
       />
       <ZoneOverlay src={`${ASSET_BASE}/mask-muetze.webp`} paint={paints.muetze} />
       <ZoneOverlay src={`${ASSET_BASE}/mask-futter.webp`} paint={paints.futter} />
+      <SheenOverlay src={`${ASSET_BASE}/highlight.webp`} />
     </div>
   );
 }

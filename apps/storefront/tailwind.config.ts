@@ -25,6 +25,7 @@ const config: Config = {
           "ink-muted": "#6B5E4E",     // warm mid-gray — secondary text
           "ink-subtle": "#6B5A40",    // warm brown — placeholder, disabled (WCAG AA on cream + border)
           border: "#E5DDD4",          // warm gray — borders/dividers
+          studio: "#C8C8C6",          // Studio-Look product-photo canvas grey (BIL-2462 spec) — use for photo/preview backgrounds so Konfigurator matches Katalog/PDP
         },
       },
       fontFamily: {

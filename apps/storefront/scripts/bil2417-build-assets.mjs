@@ -2,58 +2,78 @@
  * Preprocess pumphose-05.jpg into the assets the Foto-Konfigurator needs.
  *
  * Outputs (all under public/konfigurator/hose-foto/):
- *   base.webp        — near-white pants silhouette on transparent bg, only broad
- *                      fold shading + a thin darker seam line at the two zone
- *                      boundaries (no fabric print, no colour). BIL-2461 board
- *                      wanted the base "farb- und musterlos" so tints render 1:1.
- *   mask-bund.webp   — alpha mask for the upper waistband zone
+ *   base.webp        — achromatic shading map of the pants on a transparent bg:
+ *                      fold gradients, edge occlusion, seam valleys and jersey
+ *                      grain, but no colour and no print.
+ *   highlight.webp   — faint sheen, composited with `mix-blend-mode: screen`
+ *                      so dark tints keep a lit side.
+ *   mask-bund.webp   — alpha mask for the waistband zone
  *   mask-hose.webp   — alpha mask for the main body zone
- *   mask-buendchen.webp — alpha mask for the lower cuffs zone
+ *   mask-buendchen.webp — alpha mask for the leg cuffs zone
  *
- * The masks are pure white (255) inside their zone, transparent elsewhere. In
- * the browser they are used as CSS `mask-image` for coloured overlays with
- * `mix-blend-mode: multiply`, so the base's residual shading comes through the
- * tint (see task spec: soft-light/multiply, KEIN hue-rotate).
+ * The masks are white (255) inside their zone, transparent elsewhere. In the
+ * browser they are used as CSS `mask-image` for coloured overlays with
+ * `mix-blend-mode: multiply`, so the base's shading comes through the tint.
  *
- * Neutralization pipeline (BIL-2461):
- *   1. Background is flood-filled from the border across neutral studio grey
- *      pixels — the BIL-2455 photo rebuild replaced the old white backdrop
- *      with grey, so the previous `r>240` threshold no longer worked.
- *   2. The BASE gray uses a HEAVILY blurred copy of the source so the floral
- *      print smears out; only fold-scale luminance variation survives.
- *   3. The blurred luminance is compressed into a NARROW near-white range
- *      (BASE_MIN..BASE_MAX below) so any residual variation is muted — a
- *      multiply-blend of a swatch onto this base produces ~90-100% of the
- *      swatch's own colour, which is what the board asked for.
- *   4. A 1 px darker seam line is baked into the base at both zone boundaries
- *      so the seam reads as sewn without a hard mask transition.
+ * BIL-2461, second pass — what changed and why
+ * --------------------------------------------
+ * The first pass made the base "farb- und musterlos" by blurring the photo and
+ * squeezing it into a 220..250 ramp. Board rejected the result: with 30 levels
+ * of shading left and straight horizontal zone cuts, the preview rendered as
+ * three flat colour bands. Two root causes, both fixed here:
  *
- * Rerun this script whenever the source photo changes.
+ *  1. SHADING. `blur(28)` averages the print INTO the fabric, so the only way
+ *     to hide it afterwards was to crush the contrast. Instead we now estimate
+ *     illumination with a MAX FILTER (see lib/konfigurator-shading.mjs): the
+ *     print is dark motifs on light fabric, so the locally brightest pixel is
+ *     unprinted fabric. That removes the pattern completely while KEEPING the
+ *     full fold structure, which then gets a real dynamic range.
+ *
+ *  2. ZONE SHAPE. Waistband and cuffs were cut with two hardcoded Y constants,
+ *     which is why the bands ran dead straight across the garment. The real
+ *     waistband has a curved hem and the two leg cuffs sit at different heights
+ *     and angles. Both are now segmented by COLOUR — the waistband is the large
+ *     print-free (locally desaturated) region up top, the cuffs are the solid
+ *     pink components at the bottom — then contour-smoothed, so every seam
+ *     follows the actual garment.
+ *
+ * Rerun this script whenever the source photo changes:
+ *   cd apps/storefront && node scripts/bil2417-build-assets.mjs [--debug]
  */
 import sharp from "sharp";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 
+import {
+  applyEdgeShadow,
+  applyGrain,
+  applyRib,
+  applySeamShadow,
+  boundaryBetween,
+  buildHighlight,
+  estimateIllumination,
+  grayToRGBA,
+  maxFilter,
+  normalizeShadingZoned,
+  smoothContour,
+} from "./lib/konfigurator-shading.mjs";
+
 const SRC = "public/products/pumphose/pumphose-05.jpg";
 const OUT_DIR = "public/konfigurator/hose-foto";
+const DEBUG = process.argv.includes("--debug");
 await mkdir(OUT_DIR, { recursive: true });
 
-// -- Load raw pixels of the source image ------------------------------------
-// data = unaltered pixels used for background segmentation.
-// blurred = heavily blurred copy used only for the base gray, so the fabric
-// print smears into flat colour before we sample luminance.
 const { data, info } = await sharp(SRC).raw().toBuffer({ resolveWithObject: true });
-const blurred = (await sharp(SRC).blur(28).raw().toBuffer({ resolveWithObject: true })).data;
 const W = info.width;
 const H = info.height;
 const N = W * H;
 
 // -- 1. Background flood-fill from the image border -------------------------
 // The BIL-2455 photo rebuild set a uniform studio backdrop. Sample the actual
-// border colour (rather than assume white) and flood only across pixels that
-// are within a tight RGB delta of it. Robust to both the old white bg and the
-// current grey bg; also rejects the cream bund (~224) and neutral bündchen
-// (~180) which the previous generic-neutrality rule leaked into.
+// border colour (rather than assume white) and flood only across pixels within
+// a tight RGB delta of it. The pumphose-05 shot has TWO bg tones — a grey
+// vignette (~200) at the outer border AND near-white in the concavity between
+// the legs — so both must qualify, else the flood leaves interior pockets.
 let brSum = 0, bgSum = 0, bbSum = 0, bnSamples = 0;
 for (let x = 0; x < W; x++) {
   for (const y of [0, H - 1]) {
@@ -66,10 +86,6 @@ const bgG = bgSum / bnSamples;
 const bgB = bbSum / bnSamples;
 console.log("border colour ~", bgR.toFixed(1), bgG.toFixed(1), bgB.toFixed(1));
 
-// The pumphose-05 studio shot has TWO bg tones — a grey vignette (~200) at
-// the outer border AND near-white in the concavities between the pants legs.
-// Both must qualify or the flood-fill leaves interior white pockets un-marked
-// (which then flood the mask outward).
 const BG_DELTA = 18;
 const bgCandidate = new Uint8Array(N);
 for (let p = 0; p < N; p++) {
@@ -103,84 +119,120 @@ while (qh < qt) {
   if (y < H - 1) push(p + W);
 }
 
-// -- Zone classification by Y (with side-cuff bulge) ------------------------
-// From analyze-photo output on pumphose-05.jpg:
-//   Bund runs y ≈ 177 (top) → 328 (elastic shirred seam, center)
-//   Body runs y ≈ 328 → 880 (patterned floral)
-//   Bündchen (pink cuffs) run y ≈ 880 → 1027 (bottom of each leg)
-const BUND_END = 336;
-const BUENDCHEN_START = 878;
-// Feather = pixels blended across the seam. BIL-2461: tightened from 6 → 2 for
-// a crisper seam; the darker seam line below carries the "sewn" impression.
-const FEATHER = 2;
-// Seam line: half-thickness (px) and darkness (0..255, lower = darker) baked
-// into the base at each zone boundary. ~180 gives a subtle multiply-darkening
-// without turning into a hard black outline.
-const SEAM_HALF = 1;
-const SEAM_GRAY = 180;
+// Keep only the largest garment component so JPEG speckle near the studio edge
+// does not survive into the masks as loose fragments.
+keepLargestGarmentComponent();
 
-// Near-white base range. Chosen empirically: 220..250 keeps just enough fold
-// shading for depth while a chosen tint reads as itself (0.86..0.98 × tint
-// under multiply-blend).
-const BASE_MIN = 220;
-const BASE_MAX = 250;
+// -- 2. Zone segmentation by colour -----------------------------------------
+// Saturation, and its local maximum. The printed body fabric always has a
+// saturated motif within ~14 px; the plain waistband never does. That is the
+// discriminator, and it is far more robust than a luminance threshold because
+// the print's white ground is just as bright as the waistband.
+const sat = new Float32Array(N);
+for (let p = 0; p < N; p++) {
+  if (isBg[p]) continue;
+  const i = p * 3;
+  const r = data[i], g = data[i + 1], b = data[i + 2];
+  sat[p] = Math.max(r, g, b) - Math.min(r, g, b);
+}
+const localSat = maxFilter(sat, W, H, isBg, 14);
 
-// -- Build 4 raw buffers ----------------------------------------------------
-const baseRGBA = Buffer.alloc(N * 4);              // near-white gray + alpha
-const maskBund = Buffer.alloc(N);                  // alpha-only
+// Waistband: print-free region in the upper part of the garment.
+const bundCandidate = new Uint8Array(N);
+for (let p = 0; p < N; p++) {
+  if (isBg[p]) continue;
+  const y = (p / W) | 0;
+  if (y < H * 0.44 && localSat[p] < 24) bundCandidate[p] = 1;
+}
+const bundParts = largestComponents(bundCandidate, 1, 4000);
+bundParts.forEach(holeFill);
+
+// Leg cuffs: solid dusty-pink components low in the garment. Measured on the
+// source: cuff pixels sit around (215,167,167)…(232,192,193), so r−g ≈ 40..48.
+// The print's pink motifs reach r−g ≈ 25 but are small isolated blobs, hence
+// the size floor and the two-component cap (one cuff per leg).
+const buenCandidate = new Uint8Array(N);
+for (let p = 0; p < N; p++) {
+  if (isBg[p]) continue;
+  const y = (p / W) | 0;
+  if (y < H * 0.6) continue;
+  const i = p * 3;
+  const r = data[i], g = data[i + 1], b = data[i + 2];
+  if (r - g > 26 && r - b > 16) buenCandidate[p] = 1;
+}
+const buenParts = largestComponents(buenCandidate, 2, 4000);
+buenParts.forEach(holeFill);
+
+// -- 3. Turn each ragged zone contour into a real hem ------------------------
+// This is the "sauberere Stoff-Abtrennung" half of the ticket. Each cuff is
+// smoothed on its own so the left and right leg keep their genuinely different
+// heights and angles — the previous straight-Y cut is exactly what made the
+// preview look like flat colour bands.
+const isBund = union(
+  bundParts.map((z) => smoothContour(z, W, H, isBg, { edge: "bottom", median: 121, mean: 81 })),
+);
+// Wider windows on the cuffs: the sewn-in "made with love" label sits right
+// above the right cuff and is pink enough to join the component, which would
+// otherwise leave a stair-step in the hem.
+const isBuen = union(
+  buenParts.map((z) => smoothContour(z, W, H, isBg, { edge: "top", median: 181, mean: 121 })),
+);
+// Resolve any overlap deterministically; cuffs win (they are the tighter fit).
+for (let p = 0; p < N; p++) if (isBuen[p]) isBund[p] = 0;
+
+// -- 4. Build the achromatic shading base -----------------------------------
+// radius 44 exceeds the largest watercolour motif in this print; anything
+// smaller leaves the flower centres behind as gray stains on the base.
+// smooth 40 is deliberately heavy: this is a flat-lay studio shot, so the only
+// honest large-scale signal is the broad drape gradient. Leaving mid-frequency
+// detail in just resurrects the print as cloudy blotches that read as dirt.
+// The convincing depth cues are added explicitly below instead.
+const illum = estimateIllumination(data, W, H, isBg, { radius: 44, smooth: 40, erode: 4 });
+// Zoned, not global: the waistband is white jersey, the body is printed and
+// the cuffs are dusty pink, so a single stretch would bake those three
+// material lightnesses into the base and the same swatch would render as three
+// different colours. lit=252 means a lit area shows the chosen swatch at ~99%
+// of its own colour, which is what "die Stoffe werden nicht beeinflusst" needs;
+// shadow=178 keeps the drape readable without greying a light cream out.
+const { gray, unit } = normalizeShadingZoned(
+  illum, W, H, isBg,
+  [isBund, isBuen, invertZones(isBund, isBuen)],
+  { shadow: 178, lit: 252 },
+);
+
+applyEdgeShadow(gray, W, H, isBg, { radius: 16, strength: 0.16 });
+
+// boundaryBetween thresholds at 127, so scale the binary zones to 0/255 first.
+const body255 = invertZones(isBund, isBuen);
+const bund255 = scale255(isBund);
+const buen255 = scale255(isBuen);
+const boundBundHose = boundaryBetween(bund255, body255, W, H, isBg);
+const boundBuenHose = boundaryBetween(buen255, body255, W, H, isBg);
+const seamSeed = new Uint8Array(N);
+for (let p = 0; p < N; p++) if (boundBundHose[p] || boundBuenHose[p]) seamSeed[p] = 1;
+applySeamShadow(gray, W, H, isBg, seamSeed, { radius: 9, strength: 0.2, highlight: 0.03 });
+
+// Knit ribbing on the two elasticated zones — the strongest single cue that
+// these are Bündchen and not just differently-coloured rectangles.
+applyRib(gray, W, H, isBuen, { period: 9, amp: 3.5, fade: 6 });
+applyRib(gray, W, H, isBund, { period: 11, amp: 2.2, fade: 8 });
+
+applyGrain(gray, W, H, isBg, { amp: 3.2, cell: 2, seed: 2417 });
+
+const baseRGBA = grayToRGBA(gray, W, H, isBg);
+const highlight = buildHighlight(unit, W, H, isBg, { start: 0.72, gain: 0.3 });
+const highlightRGBA = grayToRGBA(highlight, W, H, isBg);
+
+// -- 5. Masks with a 2 px feather -------------------------------------------
+const maskBund = featherMask(isBund);
+const maskBuen = featherMask(isBuen);
 const maskHose = Buffer.alloc(N);
-const maskBuen = Buffer.alloc(N);
-
-function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-
-for (let y = 0; y < H; y++) {
-  for (let x = 0; x < W; x++) {
-    const p = y * W + x;
-    if (isBg[p]) continue; // stays fully transparent (already zeroed)
-
-    const i = p * 3;
-    // Perceived luminance of the BLURRED source (Rec. 709). Blurring first
-    // erases the print but keeps fold-scale shading intact.
-    const lum =
-      0.2126 * blurred[i] + 0.7152 * blurred[i + 1] + 0.0722 * blurred[i + 2];
-    const gray = Math.round(BASE_MIN + (lum / 255) * (BASE_MAX - BASE_MIN));
-    const o = p * 4;
-    baseRGBA[o] = gray;
-    baseRGBA[o + 1] = gray;
-    baseRGBA[o + 2] = gray;
-    baseRGBA[o + 3] = 255;
-
-    // Zone mask — narrow feather at the seam so recolour doesn't ring.
-    const featherBund = 1 - clamp01((y - (BUND_END - FEATHER)) / (2 * FEATHER));
-    const featherBuen = clamp01((y - (BUENDCHEN_START - FEATHER)) / (2 * FEATHER));
-    const featherHose = 1 - featherBund - featherBuen;
-    maskBund[p] = Math.round(255 * featherBund);
-    maskBuen[p] = Math.round(255 * featherBuen);
-    maskHose[p] = Math.max(0, Math.round(255 * featherHose));
-  }
+for (let p = 0; p < N; p++) {
+  if (isBg[p]) continue;
+  maskHose[p] = Math.max(0, 255 - maskBund[p] - maskBuen[p]);
 }
 
-// -- Bake a thin darker seam line into the base at the two zone boundaries --
-// Only affects garment pixels (alpha > 0); reads as a sewn seam once the tint
-// is multiplied on top, while the mask feather (2 px) still hides any hard
-// colour boundary between adjacent zones.
-for (const yc of [BUND_END, BUENDCHEN_START]) {
-  for (let dy = -SEAM_HALF; dy <= SEAM_HALF; dy++) {
-    const y = yc + dy;
-    if (y < 0 || y >= H) continue;
-    for (let x = 0; x < W; x++) {
-      const p = y * W + x;
-      if (isBg[p]) continue;
-      const o = p * 4;
-      const g = Math.min(baseRGBA[o], SEAM_GRAY);
-      baseRGBA[o] = g;
-      baseRGBA[o + 1] = g;
-      baseRGBA[o + 2] = g;
-    }
-  }
-}
-
-// -- Crop to pants bounding box (with breathing room) -----------------------
+// -- 6. Crop to garment bbox + pad, encode ----------------------------------
 let cropL = W, cropR = 0, cropT = H, cropB = 0;
 for (let y = 0; y < H; y++) {
   for (let x = 0; x < W; x++) {
@@ -201,31 +253,201 @@ const cropW = cropR - cropL + 1;
 const cropH = cropB - cropT + 1;
 console.log("crop", { cropL, cropT, cropW, cropH });
 
-// -- Encode to WebP (single downsample step for smaller assets) -------------
 const TARGET_W = 900;
+const extract = { left: cropL, top: cropT, width: cropW, height: cropH };
 
-async function saveBase(buf, name) {
+async function saveRGBA(buf, name, quality = 86) {
   await sharp(buf, { raw: { width: W, height: H, channels: 4 } })
-    .extract({ left: cropL, top: cropT, width: cropW, height: cropH })
+    .extract(extract)
     .resize({ width: TARGET_W })
-    .webp({ quality: 82, alphaQuality: 90 })
+    .webp({ quality, alphaQuality: 90 })
     .toFile(path.join(OUT_DIR, name));
 }
 async function saveMask(buf, name) {
   const rgba = Buffer.alloc(N * 4);
   for (let i = 0; i < N; i++) rgba[i * 4 + 3] = buf[i];
   await sharp(rgba, { raw: { width: W, height: H, channels: 4 } })
-    .extract({ left: cropL, top: cropT, width: cropW, height: cropH })
+    .extract(extract)
     .resize({ width: TARGET_W })
     .webp({ quality: 60, alphaQuality: 100 })
     .toFile(path.join(OUT_DIR, name));
 }
 
-await saveBase(baseRGBA, "base.webp");
+await saveRGBA(baseRGBA, "base.webp");
+await saveRGBA(highlightRGBA, "highlight.webp", 80);
 await saveMask(maskBund, "mask-bund.webp");
 await saveMask(maskHose, "mask-hose.webp");
 await saveMask(maskBuen, "mask-buendchen.webp");
 
+if (DEBUG) {
+  const dbg = Buffer.alloc(N * 3);
+  for (let p = 0; p < N; p++) {
+    const i = p * 3;
+    if (isBg[p]) { dbg[i] = 235; dbg[i + 1] = 235; dbg[i + 2] = 235; }
+    else if (isBund[p]) { dbg[i] = 40; dbg[i + 1] = 140; dbg[i + 2] = 220; }
+    else if (isBuen[p]) { dbg[i] = 220; dbg[i + 1] = 60; dbg[i + 2] = 60; }
+    else { dbg[i] = 240; dbg[i + 1] = 190; dbg[i + 2] = 60; }
+  }
+  await sharp(dbg, { raw: { width: W, height: H, channels: 3 } })
+    .resize({ width: 800 }).png().toFile(path.join(OUT_DIR, "debug-zones.png"));
+  console.log("debug zone map written");
+}
+
 const meta = await sharp(path.join(OUT_DIR, "base.webp")).metadata();
 console.log("base.webp", meta.width, "x", meta.height);
 console.log("wrote", OUT_DIR, "at", TARGET_W, "px wide");
+
+// ---------------------------------------------------------------------------
+// helpers
+// ---------------------------------------------------------------------------
+
+function keepLargestGarmentComponent() {
+  const label = new Int32Array(N);
+  const q = new Int32Array(N);
+  let next = 0, best = 0, bestSize = 0;
+  for (let seed = 0; seed < N; seed++) {
+    if (isBg[seed] || label[seed]) continue;
+    next++;
+    let size = 0, h = 0, t = 0;
+    label[seed] = next;
+    q[t++] = seed;
+    while (h < t) {
+      const p = q[h++];
+      size++;
+      const x = p % W, y = (p / W) | 0;
+      if (x > 0 && !isBg[p - 1] && !label[p - 1]) { label[p - 1] = next; q[t++] = p - 1; }
+      if (x < W - 1 && !isBg[p + 1] && !label[p + 1]) { label[p + 1] = next; q[t++] = p + 1; }
+      if (y > 0 && !isBg[p - W] && !label[p - W]) { label[p - W] = next; q[t++] = p - W; }
+      if (y < H - 1 && !isBg[p + W] && !label[p + W]) { label[p + W] = next; q[t++] = p + W; }
+    }
+    if (size > bestSize) { bestSize = size; best = next; }
+  }
+  let stripped = 0;
+  for (let p = 0; p < N; p++) {
+    if (!isBg[p] && label[p] !== best) { isBg[p] = 1; stripped++; }
+  }
+  console.log("garment components:", next, "largest:", bestSize, "px, speckle stripped:", stripped);
+}
+
+/** Keep up to `count` connected components of `candidate` that exceed `minSize`. */
+function largestComponents(candidate, count, minSize) {
+  const label = new Int32Array(N);
+  const q = new Int32Array(N);
+  const sizes = [0];
+  let next = 0;
+  for (let seed = 0; seed < N; seed++) {
+    if (!candidate[seed] || label[seed]) continue;
+    next++;
+    let size = 0, h = 0, t = 0;
+    label[seed] = next;
+    q[t++] = seed;
+    while (h < t) {
+      const p = q[h++];
+      size++;
+      const x = p % W, y = (p / W) | 0;
+      if (x > 0 && candidate[p - 1] && !label[p - 1]) { label[p - 1] = next; q[t++] = p - 1; }
+      if (x < W - 1 && candidate[p + 1] && !label[p + 1]) { label[p + 1] = next; q[t++] = p + 1; }
+      if (y > 0 && candidate[p - W] && !label[p - W]) { label[p - W] = next; q[t++] = p - W; }
+      if (y < H - 1 && candidate[p + W] && !label[p + W]) { label[p + W] = next; q[t++] = p + W; }
+    }
+    sizes[next] = size;
+  }
+  const keep = sizes
+    .map((size, id) => ({ size, id }))
+    .filter((c) => c.id > 0 && c.size >= minSize)
+    .sort((a, b) => b.size - a.size)
+    .slice(0, count);
+  console.log("components:", next, "kept:", keep.map((c) => c.size).join(", ") || "none");
+  return keep.map((c) => {
+    const out = new Uint8Array(N);
+    for (let p = 0; p < N; p++) if (label[p] === c.id) out[p] = 1;
+    return out;
+  });
+}
+
+/** OR a list of binary zones into one. */
+function union(zones) {
+  const out = new Uint8Array(N);
+  for (const z of zones) for (let p = 0; p < N; p++) if (z[p]) out[p] = 1;
+  return out;
+}
+
+/** Fill enclosed holes in a binary zone (fold shadows inside a cuff, etc.). */
+function holeFill(zone) {
+  const outside = new Uint8Array(N);
+  const q = new Int32Array(N);
+  let h = 0, t = 0;
+  const pushOut = (p) => { if (!zone[p] && !outside[p]) { outside[p] = 1; q[t++] = p; } };
+  for (let x = 0; x < W; x++) { pushOut(x); pushOut((H - 1) * W + x); }
+  for (let y = 0; y < H; y++) { pushOut(y * W); pushOut(y * W + W - 1); }
+  while (h < t) {
+    const p = q[h++];
+    const x = p % W, y = (p / W) | 0;
+    if (x > 0) pushOut(p - 1);
+    if (x < W - 1) pushOut(p + 1);
+    if (y > 0) pushOut(p - W);
+    if (y < H - 1) pushOut(p + W);
+  }
+  for (let p = 0; p < N; p++) if (!zone[p] && !outside[p] && !isBg[p]) zone[p] = 1;
+}
+
+/** Plain separable box blur (bg included — zones must smooth across the edge). */
+function boxBlurBinary(src, radius, iterations) {
+  let cur = Float32Array.from(src);
+  const tmp = new Float32Array(N);
+  for (let it = 0; it < iterations; it++) {
+    for (let y = 0; y < H; y++) {
+      const row = y * W;
+      let sum = 0;
+      for (let x = 0; x <= Math.min(radius, W - 1); x++) sum += cur[row + x];
+      let count = Math.min(radius, W - 1) + 1;
+      for (let x = 0; x < W; x++) {
+        tmp[row + x] = sum / count;
+        const drop = x - radius, add = x + radius + 1;
+        if (drop >= 0) { sum -= cur[row + drop]; count--; }
+        if (add < W) { sum += cur[row + add]; count++; }
+      }
+    }
+    const next = new Float32Array(N);
+    for (let x = 0; x < W; x++) {
+      let sum = 0;
+      for (let y = 0; y <= Math.min(radius, H - 1); y++) sum += tmp[y * W + x];
+      let count = Math.min(radius, H - 1) + 1;
+      for (let y = 0; y < H; y++) {
+        next[y * W + x] = sum / count;
+        const drop = y - radius, add = y + radius + 1;
+        if (drop >= 0) { sum -= tmp[drop * W + x]; count--; }
+        if (add < H) { sum += tmp[add * W + x]; count++; }
+      }
+    }
+    cur = next;
+  }
+  return cur;
+}
+
+/** 2 px anti-aliased alpha mask from a binary zone. */
+function featherMask(zone) {
+  const f = new Float32Array(N);
+  for (let p = 0; p < N; p++) f[p] = zone[p] ? 255 : 0;
+  const soft = boxBlurBinary(f, 2, 1);
+  const out = Buffer.alloc(N);
+  for (let p = 0; p < N; p++) {
+    if (isBg[p]) continue;
+    out[p] = Math.max(0, Math.min(255, Math.round(soft[p])));
+  }
+  return out;
+}
+
+/** Binary 0/1 zone → 0/255, which is what boundaryBetween thresholds on. */
+function scale255(zone) {
+  const out = new Uint8Array(N);
+  for (let p = 0; p < N; p++) if (zone[p]) out[p] = 255;
+  return out;
+}
+
+/** Body zone = garment minus the two accent zones. */
+function invertZones(a, b) {
+  const out = new Uint8Array(N);
+  for (let p = 0; p < N; p++) if (!isBg[p] && !a[p] && !b[p]) out[p] = 255;
+  return out;
+}

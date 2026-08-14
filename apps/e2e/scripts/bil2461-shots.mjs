@@ -21,7 +21,7 @@ const LAYOUTS = {
   hose: {
     assetBase: "/konfigurator/hose-foto",
     w: 900,
-    h: 1003,
+    h: 1005,
     zones: [
       { id: "bund", mask: "bund", defaultHex: "#5BA8AE" },
       { id: "hose", mask: "hose", defaultHex: "#FAF7F2" },
@@ -31,7 +31,7 @@ const LAYOUTS = {
   muetze: {
     assetBase: "/konfigurator/muetze-foto",
     w: 900,
-    h: 918,
+    h: 920,
     zones: [
       { id: "muetze", mask: "muetze", defaultHex: "#5BA8AE" },
       { id: "futter", mask: "futter", defaultHex: "#FAF7F2" },
@@ -152,8 +152,9 @@ function pageHtml(garment, searchParams) {
     <style>
       html,body{margin:0;padding:0;background:#faf7f2;font-family:system-ui;}
       .wrap{max-width:520px;margin:24px auto;padding:16px;}
-      .frame{position:relative;width:100%;aspect-ratio:${layout.w}/${layout.h};}
+      .frame{position:relative;width:100%;aspect-ratio:${layout.w}/${layout.h};isolation:isolate;}
       .frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;user-select:none;pointer-events:none;}
+      .frame img.sheen{mix-blend-mode:screen;}
       h1{font-size:14px;color:#555;text-align:center;margin:0 0 8px;letter-spacing:0.02em;}
     </style></head>
     <body><div class="wrap">
@@ -161,6 +162,7 @@ function pageHtml(garment, searchParams) {
       <div class="frame">
         <img src="${layout.assetBase}/base.webp" alt="">
         ${layers}
+        <img class="sheen" src="${layout.assetBase}/highlight.webp" alt="">
       </div>
     </div></body></html>`;
 }

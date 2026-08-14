@@ -52,3 +52,38 @@ export function ZoneOverlay({ src, paint }: ZoneOverlayProps) {
   }
   return <div aria-hidden="true" style={style} />;
 }
+
+/**
+ * Sheen layer, composited over the tinted zones with `mix-blend-mode: screen`.
+ *
+ * Multiply can only ever darken, so on a dark tint (navy, forest) the garment
+ * lost its lit side and read as a flat silhouette — one of the two things the
+ * board rejected in the first BIL-2461 pass. The highlight asset is black
+ * everywhere except where the source photo was brightest, and screen leaves
+ * black untouched, so it adds a lit side without touching the chosen colour's
+ * hue. Assets are built by the bil2417/bil2445 scripts.
+ */
+export function SheenOverlay({ src }: { src: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      role="presentation"
+      aria-hidden="true"
+      loading="eager"
+      decoding="async"
+      draggable={false}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        objectFit: "contain",
+        mixBlendMode: "screen",
+        pointerEvents: "none",
+        userSelect: "none",
+      }}
+    />
+  );
+}

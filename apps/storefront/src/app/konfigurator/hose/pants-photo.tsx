@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
+import { SheenOverlay, ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
 
 export interface PantsPhotoPaints {
   bund: ZonePaint;
@@ -27,7 +27,7 @@ interface PantsPhotoProps {
  */
 const ASSET_BASE = "/konfigurator/hose-foto";
 const ASSET_W = 900;
-const ASSET_H = 1003;
+const ASSET_H = 1005;
 
 export function PantsPhoto({ paints, title = "Hose-Vorschau", className }: PantsPhotoProps) {
   return (
@@ -39,6 +39,9 @@ export function PantsPhoto({ paints, title = "Hose-Vorschau", className }: Pants
         position: "relative",
         width: "100%",
         aspectRatio: `${ASSET_W} / ${ASSET_H}`,
+        // Keep multiply/screen confined to this stack instead of blending with
+        // whatever page background happens to sit behind the preview.
+        isolation: "isolate",
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -64,6 +67,7 @@ export function PantsPhoto({ paints, title = "Hose-Vorschau", className }: Pants
       <ZoneOverlay src={`${ASSET_BASE}/mask-bund.webp`} paint={paints.bund} />
       <ZoneOverlay src={`${ASSET_BASE}/mask-hose.webp`} paint={paints.hose} />
       <ZoneOverlay src={`${ASSET_BASE}/mask-buendchen.webp`} paint={paints.buendchen} />
+      <SheenOverlay src={`${ASSET_BASE}/highlight.webp`} />
     </div>
   );
 }
