@@ -29,7 +29,13 @@ const OUT_DIR = "public/konfigurator/muetze-foto";
 const DEBUG = process.argv.includes("--debug");
 await mkdir(OUT_DIR, { recursive: true });
 
+// data = unaltered raw pixels — needed for background + lining segmentation
+// which reads exact colour values.
+// blurred = heavily blurred copy used only for the base gray. Blurring first
+// erases the boho print pattern so the base can be near-uniform light gray
+// (BIL-2461: board wanted "farb- und musterlos"), leaving only fold shading.
 const { data, info } = await sharp(SRC).raw().toBuffer({ resolveWithObject: true });
+const blurred = (await sharp(SRC).blur(28).raw().toBuffer({ resolveWithObject: true })).data;
 const W = info.width;
 const H = info.height;
 const N = W * H;
@@ -74,6 +80,43 @@ while (qh < qt) {
 }
 // Everything not reachable from the border is garment — enclosed neutral
 // pixels (white stars in the print, seam shadows) stay garment automatically.
+
+// BIL-2461: strip garment speckle by keeping only the LARGEST connected
+// component of non-bg pixels. Isolated colourful print fragments outside the
+// main hat silhouette (JPEG noise near the studio edge) would otherwise show
+// up as jagged fragments in the base + masks after cropping.
+{
+  const garmentLabel = new Int32Array(N);
+  const gq = new Int32Array(N);
+  let nextL = 0, bestL = 0, bestSize = 0;
+  for (let seed = 0; seed < N; seed++) {
+    if (isBg[seed] || garmentLabel[seed]) continue;
+    nextL++;
+    let size = 0;
+    let gh = 0, gt = 0;
+    garmentLabel[seed] = nextL;
+    gq[gt++] = seed;
+    while (gh < gt) {
+      const p = gq[gh++];
+      size++;
+      const x = p % W, y = (p / W) | 0;
+      if (x > 0 && !isBg[p - 1] && !garmentLabel[p - 1]) { garmentLabel[p - 1] = nextL; gq[gt++] = p - 1; }
+      if (x < W - 1 && !isBg[p + 1] && !garmentLabel[p + 1]) { garmentLabel[p + 1] = nextL; gq[gt++] = p + 1; }
+      if (y > 0 && !isBg[p - W] && !garmentLabel[p - W]) { garmentLabel[p - W] = nextL; gq[gt++] = p - W; }
+      if (y < H - 1 && !isBg[p + W] && !garmentLabel[p + W]) { garmentLabel[p + W] = nextL; gq[gt++] = p + W; }
+    }
+    if (size > bestSize) { bestSize = size; bestL = nextL; }
+  }
+  console.log("garment components:", nextL, "largest:", bestSize, "px");
+  let stripped = 0;
+  for (let p = 0; p < N; p++) {
+    if (!isBg[p] && garmentLabel[p] !== bestL) {
+      isBg[p] = 1;
+      stripped++;
+    }
+  }
+  console.log("garment speckle stripped:", stripped, "px");
+}
 
 // -- 2. Lining: colour rule + largest connected component -------------------
 // Lining samples: (199,134,138), (170,104,108) — r−g ≈ 65, r−b ≈ 60.
@@ -144,6 +187,14 @@ for (let p = 0; p < N; p++) {
 console.log("futter hole-fill:", filled, "px");
 
 // -- 3. Compose raw buffers -------------------------------------------------
+// BIL-2461: near-white base range so the boho print luminance from the source
+// is muted into faint fold shading only. Multiply-blend of any tint over this
+// base reproduces ~86..98% of the tint's own colour.
+const BASE_MIN = 220;
+const BASE_MAX = 250;
+const lumBlurredOf = (i) =>
+  0.2126 * blurred[i] + 0.7152 * blurred[i + 1] + 0.0722 * blurred[i + 2];
+
 const baseRGBA = Buffer.alloc(N * 4);
 const maskMuetze = Buffer.alloc(N);
 const maskFutter = Buffer.alloc(N);
@@ -151,10 +202,8 @@ const maskFutter = Buffer.alloc(N);
 for (let p = 0; p < N; p++) {
   if (isBg[p]) continue; // transparent
   const i = p * 3;
-  const lum = lumOf(i);
-  // Same range compression as hose/turban: keeps shadow detail for the
-  // multiply blend without crushing to black or washing to white.
-  const gray = Math.round(60 + (lum / 255) * 175);
+  const lum = lumBlurredOf(i);
+  const gray = Math.round(BASE_MIN + (lum / 255) * (BASE_MAX - BASE_MIN));
   const o = p * 4;
   baseRGBA[o] = gray;
   baseRGBA[o + 1] = gray;
@@ -164,26 +213,30 @@ for (let p = 0; p < N; p++) {
   else maskMuetze[p] = 255;
 }
 
-// Equalise the two zones' tonal range so the same tint reads equally bright
-// on both (the lining midtone is darker than the print). Same clamped-gain
-// approach as the turban bow, applied to the lining zone.
-let futterSum = 0, futterN = 0, bodySum = 0, bodyN = 0;
-for (let p = 0; p < N; p++) {
-  if (isBg[p]) continue;
-  const l = lumOf(p * 3);
-  if (isFutter[p]) { futterSum += l; futterN++; } else { bodySum += l; bodyN++; }
-}
-const futterMean = futterSum / Math.max(1, futterN);
-const bodyMean = bodySum / Math.max(1, bodyN);
-console.log("mean lum — futter:", futterMean.toFixed(1), "body:", bodyMean.toFixed(1));
-const gain = Math.min(3.2, bodyMean / Math.max(20, futterMean));
-for (let p = 0; p < N; p++) {
-  if (!isFutter[p] || isBg[p]) continue;
-  const o = p * 4;
-  const lifted = Math.min(235, Math.round(60 + ((lumOf(p * 3) * gain) / 255) * 175));
-  baseRGBA[o] = lifted;
-  baseRGBA[o + 1] = lifted;
-  baseRGBA[o + 2] = lifted;
+// BIL-2461: bake a thin darker seam line along the futter/hauptstoff boundary
+// into the base. Reads as a sewn edge once tints are applied; ~180 gray gives
+// a subtle multiply-darkening without a hard black outline.
+const SEAM_GRAY = 180;
+for (let y = 1; y < H - 1; y++) {
+  for (let x = 1; x < W - 1; x++) {
+    const p = y * W + x;
+    if (isBg[p] || !isFutter[p]) continue;
+    // Edge = at least one 4-neighbour is non-futter garment.
+    const edge =
+      (!isFutter[p - 1] && !isBg[p - 1]) ||
+      (!isFutter[p + 1] && !isBg[p + 1]) ||
+      (!isFutter[p - W] && !isBg[p - W]) ||
+      (!isFutter[p + W] && !isBg[p + W]);
+    if (!edge) continue;
+    for (const q of [p, p - 1, p + 1, p - W, p + W]) {
+      if (isBg[q]) continue;
+      const o = q * 4;
+      const g = Math.min(baseRGBA[o], SEAM_GRAY);
+      baseRGBA[o] = g;
+      baseRGBA[o + 1] = g;
+      baseRGBA[o + 2] = g;
+    }
+  }
 }
 
 // -- 4. Feather the futter/body boundary ------------------------------------

@@ -24,7 +24,7 @@ interface MuetzePhotoProps {
  */
 const ASSET_BASE = "/konfigurator/muetze-foto";
 const ASSET_W = 900;
-const ASSET_H = 917;
+const ASSET_H = 918;
 
 export function MuetzePhoto({ paints, title = "Muetze-Vorschau", className }: MuetzePhotoProps) {
   return (
