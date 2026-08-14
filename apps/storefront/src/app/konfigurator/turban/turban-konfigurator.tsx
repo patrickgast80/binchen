@@ -181,7 +181,7 @@ export function TurbanKonfigurator() {
 
           {/* Selection summary + actions */}
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-2">
+            <dl className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:flex sm:flex-wrap">
               {TURBAN_REGIONS.map((region) => {
                 const swatchId = selection[region.param];
                 const swatch = resolveSwatch(swatchId, region.defaultColor);

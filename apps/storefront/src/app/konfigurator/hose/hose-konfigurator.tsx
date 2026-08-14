@@ -178,7 +178,9 @@ export function HoseKonfigurator() {
 
           {/* Selection summary + actions */}
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-3">
+            {/* Wrapping flex statt fixer Spalten: lange Farbnamen ("Marineblau") sprengten
+                sonst ihre Grid-Spur und liefen in den Nachbar-Eintrag (BIL-2468). */}
+            <dl className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:flex sm:flex-wrap">
               {REGIONS.map((region) => {
                 const swatchId = selection[region.param];
                 const swatch = resolveSwatch(swatchId, region.defaultColor);

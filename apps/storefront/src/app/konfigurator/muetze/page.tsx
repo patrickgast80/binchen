@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { buildKonfigMetadata } from "../_shared/metadata";
 import { MuetzeKonfigurator } from "./muetze-konfigurator";
 
-const TITLE = "Muetze-Konfigurator";
+const TITLE = "Mütze-Konfigurator";
 const DESCRIPTION =
-  "Stell deine Bilulu-Muetze selbst zusammen: Hauptstoff und Futter einzeln einfärben. Vorschau auf einem echten Muetzenfoto.";
+  "Stell deine Bilulu-Mütze selbst zusammen: Hauptstoff und Futter einzeln einfärben. Vorschau auf einem echten Mützenfoto.";
 
 export const dynamic = "force-dynamic";
 

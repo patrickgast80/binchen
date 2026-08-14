@@ -14,10 +14,10 @@ interface MuetzePhotoProps {
 }
 
 /**
- * Fotorealistische Konfigurator-Vorschau: die echte Bilulu-Muetze "Boho-Regenbogen"
- * (freigestellt, entsaettigt) als Basis, ueberlagert mit zwei einfaerbbaren
+ * Fotorealistische Konfigurator-Vorschau: die echte Bilulu-Mütze "Boho-Regenbogen"
+ * (freigestellt, entsättigt) als Basis, überlagert mit zwei einfärbbaren
  * Zonen (Hauptstoff + Futter). Gleiches Prinzip wie TurbanPhoto:
- * mix-blend-mode: multiply ueber Graustufen-Basis. Der Hauptstoff kann
+ * mix-blend-mode: multiply über Graustufen-Basis. Der Hauptstoff kann
  * einen Stoffdruck rendern.
  *
  * Assets werden von scripts/bil2445-build-muetze-assets.mjs erzeugt.
@@ -26,7 +26,7 @@ const ASSET_BASE = "/konfigurator/muetze-foto";
 const ASSET_W = 900;
 const ASSET_H = 920;
 
-export function MuetzePhoto({ paints, title = "Muetze-Vorschau", className }: MuetzePhotoProps) {
+export function MuetzePhoto({ paints, title = "Mütze-Vorschau", className }: MuetzePhotoProps) {
   return (
     <div
       role="img"

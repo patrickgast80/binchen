@@ -73,7 +73,7 @@ export function MuetzeKonfigurator() {
 
   const handleReset = React.useCallback(() => {
     router.replace(pathname, { scroll: false });
-    setLastChanged({ region: "Konfiguration", swatch: "zurueckgesetzt" });
+    setLastChanged({ region: "Konfiguration", swatch: "zurückgesetzt" });
     setShareStatus("idle");
   }, [pathname, router]);
 
@@ -82,7 +82,7 @@ export function MuetzeKonfigurator() {
     const url = window.location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Meine Bilulu-Muetze", url });
+        await navigator.share({ title: "Meine Bilulu-Mütze", url });
         return;
       }
     } catch {
@@ -106,28 +106,28 @@ export function MuetzeKonfigurator() {
           Konfigurator · MVP
         </p>
         <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-binchen-ink sm:text-4xl lg:text-5xl">
-          Stell deine Bilulu-Muetze selbst zusammen
+          Stell deine Bilulu-Mütze selbst zusammen
         </h1>
         <p className="mt-4 font-body text-base leading-relaxed text-binchen-ink-muted sm:text-lg">
-          Waehl Farbe fuer Mueetzenstoff und Futter. Die Vorschau zeigt deine Auswahl live auf
-          einem echten Produktfoto. Den Link kannst du teilen und spaeter wieder oeffnen.
+          Wähle Farbe für Mützenstoff und Futter. Die Vorschau zeigt deine Auswahl live auf
+          einem echten Produktfoto. Den Link kannst du teilen und später wieder öffnen.
         </p>
       </header>
 
       <aside
         role="note"
-        aria-label="Hinweis zu Fruehchengroessen"
+        aria-label="Hinweis zu Frühchengrößen"
         className="mt-8 rounded-xl border border-binchen-terracotta/40 bg-binchen-terracotta/10 px-4 py-3 sm:px-5 sm:py-4"
       >
         <p className="font-body text-sm leading-relaxed text-binchen-ink">
-          <span className="font-semibold text-binchen-terracotta-text">Auch fuer Fruehchen.</span>{" "}
+          <span className="font-semibold text-binchen-terracotta-text">Auch für Frühchen.</span>{" "}
           <span className="text-binchen-ink-muted">
-            Wir naehen auch Muetzchen in Fruehchengroessen — Sondermasse auf Anfrage. Mehr Infos auf{" "}
+            Wir nähen auch Mützchen in Frühchengrößen — Sondermaße auf Anfrage. Mehr Infos auf{" "}
             <Link
               href="/fruehchen"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
             >
-              der Fruehchen-Seite
+              der Frühchen-Seite
             </Link>
             .
           </span>
@@ -141,19 +141,19 @@ export function MuetzeKonfigurator() {
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-14">
         <section aria-labelledby="preview-heading" className="lg:sticky lg:top-24 lg:self-start">
           <h2 id="preview-heading" className="sr-only">
-            Live-Vorschau deiner Muetze
+            Live-Vorschau deiner Mütze
           </h2>
           <div className="relative overflow-hidden rounded-2xl border border-binchen-border bg-binchen-studio p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
               <MuetzePhoto
                 paints={paints}
-                title="Live-Vorschau der konfigurierten Bilulu-Muetze auf Basis eines echten Produktfotos"
+                title="Live-Vorschau der konfigurierten Bilulu-Mütze auf Basis eines echten Produktfotos"
               />
             </div>
           </div>
 
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:grid-cols-2">
+            <dl className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-2 font-body text-sm sm:flex sm:flex-wrap">
               {MUETZE_REGIONS.map((region) => {
                 const swatchId = selection[region.param];
                 const swatch = resolveSwatch(swatchId, region.defaultColor);
@@ -188,7 +188,7 @@ export function MuetzeKonfigurator() {
               {showReset && (
                 <Button type="button" variant="ghost" size="sm" onClick={handleReset}>
                   <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                  Zuruecksetzen
+                  Zurücksetzen
                 </Button>
               )}
             </div>
@@ -206,7 +206,7 @@ export function MuetzeKonfigurator() {
 
         <section aria-labelledby="palette-heading" className="space-y-8">
           <h2 id="palette-heading" className="sr-only">
-            Farbpalette fuer jede Region
+            Farbpalette für jede Region
           </h2>
 
           {/* Desktop palette — on mobile the sticky bottom-sheet below owns the same picker */}
@@ -224,7 +224,7 @@ export function MuetzeKonfigurator() {
                 <p className="font-body text-sm text-binchen-ink-muted">{region.description}</p>
                 <div
                   role="radiogroup"
-                  aria-label={`Farbe fuer ${region.label}`}
+                  aria-label={`Farbe für ${region.label}`}
                   className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-6"
                 >
                   {swatchesForRegion(region).map((swatch) => {
@@ -298,7 +298,7 @@ export function MuetzeKonfigurator() {
                   Deine Konfiguration in den Warenkorb
                 </p>
                 <p className="mt-1 font-body text-sm text-binchen-ink-muted">
-                  Handgenaecht auf Bestellung. Preis + Versand siehst du im Warenkorb.
+                  Handgenäht auf Bestellung. Preis + Versand siehst du im Warenkorb.
                 </p>
               </div>
               <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto">
@@ -309,7 +309,7 @@ export function MuetzeKonfigurator() {
           </form>
 
           <p className="font-body text-sm text-binchen-ink-muted">
-            Du moechtest lieber eine Hose gestalten?{" "}
+            Du möchtest lieber eine Hose gestalten?{" "}
             <Link
               href="/konfigurator/hose"
               className="font-medium text-binchen-terracotta-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 rounded"
