@@ -40,13 +40,22 @@ const args = Object.fromEntries(process.argv.slice(2).reduce((acc, cur, i, a) =>
 }, []));
 if (!args.in || !args.out) { console.error("--in and --out required"); process.exit(1); }
 
-function nearFrame(r, g, b) {
-  return Math.abs(r - FRAME_TARGET.r) <= FRAME_TOLERANCE
-    && Math.abs(g - FRAME_TARGET.g) <= FRAME_TOLERANCE
-    && Math.abs(b - FRAME_TARGET.b) <= FRAME_TOLERANCE;
+function nearColour(r, g, b, target, tolerance) {
+  return Math.abs(r - target.r) <= tolerance
+    && Math.abs(g - target.g) <= tolerance
+    && Math.abs(b - target.b) <= tolerance;
 }
 
-async function findFrameCrop(pngBuf) {
+// Finds the bounding box of "real content" by trimming rows/cols from every
+// edge that are close to `target` on average — used both for the decorative
+// cream frame (older batches) and, in a second pass, for the flat studio-grey
+// CANVAS_BG padding a prior normalizer run (BIL-2455) already composited
+// around the original photo. Without that second pass, this script's own
+// border-seeded flood fill only ever finds the pre-existing grey padding
+// (a big color jump separates it from whatever backdrop the original photo
+// actually has) and never reaches the real problem pixels — see BIL-2462
+// apply-run notes.
+async function findContentCrop(pngBuf, target, tolerance) {
   const { data, info } = await sharp(pngBuf).raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h, channels: c } = info;
   const pixelAt = (x, y) => {
@@ -63,12 +72,16 @@ async function findFrameCrop(pngBuf) {
     for (let y = 0; y < h; y++) { const p = pixelAt(x, y); R += p.r; G += p.g; B += p.b; }
     return { r: R / h, g: G / h, b: B / h };
   };
-  let top = 0; while (top < h / 2 && nearFrame(rowAvg(top).r, rowAvg(top).g, rowAvg(top).b)) top++;
-  let bottom = h - 1; while (bottom > h / 2 && nearFrame(rowAvg(bottom).r, rowAvg(bottom).g, rowAvg(bottom).b)) bottom--;
-  let left = 0; while (left < w / 2 && nearFrame(colAvg(left).r, colAvg(left).g, colAvg(left).b)) left++;
-  let right = w - 1; while (right > w / 2 && nearFrame(colAvg(right).r, colAvg(right).g, colAvg(right).b)) right--;
+  const near = (p) => nearColour(p.r, p.g, p.b, target, tolerance);
+  let top = 0; while (top < h / 2 && near(rowAvg(top))) top++;
+  let bottom = h - 1; while (bottom > h / 2 && near(rowAvg(bottom))) bottom--;
+  let left = 0; while (left < w / 2 && near(colAvg(left))) left++;
+  let right = w - 1; while (right > w / 2 && near(colAvg(right))) right--;
   return { left, top, width: right - left + 1, height: bottom - top + 1, orig: { w, h } };
 }
+
+const findFrameCrop = (pngBuf) => findContentCrop(pngBuf, FRAME_TARGET, FRAME_TOLERANCE);
+const findPaddingCrop = (pngBuf) => findContentCrop(pngBuf, CANVAS_BG, 4);
 
 /**
  * Chained flood fill from the border: a pixel joins the background if it is
@@ -216,6 +229,16 @@ async function normalizeOne(inFile, outFile) {
   if (crop.width < crop.orig.w * 0.98 || crop.height < crop.orig.h * 0.98) {
     pngBuf = await sharp(pngBuf).extract({
       left: crop.left, top: crop.top, width: crop.width, height: crop.height,
+    }).png().toBuffer();
+  }
+
+  // 2b) strip a prior run's studio-grey CANVAS_BG padding, if present, so
+  // segmentation below sees the actual original photo (and its real
+  // backdrop) instead of stalling at the padding's edge — see findPaddingCrop.
+  const padCrop = await findPaddingCrop(pngBuf);
+  if (padCrop.width < padCrop.orig.w * 0.98 || padCrop.height < padCrop.orig.h * 0.98) {
+    pngBuf = await sharp(pngBuf).extract({
+      left: padCrop.left, top: padCrop.top, width: padCrop.width, height: padCrop.height,
     }).png().toBuffer();
   }
 
