@@ -541,6 +541,119 @@ export function applySeamShadow(gray, W, H, isBg, boundary, {
 }
 
 /**
+ * DIRECTIONAL seam relief — the Bündchen/Hauptteil transition, BIL-2470.
+ *
+ * `applySeamShadow` above puts a symmetric valley on the boundary. On a photo
+ * of a real Pumphose the transition is nothing like symmetric, which is why the
+ * board kept reading it as a vector outline rather than a seam. Measured on
+ * public/products/pumphose/pumphose-05.jpg, going across a cuff hem:
+ *
+ *   body side   the main fabric is GATHERED into the cuff and tucks in behind
+ *               the rolled hem, so it sits in shadow — a wide, fairly deep
+ *               occlusion band, deepest right at the stitch line.
+ *   the hem     the Bündchen is a folded-over rib tube; the fold rolls towards
+ *               the light and reads as a narrow BRIGHT ridge, 3-5 px.
+ *   cuff side   below the ridge the cuff falls away from the light again, so a
+ *               gentle darkening over ~25 px before it settles.
+ *
+ * Reproducing that asymmetry (dark / bright / gentle) is what makes the edge
+ * read as two pieces of fabric sewn together instead of one shape with a stroke
+ * around it.
+ *
+ * @param {Uint8Array} boundary  seam pixels, e.g. from `boundaryBetween`
+ * @param {Uint8Array} shadowed  zone whose fabric ducks BEHIND the seam (body)
+ * @param {Uint8Array} rolled    zone with the rolled hem (cuff / waistband)
+ */
+export function applySeamRelief(gray, W, H, isBg, { boundary, shadowed, rolled }, {
+  occlusion = { reach: 18, strength: 0.2, bias: 1.6 },
+  ridge = { reach: 5, strength: 0.08 },
+  falloff = { reach: 26, strength: 0.07 },
+} = {}) {
+  const maxReach = Math.max(occlusion.reach, ridge.reach, falloff.reach);
+  const d = distanceFrom(boundary, W, H, maxReach + 4);
+  for (let p = 0; p < W * H; p++) {
+    if (isBg[p]) continue;
+    const dist = d[p];
+    if (dist > maxReach) continue;
+    if (shadowed[p]) {
+      if (dist > occlusion.reach) continue;
+      const t = 1 - dist / occlusion.reach;
+      gray[p] *= 1 - occlusion.strength * Math.pow(t, occlusion.bias);
+    } else if (rolled[p]) {
+      if (dist <= ridge.reach) {
+        // Brightest exactly on the fold, easing out over `reach`.
+        gray[p] *= 1 + ridge.strength * (1 - smoothstep(dist / ridge.reach));
+      } else if (dist <= falloff.reach) {
+        const t = (dist - ridge.reach) / (falloff.reach - ridge.reach);
+        gray[p] *= 1 - falloff.strength * smoothstep(t);
+      }
+    }
+  }
+  return gray;
+}
+
+/**
+ * Gather folds running out of a seam into the gathered zone — BIL-2470.
+ *
+ * The main body of a Pumphose is sewn into a shorter cuff, so the surplus width
+ * bunches up into a fan of near-vertical creases above the hem. Those creases
+ * are the loudest "this is cloth, and it is sewn on" signal in the reference
+ * photo, and the previous base had none of them: the fabric above the cuff was
+ * a dead flat field, so the hem could only ever look drawn on.
+ *
+ * Both the waistband hem and the two leg hems run roughly horizontal, so the
+ * creases are modelled as a 1-D signal along x whose amplitude decays with the
+ * distance to the seam. Spacing is deliberately irregular (hash-jittered phase
+ * accumulation, not a fixed period) — evenly spaced creases read as corduroy.
+ * The profile is asymmetric too: broad soft ridges separated by narrower, deeper
+ * valleys, which is how a fold in jersey actually catches light.
+ */
+export function applyGatherFolds(gray, W, H, isBg, zone, boundary, {
+  reach = 70,
+  amp = 7,
+  period = 26,
+  jitter = 0.55,
+  decay = 1.4,
+  seed = 2470,
+} = {}) {
+  const hash = (x) => {
+    let h = (x * 2246822519 + seed * 374761393) | 0;
+    h = (h ^ (h >>> 13)) * 1274126177;
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+  };
+  // Accumulate phase column by column so crease spacing wanders instead of
+  // repeating exactly; the >> 4 keeps a single crease coherent across ~16 px.
+  const phase = new Float64Array(W);
+  const strength = new Float64Array(W);
+  let acc = 0;
+  for (let x = 0; x < W; x++) {
+    acc += (1 / period) * (1 + jitter * (hash(x >> 4) - 0.5) * 2);
+    phase[x] = acc;
+    // Coarser cell than the phase jitter, so prominence drifts across groups of
+    // creases rather than flickering from one to the next.
+    strength[x] = 0.5 + 1.0 * hash((x >> 6) + 9973);
+  }
+
+  const d = distanceFrom(boundary, W, H, reach + 4);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const p = y * W + x;
+      if (isBg[p] || !zone[p]) continue;
+      const dist = d[p];
+      if (dist > reach) continue;
+      const w = Math.cos(phase[x] * Math.PI * 2);
+      // Soft ridge (w > 0) vs. sharper crease valley (w < 0).
+      const shaped = w >= 0 ? w * 0.65 : -Math.pow(-w, 1.5);
+      // Vary how prominent each crease is, not just where it sits. With a
+      // constant amplitude the fan reads as ribbing; real gathers have a few
+      // deep folds and a lot of shallow ones.
+      gray[p] += shaped * amp * strength[x] * Math.pow(1 - dist / reach, decay);
+    }
+  }
+  return gray;
+}
+
+/**
  * Fine achromatic jersey grain.
  *
  * Uses a deterministic hash (no Math.random) so rebuilding the assets from the
@@ -576,7 +689,7 @@ export function applyGrain(gray, W, H, isBg, { amp = 3.2, cell = 2, seed = 2461 
  * fabric. `fade` softens the rib out towards the zone border so it does not
  * end in a hard stripe against the seam.
  */
-export function applyRib(gray, W, H, zone, { period = 9, amp = 3.5, fade = 6 } = {}) {
+export function applyRib(gray, W, H, zone, { period = 9, amp = 3.5, fade = 6, knit = 0 } = {}) {
   const inZone = new Uint8Array(W * H);
   for (let p = 0; p < W * H; p++) if (!zone[p]) inZone[p] = 1; // seed = outside
   const d = distanceFrom(inZone, W, H, fade + 2);
@@ -584,7 +697,13 @@ export function applyRib(gray, W, H, zone, { period = 9, amp = 3.5, fade = 6 } =
     for (let x = 0; x < W; x++) {
       const p = y * W + x;
       if (!zone[p]) continue;
-      const wave = Math.sin((x / period) * Math.PI * 2);
+      const s = Math.sin((x / period) * Math.PI * 2);
+      // knit = 0 keeps the original sine (Mütze/Turban callers unchanged).
+      // knit > 0 blends towards a real 1x1 rib cross-section: a broad rounded
+      // wale with a narrow, deeper valley between it and the next one.
+      const wave = knit > 0
+        ? s * (1 - knit) + knit * (s >= 0 ? Math.pow(s, 0.7) : -Math.pow(-s, 2.2))
+        : s;
       gray[p] += wave * amp * smoothstep(d[p] / fade);
     }
   }

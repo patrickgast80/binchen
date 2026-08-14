@@ -37,6 +37,22 @@
  *     pink components at the bottom — then contour-smoothed, so every seam
  *     follows the actual garment.
  *
+ * BIL-2470, third pass — the Bündchen edge
+ * ----------------------------------------
+ * Board repro against BIL-2461's own criterion #2 ("dezente Naht-/Schattenlinie
+ * an der Trennstelle, damit es wie ein echtes Kleidungsstück liest"): the hem
+ * still read as a drawn outline. Measured against the reference photo, four
+ * things were wrong, all fixed below at their marked sections:
+ *
+ *  1. The seam was a SYMMETRIC valley. A real cuff hem is dark on the body side
+ *     (gathered fabric tucks in behind), bright on the fold, then falls away.
+ *  2. The body above the hem had NO gathers, so nothing showed that the fabric
+ *     is sewn into a shorter cuff.
+ *  3. A dark outline traced every cuff, because the anti-aliased silhouette rim
+ *     failed the colour threshold and got measured as body fabric.
+ *  4. The illumination was estimated once for the whole garment, so the 44 px
+ *     max window bled body brightness into a frame around each cuff.
+ *
  * Rerun this script whenever the source photo changes:
  *   cd apps/storefront && node scripts/bil2417-build-assets.mjs [--debug]
  */
@@ -46,12 +62,16 @@ import path from "node:path";
 
 import {
   applyEdgeShadow,
+  applyGatherFolds,
   applyGrain,
   applyRib,
-  applySeamShadow,
+  applySeamRelief,
   boundaryBetween,
   buildHighlight,
+  distanceFrom,
+  erodeMask,
   estimateIllumination,
+  extendInto,
   grayToRGBA,
   maxFilter,
   normalizeShadingZoned,
@@ -180,6 +200,22 @@ const isBuen = union(
 // Resolve any overlap deterministically; cuffs win (they are the tighter fit).
 for (let p = 0; p < N; p++) if (isBuen[p]) isBund[p] = 0;
 
+// BIL-2470: give each knit zone the anti-aliased rim it loses at the silhouette.
+//
+// Zone segmentation keys on colour (r−g > 26 for the dusty-pink cuffs), but the
+// JPEG's silhouette rim blends cuff into the grey backdrop, so the outermost
+// 3-12 px of every cuff falls under that threshold and lands in the body zone.
+// Leaving it there cost twice over: the rim was tinted with the HOSE colour — a
+// cream halo tracing a pink cuff on any two-colour design — and its luminance
+// sits ~25 levels below real body fabric, so the body's percentile stretch
+// floored it to `shadow`, drawing a hard dark outline around every cuff. That
+// outline is a good part of why the board reads the hem as a drawn stroke.
+//
+// It cannot be repaired downstream either: interpolation has nothing to pull
+// from, since the rim is bounded by the backdrop on one side and the cuff on
+// the other. So it is reassigned here, before anything is measured.
+absorbSilhouetteRim();
+
 // -- 4. Build the achromatic shading base -----------------------------------
 // radius 44 exceeds the largest watercolour motif in this print; anything
 // smaller leaves the flower centres behind as gray stains on the base.
@@ -187,7 +223,67 @@ for (let p = 0; p < N; p++) if (isBuen[p]) isBund[p] = 0;
 // honest large-scale signal is the broad drape gradient. Leaving mid-frequency
 // detail in just resurrects the print as cloudy blotches that read as dirt.
 // The convincing depth cues are added explicitly below instead.
-const illum = estimateIllumination(data, W, H, isBg, { radius: 44, smooth: 40, erode: 4 });
+//
+// BIL-2470: estimated PER ZONE, not once over the whole garment. The max filter
+// only ever sees pixels of its own zone, for two reasons:
+//
+//  * Bleed. A 44 px max window centred inside a cuff, but within 44 px of the
+//    cuff's border, also sees the brighter body fabric — so it lifted a 44 px
+//    frame around each cuff and left the interior darker. After the per-zone
+//    percentile stretch that step became a hard-cornered rectangle inset inside
+//    the cuff, reading as a second panel sewn on. Restricting the window to the
+//    zone removes it at the source.
+//  * Only the body is printed. The waistband and the cuffs are plain jersey and
+//    rib, so a max filter there buys nothing and actively costs detail — it
+//    fills the rib valleys in with the neighbouring wale crests. They get the
+//    plain (lightly smoothed) luminance instead, which keeps their real
+//    photographic structure.
+const zoneIllum = (zone, opts) => {
+  const zoneBg = new Uint8Array(N);
+  for (let p = 0; p < N; p++) if (isBg[p] || !zone[p]) zoneBg[p] = 1;
+  return estimateIllumination(data, W, H, zoneBg, opts);
+};
+const bodyMask = new Uint8Array(N);
+for (let p = 0; p < N; p++) if (!isBg[p] && !isBund[p] && !isBuen[p]) bodyMask[p] = 1;
+
+// The knit zones are smoothed hard on purpose. They carry two things worth
+// keeping — the broad dome of a tube lit from the front, and the drape of the
+// waistband — and one thing worth losing: the crisp inner fold edge of the
+// folded-over cuff, which the per-zone percentile stretch below amplifies from
+// a ~10-level difference in the photo into a ~40-level step that reads as a
+// lighter panel stitched onto the cuff. Smoothing also shrinks each zone's own
+// p5..p95 span below `minSpan`, so the stretch self-limits and the zones stay
+// gentle without having to detune the body.
+// The body estimate additionally ignores a 12 px collar around each knit zone.
+// `smoothContour` turns the segmented hem into a smooth curve, which necessarily
+// leaves a thin ring of genuinely cuff-coloured pixels on the body side of the
+// line. Those sit at luminance ~176-184 while real body fabric is ~203-233, so
+// the body's own percentile stretch floored them at `shadow` — a hard black rim
+// tracing every cuff and the waistband. (It was always there; the old whole-
+// garment max filter bled body brightness over it and hid it.) Estimating
+// without the collar and then extending the field back out inpaints the ring
+// from real body fabric instead of measuring cuff pixels as if they were body.
+const knitCollar = erodeMask(union([isBund, isBuen]), W, H, 12);
+const bodyCore = new Uint8Array(N);
+for (let p = 0; p < N; p++) if (bodyMask[p] && !knitCollar[p]) bodyCore[p] = 1;
+
+const bodyCoreBg = new Uint8Array(N);
+for (let p = 0; p < N; p++) if (!bodyCore[p]) bodyCoreBg[p] = 1;
+const bodyMaskBg = new Uint8Array(N);
+for (let p = 0; p < N; p++) if (!bodyMask[p]) bodyMaskBg[p] = 1;
+
+const illumBody = extendInto(
+  zoneIllum(bodyCore, { radius: 44, smooth: 40, erode: 4 }),
+  bodyCoreBg, bodyMaskBg, W, H, 20,
+);
+const illumBund = zoneIllum(isBund, { mode: "plain", smooth: 30, erode: 3 });
+const illumBuen = zoneIllum(isBuen, { mode: "plain", smooth: 24, erode: 3 });
+
+const illum = new Float32Array(N);
+for (let p = 0; p < N; p++) {
+  if (isBg[p]) continue;
+  illum[p] = isBund[p] ? illumBund[p] : isBuen[p] ? illumBuen[p] : illumBody[p];
+}
 // Zoned, not global: the waistband is white jersey, the body is printed and
 // the cuffs are dusty pink, so a single stretch would bake those three
 // material lightnesses into the base and the same swatch would render as three
@@ -210,12 +306,57 @@ const boundBundHose = boundaryBetween(bund255, body255, W, H, isBg);
 const boundBuenHose = boundaryBetween(buen255, body255, W, H, isBg);
 const seamSeed = new Uint8Array(N);
 for (let p = 0; p < N; p++) if (boundBundHose[p] || boundBuenHose[p]) seamSeed[p] = 1;
-applySeamShadow(gray, W, H, isBg, seamSeed, { radius: 9, strength: 0.2, highlight: 0.03 });
+
+// -- 4b. BIL-2470: make the Bündchen edge read as a seam, not as an outline ---
+// Board repro on BIL-2461's own criterion #2 ("dezente Naht-/Schattenlinie an
+// der Trennstelle, damit es wie ein echtes Kleidungsstück liest"): the previous
+// symmetric `applySeamShadow` valley rendered as a flat 1-2 px stroke and the
+// fabric on either side of it was dead flat, so the hem looked drawn on.
+// Compared against the reference photo the transition needs three things, in
+// this order (each helper is documented in lib/konfigurator-shading.mjs):
+const bodyZone = bodyMask;
+
+//  (a) volume. Deliberately NOT synthesised. A cuff wraps a leg, so it is lit
+//      centrally and falls off at its borders — but the source photo already
+//      carries exactly that (visible on pumphose-05.jpg with the cuff greyscaled
+//      and contrast-stretched), and the per-zone illumination above now keeps
+//      it instead of letting the max filter flatten it. Adding a synthetic roll
+//      on top double-counted the same physical effect and turned the cuff's soft
+//      volume into a hard-edged rectangle inset. The photo's own shading wins.
+
+//  (b) the surplus body width gathered into the shorter cuff. The waistband
+//      takes a wider, shallower fan (it is a longer, gentler hem); the leg
+//      cuffs gather hard over a short span, so tighter spacing and more depth.
+applyGatherFolds(gray, W, H, isBg, bodyZone, boundBundHose, {
+  reach: 110, amp: 11, period: 38, jitter: 0.5, decay: 1.5, seed: 2470,
+});
+applyGatherFolds(gray, W, H, isBg, bodyZone, boundBuenHose, {
+  reach: 84, amp: 13, period: 27, jitter: 0.6, decay: 1.3, seed: 2471,
+});
+
+//  (c) the asymmetric hem itself: occlusion where the body tucks in behind the
+//      cuff, a narrow bright ridge on the rolled fold, then a soft falloff.
+applySeamRelief(gray, W, H, isBg, { boundary: boundBuenHose, shadowed: bodyZone, rolled: isBuen }, {
+  occlusion: { reach: 20, strength: 0.22, bias: 1.5 },
+  ridge: { reach: 5, strength: 0.09 },
+  falloff: { reach: 28, strength: 0.07 },
+});
+applySeamRelief(gray, W, H, isBg, { boundary: boundBundHose, shadowed: bodyZone, rolled: isBund }, {
+  occlusion: { reach: 18, strength: 0.18, bias: 1.6 },
+  ridge: { reach: 4, strength: 0.07 },
+  falloff: { reach: 24, strength: 0.05 },
+});
 
 // Knit ribbing on the two elasticated zones — the strongest single cue that
-// these are Bündchen and not just differently-coloured rectangles.
-applyRib(gray, W, H, isBuen, { period: 9, amp: 3.5, fade: 6 });
-applyRib(gray, W, H, isBund, { period: 11, amp: 2.2, fade: 8 });
+// these are Bündchen and not just differently-coloured rectangles. `knit`
+// shapes the wale cross-section (broad ridge, narrow deep valley); the plain
+// sine it replaces survived the 1200→900 downsample as a faint corduroy hatch.
+// Period stays well above the 1200→900 Nyquist limit (12 px source ≈ 9 px
+// delivered) — at period 8 the wales aliased into a moiré across the cuff. The
+// waistband is smooth jersey on the reference photo, not rib, so it only gets
+// enough structure to separate it from the body, not a visible wale pattern.
+applyRib(gray, W, H, isBuen, { period: 12, amp: 4.5, fade: 7, knit: 0.85 });
+applyRib(gray, W, H, isBund, { period: 15, amp: 1.8, fade: 9, knit: 0.6 });
 
 applyGrain(gray, W, H, isBg, { amp: 3.2, cell: 2, seed: 2417 });
 
@@ -327,6 +468,43 @@ function keepLargestGarmentComponent() {
     if (!isBg[p] && label[p] !== best) { isBg[p] = 1; stripped++; }
   }
   console.log("garment components:", next, "largest:", bestSize, "px, speckle stripped:", stripped);
+}
+
+/**
+ * Reassign the anti-aliased silhouette rim of each knit zone from body to that
+ * zone. See the call site for why the rim ends up misclassified.
+ *
+ * A body pixel is rim if all three hold:
+ *   - it is within `RIM` px of the backdrop, which confines the whole operation
+ *     to the silhouette and leaves the hem itself alone;
+ *   - it is nearer to a knit zone than to the body's own interior, which is
+ *     what distinguishes "pink pixel the threshold missed" from "main fabric
+ *     that happens to run along the silhouette";
+ *   - it is body to begin with.
+ * It then goes to whichever knit zone is nearer.
+ */
+function absorbSilhouetteRim(RIM = 14, CORE_MARGIN = 16) {
+  const isBody = new Uint8Array(N);
+  for (let p = 0; p < N; p++) if (!isBg[p] && !isBund[p] && !isBuen[p]) isBody[p] = 1;
+
+  const nearKnit = erodeMask(union([isBund, isBuen]), W, H, CORE_MARGIN);
+  const core = new Uint8Array(N);
+  for (let p = 0; p < N; p++) if (isBody[p] && !nearKnit[p]) core[p] = 1;
+
+  const dBg = distanceFrom(isBg, W, H, 64);
+  const dCore = distanceFrom(core, W, H, 64);
+  const dBund = distanceFrom(isBund, W, H, 64);
+  const dBuen = distanceFrom(isBuen, W, H, 64);
+
+  let toBund = 0, toBuen = 0;
+  for (let p = 0; p < N; p++) {
+    if (!isBody[p] || dBg[p] > RIM) continue;
+    const dKnit = Math.min(dBund[p], dBuen[p]);
+    if (dKnit >= dCore[p]) continue;
+    if (dBuen[p] <= dBund[p]) { isBuen[p] = 1; toBuen++; }
+    else { isBund[p] = 1; toBund++; }
+  }
+  console.log("silhouette rim absorbed — Bündchen:", toBuen, "px, Bund:", toBund, "px");
 }
 
 /** Keep up to `count` connected components of `candidate` that exceed `minSize`. */
