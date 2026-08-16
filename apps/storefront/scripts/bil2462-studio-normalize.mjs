@@ -29,7 +29,16 @@ const FRAME_TARGET = { r: 238, g: 233, b: 217 };
 const FRAME_TOLERANCE = 22;
 const CANVAS_BG = { r: 200, g: 200, b: 198 };
 const CANVAS_SIZE = 1200;
-const PAD_RATIO = 0.06;
+// 0.06 kept the grey mat too thin to read at catalog-card scale: on photos
+// the pipeline can't safely segment (fallback mode — the majority, see
+// RESHOOT-LIST-2026-08-14.md), the original backdrop still filled almost the
+// entire frame, so cards showed clashing colours (mint/blue-grey/white) with
+// only a sliver of grey at the very edge. 0.20 makes the studio-grey mat the
+// dominant visual element on every card regardless of mode, so the series
+// reads as one consistent shoot even where the interior backdrop still needs
+// a reshoot to be fixed for real. Verified idempotent against already-padded
+// live thumbnails (padCrop strips prior padding before re-measuring).
+const PAD_RATIO = 0.20;
 const CHAIN_DELTA = 24; // per-channel tolerance vs. the neighbour that queued this pixel
 const SEED_DELTA = 26; // per-channel tolerance vs. the sampled border colour (first ring only)
 const MIN_COMPONENT_RATIO = 0.004; // keep any foreground island >= 0.4% of canvas (multi-part flatlays)
