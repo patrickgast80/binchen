@@ -1,0 +1,40 @@
+[
+  {
+    "viewport": "mobile",
+    "layers": [
+      {
+        "src": "/konfigurator/muetze-foto/base.webp",
+        "w": 900,
+        "h": 880,
+        "complete": true
+      },
+      {
+        "src": "/konfigurator/muetze-foto/highlight.webp",
+        "w": 900,
+        "h": 880,
+        "complete": true
+      }
+    ],
+    "consoleErrors": [],
+    "axeViolations": []
+  },
+  {
+    "viewport": "desktop",
+    "layers": [
+      {
+        "src": "/konfigurator/muetze-foto/base.webp",
+        "w": 900,
+        "h": 880,
+        "complete": true
+      },
+      {
+        "src": "/konfigurator/muetze-foto/highlight.webp",
+        "w": 900,
+        "h": 880,
+        "complete": true
+      }
+    ],
+    "consoleErrors": [],
+    "axeViolations": []
+  }
+]
