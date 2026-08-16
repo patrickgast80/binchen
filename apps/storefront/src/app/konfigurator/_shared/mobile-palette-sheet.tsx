@@ -28,12 +28,26 @@ interface MobilePaletteSheetProps {
 }
 
 /**
- * Sticky bottom-sheet used on `<md` screens. Live-Preview stays visible above
- * — the sheet occupies ~48% of viewport height, so the top half of the
- * viewport keeps the sticky preview in view (per BIL-2454 spec).
+ * CSS variable carrying the sheet's measured height. The configurator pages
+ * pad their bottom by this value so page content is never parked underneath
+ * the fixed sheet. Falls back to 280px before hydration.
+ */
+export const PALETTE_SHEET_HEIGHT_VAR = "--binchen-palette-sheet-h";
+
+/**
+ * Sticky bottom-sheet used on `<md` screens. The Live-Preview has to stay
+ * visible above it — that is the whole point of the configurator.
  *
- * The region strip is a horizontal snap-scroll list so single-hand swipes move
- * between regions instead of scrolling a long vertical list.
+ * Only the ACTIVE region panel is rendered (BIL-2474). The previous version
+ * laid all region panels side by side in a horizontal snap-scroller, so the
+ * container inherited the height of the TALLEST panel — "Hose", the only
+ * region carrying the fabric swatches (BIL-2455) — and the sheet grew to
+ * 711px of an 844px viewport, covering the preview at every scroll position.
+ * The tabs were already the primary control, and a horizontal swipe across
+ * three unequally tall panels is not a pattern shoppers know (Jakob's Law).
+ *
+ * The swatch list is additionally capped at 38svh with its own vertical
+ * scroll, so a future longer fabric list cannot eat the preview again.
  */
 export function MobilePaletteSheet({
   regions,
@@ -41,28 +55,55 @@ export function MobilePaletteSheet({
   onSelect,
 }: MobilePaletteSheetProps) {
   const [activeIdx, setActiveIdx] = React.useState(0);
-  const scrollerRef = React.useRef<HTMLDivElement | null>(null);
-  const chipRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const tabStripRef = React.useRef<HTMLDivElement | null>(null);
+  const swatchScrollerRef = React.useRef<HTMLDivElement | null>(null);
+  const sheetRef = React.useRef<HTMLDivElement | null>(null);
   const activeRegion = regions[Math.min(activeIdx, regions.length - 1)];
 
-  // Keep the region chip strip in sync with the palette page.
+  // Publish the measured sheet height so the page below can reserve room for
+  // it. Height changes with the active tab, so this has to be observed rather
+  // than hard-coded (the old hard-coded 280px was off by 431px).
+  React.useEffect(() => {
+    const el = sheetRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const root = document.documentElement;
+    const observer = new ResizeObserver(() => {
+      // Border box, not contentRect — the sheet carries a top border and the
+      // iOS safe-area padding, and the page has to clear both.
+      root.style.setProperty(
+        PALETTE_SHEET_HEIGHT_VAR,
+        `${Math.round(el.getBoundingClientRect().height)}px`,
+      );
+    });
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty(PALETTE_SHEET_HEIGHT_VAR);
+    };
+  }, []);
+
   const activateRegion = React.useCallback(
     (idx: number) => {
       const clamped = Math.max(0, Math.min(idx, regions.length - 1));
       setActiveIdx(clamped);
-      const scroller = scrollerRef.current;
-      if (scroller) {
-        const child = scroller.children[clamped] as HTMLElement | undefined;
-        child?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
-      }
+      // Keep the chip strip scrolled to the chosen region…
+      const strip = tabStripRef.current;
+      const chip = strip?.children[clamped] as HTMLElement | undefined;
+      chip?.scrollIntoView({ behavior: "smooth", inline: "nearest", block: "nearest" });
+      // …and start the new swatch list at the top instead of inheriting the
+      // previous region's scroll offset.
+      swatchScrollerRef.current?.scrollTo({ top: 0 });
     },
     [regions.length],
   );
 
-  // If the palette layout would fit the region count on a single row of chips,
-  // no need for snap-scroll cues — but the CSS below stays consistent.
+  if (!activeRegion) return null;
+
+  const activeSwatchId = selection[activeRegion.param];
+
   return (
     <div
+      ref={sheetRef}
       className={cn(
         "md:hidden",
         // Fixed bottom-sheet — always pinned to viewport bottom on mobile so
@@ -87,7 +128,7 @@ export function MobilePaletteSheet({
           role="tablist"
           aria-label="Region auswählen"
           className="flex snap-x snap-mandatory gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          ref={scrollerRef}
+          ref={tabStripRef}
         >
           {regions.map((region, idx) => {
             const isActive = idx === activeIdx;
@@ -96,15 +137,16 @@ export function MobilePaletteSheet({
             return (
               <button
                 key={region.param}
-                ref={(el) => {
-                  chipRefs.current[idx] = el;
-                }}
+                id={`mobile-palette-tab-${region.param}`}
+                type="button"
                 role="tab"
                 aria-selected={isActive}
                 aria-controls="mobile-palette-panel"
                 onClick={() => activateRegion(idx)}
                 className={cn(
-                  "flex shrink-0 snap-start items-center gap-2 rounded-full border px-3 py-2",
+                  // min-h-11 keeps the chip a 44px tap target (Fitts) — it used
+                  // to render 38px tall.
+                  "flex min-h-11 shrink-0 snap-start items-center gap-2 rounded-full border px-3 py-2",
                   "font-body text-sm transition-colors",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 focus-visible:ring-offset-binchen-cream",
                   isActive
@@ -124,85 +166,78 @@ export function MobilePaletteSheet({
         </div>
       </div>
 
-      {/* Panel — swipes horizontally between regions via native snap scroll */}
+      {/* Only the active region's panel exists — the sheet is as tall as what
+          you are actually looking at. */}
       <div
         id="mobile-palette-panel"
-        className="mt-2 flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        onScroll={(e) => {
-          const el = e.currentTarget;
-          const idx = Math.round(el.scrollLeft / Math.max(1, el.clientWidth));
-          if (idx !== activeIdx) setActiveIdx(idx);
-        }}
+        role="tabpanel"
+        aria-labelledby={`mobile-palette-tab-${activeRegion.param}`}
+        className="mt-2 px-4 pb-4"
       >
-        {regions.map((region) => {
-          const activeId = selection[region.param];
-          return (
-            <div
-              key={region.param}
-              role="tabpanel"
-              aria-label={region.label}
-              className="w-full shrink-0 snap-start snap-always px-4 pb-4"
-            >
-              <div className="mb-2 flex items-baseline justify-between">
-                <p className="font-body text-xs uppercase tracking-widest text-binchen-ink-muted">
-                  {region.label}
-                </p>
-                <p className="max-w-[70%] truncate font-body text-xs text-binchen-ink-muted">
-                  {region.description}
-                </p>
-              </div>
-              <div
-                role="radiogroup"
-                aria-label={`Farbe für ${region.label}`}
-                className="grid grid-cols-6 gap-2"
-              >
-                {swatchesForRegion(region).map((swatch) => {
-                  const isActive = swatch.id === activeId;
-                  return (
-                    <button
-                      key={swatch.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={isActive}
-                      aria-label={`${region.label}: ${swatch.name}`}
-                      onClick={() => onSelect(region, swatch)}
-                      className={cn(
-                        "flex flex-col items-center gap-1 rounded-lg p-1",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 focus-visible:ring-offset-binchen-cream",
-                        isActive && "bg-binchen-cream-dark",
-                      )}
-                    >
-                      <span
+        <div className="mb-2 flex items-baseline justify-between">
+          <p className="font-body text-xs uppercase tracking-widest text-binchen-ink-muted">
+            {activeRegion.label}
+          </p>
+          <p className="max-w-[70%] truncate font-body text-xs text-binchen-ink-muted">
+            {activeRegion.description}
+          </p>
+        </div>
+        <div
+          ref={swatchScrollerRef}
+          // Hard ceiling so a longer fabric list can never grow the sheet back
+          // over the preview. vh first for engines without svh support.
+          className="max-h-[38vh] overflow-y-auto overscroll-contain supports-[height:1svh]:max-h-[38svh]"
+        >
+          <div
+            role="radiogroup"
+            aria-label={`Farbe für ${activeRegion.label}`}
+            className="grid grid-cols-6 gap-2 pb-1"
+          >
+            {swatchesForRegion(activeRegion).map((swatch) => {
+              const isActive = swatch.id === activeSwatchId;
+              return (
+                <button
+                  key={swatch.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={isActive}
+                  aria-label={`${activeRegion.label}: ${swatch.name}`}
+                  onClick={() => onSelect(activeRegion, swatch)}
+                  className={cn(
+                    "flex flex-col items-center gap-1 rounded-lg p-1",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage-btn focus-visible:ring-offset-2 focus-visible:ring-offset-binchen-cream",
+                    isActive && "bg-binchen-cream-dark",
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "relative flex h-11 w-11 items-center justify-center rounded-full border-2 transition-transform",
+                      isActive ? "border-binchen-ink shadow-inner" : "border-binchen-border",
+                    )}
+                    style={swatchChipStyle(swatch)}
+                  >
+                    {isActive && (
+                      <Check
+                        className="h-4 w-4 drop-shadow"
                         aria-hidden="true"
-                        className={cn(
-                          "relative flex h-11 w-11 items-center justify-center rounded-full border-2 transition-transform",
-                          isActive ? "border-binchen-ink shadow-inner" : "border-binchen-border",
-                        )}
-                        style={swatchChipStyle(swatch)}
-                      >
-                        {isActive && (
-                          <Check
-                            className="h-4 w-4 drop-shadow"
-                            aria-hidden="true"
-                            style={{ color: swatchTextColor(swatch.hex) }}
-                          />
-                        )}
-                      </span>
-                      <span className="text-center font-body text-[10px] leading-tight text-binchen-ink">
-                        {swatch.name}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+                        style={{ color: swatchTextColor(swatch.hex) }}
+                      />
+                    )}
+                  </span>
+                  <span className="text-center font-body text-[10px] leading-tight text-binchen-ink">
+                    {swatch.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* SR-only status region so context is announced when the active tab changes */}
       <span aria-live="polite" aria-atomic="true" className="sr-only">
-        {activeRegion ? `Aktive Region: ${activeRegion.label}` : ""}
+        {`Aktive Region: ${activeRegion.label}`}
       </span>
     </div>
   );
