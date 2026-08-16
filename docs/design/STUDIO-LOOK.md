@@ -21,7 +21,7 @@ handgenähten Sachen zeigen, aber ohne den optischen Lärm einer Wohnzimmer-Kuli
 - **Verboten:** dunkler Vinyl-Boden, Holzmaserung, Teppich, Bettdecke, Sofa, Wand mit Steckdose, Tisch mit Kante.
 
 ## Ränder & Komposition
-- **Innenrand:** mindestens **6 %** freier Canvas rundum. Kein Kleidungsstück berührt die Bildkante.
+- **Innenrand:** mindestens **20 %** freier Canvas rundum (bis 2026-08-16: 6 % — auf Karten-Größe im Katalog praktisch unsichtbar, siehe BIL-2462-Board-Feedback vom 16.08.). Kein Kleidungsstück berührt die Bildkante.
 - **Zentrierung:** Schwerpunkt des Produktes sitzt im **optischen Zentrum** (leicht oberhalb der geometrischen Mitte, ca. 48 % vom oberen Rand).
 - **Ausrichtung:** senkrechte Kanten (Bündchen, Nahtlinien) sind visuell senkrecht — max. ±2° Kippen. Kein diagonales Präsentieren.
 - **Falten:** flach ausgelegt, Bündchen glatt gezogen, keine Handmulden im Stoff. Wenn ein Kleidungsstück Volumen braucht (z. B. Turban), mit unsichtbarem Papier ausstopfen — nicht knautschen.
