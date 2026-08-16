@@ -27,7 +27,11 @@ interface PantsPhotoProps {
  */
 const ASSET_BASE = "/konfigurator/hose-foto";
 const ASSET_W = 900;
-const ASSET_H = 1005;
+// BIL-2473: 1006, was 1005 — the silhouette de-speckle shifted the garment
+// bbox by one source row, so the crop is one px taller. Must track the real
+// asset height or the `aspectRatio` box and the `object-fit: contain` image
+// disagree and the overlays drift off their zones.
+const ASSET_H = 1006;
 
 export function PantsPhoto({ paints, title = "Hose-Vorschau", className }: PantsPhotoProps) {
   return (

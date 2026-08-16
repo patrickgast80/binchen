@@ -560,16 +560,41 @@ export function applySeamShadow(gray, W, H, isBg, boundary, {
  * read as two pieces of fabric sewn together instead of one shape with a stroke
  * around it.
  *
+ * BIL-2473 — two corrections, both measured back against the same photo:
+ *
+ *   `ridge.offset`  The bright fold does NOT peak on the stitch line. Sampling
+ *                   pumphose-05 across the left cuff (source x=350) gives
+ *                   body 205 → 151 at the seam → 190 on the cuff: the darkest
+ *                   pixel straddles the join and the cuff only recovers a few
+ *                   px later. Peaking the ridge at distance 0 put a bright line
+ *                   immediately against a dark line, which is a cartoon outline,
+ *                   not a hem. Offsetting the peak into the cuff separates them.
+ *   `ceiling`       The ridge is multiplicative, and the knit zones are already
+ *                   normalised to `lit` (252), so `* 1.07` clipped to 255 — and
+ *                   255 under `mix-blend-mode: multiply` is the swatch colour at
+ *                   FULL saturation. That is why the hem rendered as a 1-2 px
+ *                   stroke of pure, unshaded colour tracing the whole waistband.
+ *                   Measured on the shipped base.webp at x=450: ... 250 255 |
+ *                   167 182 ... — a hard 88-level step with a blown pixel on it.
+ *   `occlusion.spill`
+ *                   A real seam shadow does not stop dead at the stitch line; the
+ *                   first few px of the cuff are shaded by the same tuck. Letting
+ *                   the occlusion bleed a short way into the rolled zone removes
+ *                   the remaining "two flat shapes butted together" read.
+ *
  * @param {Uint8Array} boundary  seam pixels, e.g. from `boundaryBetween`
  * @param {Uint8Array} shadowed  zone whose fabric ducks BEHIND the seam (body)
  * @param {Uint8Array} rolled    zone with the rolled hem (cuff / waistband)
  */
 export function applySeamRelief(gray, W, H, isBg, { boundary, shadowed, rolled }, {
-  occlusion = { reach: 18, strength: 0.2, bias: 1.6 },
-  ridge = { reach: 5, strength: 0.08 },
+  occlusion = { reach: 18, strength: 0.2, bias: 1.6, spill: 0 },
+  ridge = { reach: 5, strength: 0.08, offset: 0 },
   falloff = { reach: 26, strength: 0.07 },
+  ceiling = Infinity,
 } = {}) {
-  const maxReach = Math.max(occlusion.reach, ridge.reach, falloff.reach);
+  const spill = occlusion.spill ?? 0;
+  const offset = ridge.offset ?? 0;
+  const maxReach = Math.max(occlusion.reach, offset + ridge.reach, falloff.reach, spill);
   const d = distanceFrom(boundary, W, H, maxReach + 4);
   for (let p = 0; p < W * H; p++) {
     if (isBg[p]) continue;
@@ -580,12 +605,18 @@ export function applySeamRelief(gray, W, H, isBg, { boundary, shadowed, rolled }
       const t = 1 - dist / occlusion.reach;
       gray[p] *= 1 - occlusion.strength * Math.pow(t, occlusion.bias);
     } else if (rolled[p]) {
-      if (dist <= ridge.reach) {
-        // Brightest exactly on the fold, easing out over `reach`.
-        gray[p] *= 1 + ridge.strength * (1 - smoothstep(dist / ridge.reach));
+      if (spill > 0 && dist <= spill) {
+        // Same tuck, other side of the stitch line: fades out much faster than
+        // on the body, so the shadow stays legible as a line and not a band.
+        gray[p] *= 1 - occlusion.strength * Math.pow(1 - dist / spill, occlusion.bias);
+      }
+      if (dist <= offset + ridge.reach) {
+        // Peaks `offset` px in, easing to nothing at either end.
+        const t = Math.abs(dist - offset) / ridge.reach;
+        gray[p] = Math.min(ceiling, gray[p] * (1 + ridge.strength * (1 - smoothstep(t))));
       } else if (dist <= falloff.reach) {
-        const t = (dist - ridge.reach) / (falloff.reach - ridge.reach);
-        gray[p] *= 1 - falloff.strength * smoothstep(t);
+        const t = (dist - offset - ridge.reach) / Math.max(1, falloff.reach - offset - ridge.reach);
+        gray[p] *= 1 - falloff.strength * smoothstep(Math.min(1, t));
       }
     }
   }
@@ -688,23 +719,51 @@ export function applyGrain(gray, W, H, isBg, { amp = 3.2, cell = 2, seed = 2461 
  * shallow, so it reads as knit structure without competing with the chosen
  * fabric. `fade` softens the rib out towards the zone border so it does not
  * end in a hard stripe against the seam.
+ *
+ * BIL-2473 adds `jitter` (spacing wanders) and `vary` (per-wale depth wanders),
+ * both defaulting to 0 so existing Mütze/Turban/Dreieckstuch callers rebuild
+ * byte-identically. They exist because a perfectly regular stripe is only right
+ * for machine rib. The Hose waistband is smooth jersey held by an elastic, so
+ * what it actually shows are irregular vertical STRETCH CREASES — same code
+ * path, but even spacing there reads as corduroy printed on latex, which is
+ * exactly what the board rejected.
  */
-export function applyRib(gray, W, H, zone, { period = 9, amp = 3.5, fade = 6, knit = 0 } = {}) {
+export function applyRib(gray, W, H, zone, {
+  period = 9, amp = 3.5, fade = 6, knit = 0, jitter = 0, vary = 0, seed = 2473,
+} = {}) {
   const inZone = new Uint8Array(W * H);
   for (let p = 0; p < W * H; p++) if (!zone[p]) inZone[p] = 1; // seed = outside
   const d = distanceFrom(inZone, W, H, fade + 2);
+
+  const hash = (x) => {
+    let h = (x * 2246822519 + seed * 374761393) | 0;
+    h = (h ^ (h >>> 13)) * 1274126177;
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+  };
+  // Per-column phase and depth, precomputed once: the wale pattern is a 1-D
+  // signal along x. `>> 4` / `>> 6` keep a single crease (and a group of them)
+  // coherent instead of flickering column to column.
+  const phase = new Float64Array(W);
+  const depth = new Float64Array(W);
+  let acc = 0;
+  for (let x = 0; x < W; x++) {
+    acc += (1 / period) * (1 + jitter * (hash(x >> 4) - 0.5) * 2);
+    phase[x] = jitter > 0 ? acc : x / period;
+    depth[x] = 1 - vary * hash((x >> 6) + 7919);
+  }
+
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const p = y * W + x;
       if (!zone[p]) continue;
-      const s = Math.sin((x / period) * Math.PI * 2);
+      const s = Math.sin(phase[x] * Math.PI * 2);
       // knit = 0 keeps the original sine (Mütze/Turban callers unchanged).
       // knit > 0 blends towards a real 1x1 rib cross-section: a broad rounded
       // wale with a narrow, deeper valley between it and the next one.
       const wave = knit > 0
         ? s * (1 - knit) + knit * (s >= 0 ? Math.pow(s, 0.7) : -Math.pow(-s, 2.2))
         : s;
-      gray[p] += wave * amp * smoothstep(d[p] / fade);
+      gray[p] += wave * amp * depth[x] * smoothstep(d[p] / fade);
     }
   }
   return gray;
@@ -717,13 +776,19 @@ export function applyRib(gray, W, H, zone, { period = 9, amp = 3.5, fade = 6, kn
  * side and turns into a muddy blob. Screening a faint achromatic highlight on
  * top restores it. Black = no effect, so only the brightest part of the
  * illumination map contributes.
+ *
+ * `damp` (BIL-2473) is an optional per-pixel 0..1 multiplier. The knit zones are
+ * both bright AND — before this ticket — nearly textureless, so the sheen was
+ * the only structure left on them and the waistband rendered as a broad specular
+ * gradient: latex, not jersey. Damping the sheen where the fabric now carries
+ * its own crease structure keeps the lit side for dark tints without the gloss.
  */
-export function buildHighlight(unit, W, H, isBg, { start = 0.72, gain = 0.3 } = {}) {
+export function buildHighlight(unit, W, H, isBg, { start = 0.72, gain = 0.3, damp = null } = {}) {
   const out = new Float32Array(W * H);
   for (let p = 0; p < W * H; p++) {
     if (isBg[p]) continue;
     const t = (unit[p] - start) / (1 - start);
-    out[p] = Math.max(0, Math.min(1, t)) * gain * 255;
+    out[p] = Math.max(0, Math.min(1, t)) * gain * 255 * (damp ? damp[p] : 1);
   }
   return out;
 }

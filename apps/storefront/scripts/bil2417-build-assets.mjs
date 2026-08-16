@@ -67,6 +67,7 @@ import {
   applyRib,
   applySeamRelief,
   boundaryBetween,
+  boxBlurMasked,
   buildHighlight,
   distanceFrom,
   erodeMask,
@@ -75,6 +76,7 @@ import {
   grayToRGBA,
   maxFilter,
   normalizeShadingZoned,
+  smoothBinary,
   smoothContour,
 } from "./lib/konfigurator-shading.mjs";
 
@@ -143,6 +145,31 @@ while (qh < qt) {
 // does not survive into the masks as loose fragments.
 keepLargestGarmentComponent();
 
+// BIL-2473: de-speckle the silhouette itself.
+//
+// The flood-fill test is per-pixel, so along an edge where the garment fades
+// into the backdrop it accepts and rejects neighbouring pixels more or less at
+// random. That leaves single-pixel pinholes and spurs on the contour, and after
+// the 997→900 downsample they survive as a NON-MONOTONIC alpha ramp: sampled on
+// the shipped base.webp down the right cuff's lower edge (x=753) the alpha ran
+// 246, 4, 110, 189, 0, 7 — a fully transparent row sitting inside the garment,
+// i.e. a 1 px white pinstripe cut through the hem. That, and not the tint, is
+// what makes the edge read as scissor work.
+//
+// A radius-2 blur + 50% re-threshold is a cheap open+close: it fills the
+// pinholes and shaves the spurs while leaving the real contour where it is.
+{
+  const garment = new Uint8Array(N);
+  for (let p = 0; p < N; p++) if (!isBg[p]) garment[p] = 1;
+  const cleaned = smoothBinary(garment, W, H, { radius: 2, iterations: 1 });
+  let filled = 0, shaved = 0;
+  for (let p = 0; p < N; p++) {
+    if (cleaned[p] && isBg[p]) { isBg[p] = 0; filled++; }
+    else if (!cleaned[p] && !isBg[p]) { isBg[p] = 1; shaved++; }
+  }
+  console.log("silhouette de-speckled — pinholes filled:", filled, "spurs shaved:", shaved);
+}
+
 // -- 2. Zone segmentation by colour -----------------------------------------
 // Saturation, and its local maximum. The printed body fabric always has a
 // saturated motif within ~14 px; the plain waistband never does. That is the
@@ -155,14 +182,37 @@ for (let p = 0; p < N; p++) {
   const r = data[i], g = data[i + 1], b = data[i + 2];
   sat[p] = Math.max(r, g, b) - Math.min(r, g, b);
 }
-const localSat = maxFilter(sat, W, H, isBg, 14);
+// BIL-2473: radius 30 / threshold 18, was 14 / 24.
+//
+// This is the "schlampig ausgeschnitten" half of the board's second rejection.
+// The print on pumphose-05 is sparse watercolour motifs on a white ground, so a
+// 14 px window centred in one of the larger white gaps just below the waistband
+// finds no saturated pixel either — those gaps passed the test, joined the
+// waistband component, and the hem smoothing then dragged the zone down over
+// them. Result: a waistband whose lower edge scalloped ~70 px into the body and
+// stair-stepped out sideways past the real band on both hips.
+//
+// A window wide enough to always contain a motif fixes it at the source.
+// Measured on the largest connected component, per-column lower edge (source
+// px, the true hem sits at y≈247):
+//
+//   r=14 thr=24   p50=316  p90=346  max=358   150 columns >12 px past a robust
+//                                             hem fit          ← shipped state
+//   r=30 thr=18   p50=239  p90=249  max=316    38 columns      ← this
+//
+// The cost is that a 30 px window also sees the print from up to 30 px inside
+// the real hem, so the bottom-most sliver of waistband drops out of the
+// candidate. `smoothContour` puts it back: it fills each column from the zone's
+// top down to the SMOOTHED hem curve, and that curve now sits on the real hem
+// instead of 70 px below it.
+const localSat = maxFilter(sat, W, H, isBg, 30);
 
 // Waistband: print-free region in the upper part of the garment.
 const bundCandidate = new Uint8Array(N);
 for (let p = 0; p < N; p++) {
   if (isBg[p]) continue;
   const y = (p / W) | 0;
-  if (y < H * 0.44 && localSat[p] < 24) bundCandidate[p] = 1;
+  if (y < H * 0.44 && localSat[p] < 18) bundCandidate[p] = 1;
 }
 const bundParts = largestComponents(bundCandidate, 1, 4000);
 bundParts.forEach(holeFill);
@@ -336,15 +386,31 @@ applyGatherFolds(gray, W, H, isBg, bodyZone, boundBuenHose, {
 
 //  (c) the asymmetric hem itself: occlusion where the body tucks in behind the
 //      cuff, a narrow bright ridge on the rolled fold, then a soft falloff.
+//
+//      BIL-2473 retune. The shipped values put the bright fold peak at distance
+//      0 — directly against the dark occlusion on the other side of the same
+//      pixel — and the multiply clipped it to 255, which under the browser's
+//      `mix-blend-mode: multiply` is the swatch at full saturation. Sampling the
+//      shipped base.webp down a column through the waistband hem (x=450) gave
+//      `... 243 250 255 | 167 182 182 ...`: a blown white pixel butted against
+//      an 88-level cliff. That is a drawn outline by any measure, and it is the
+//      single most literal match for the board's "wie mit Photoshop".
+//      The reference photo has no such ridge — across the left cuff it reads
+//      body 205 → 151 → 190, i.e. dark line ON the join and the cuff simply a
+//      little darker than the body. So: shadow straddles the seam (`spill`), the
+//      fold highlight moves a few px into the cuff and drops to a third of its
+//      strength, and nothing may reach the `lit` ceiling any more.
 applySeamRelief(gray, W, H, isBg, { boundary: boundBuenHose, shadowed: bodyZone, rolled: isBuen }, {
-  occlusion: { reach: 20, strength: 0.22, bias: 1.5 },
-  ridge: { reach: 5, strength: 0.09 },
-  falloff: { reach: 28, strength: 0.07 },
+  occlusion: { reach: 22, strength: 0.30, bias: 1.4, spill: 6 },
+  ridge: { reach: 6, strength: 0.05, offset: 7 },
+  falloff: { reach: 30, strength: 0.06 },
+  ceiling: 246,
 });
 applySeamRelief(gray, W, H, isBg, { boundary: boundBundHose, shadowed: bodyZone, rolled: isBund }, {
-  occlusion: { reach: 18, strength: 0.18, bias: 1.6 },
-  ridge: { reach: 4, strength: 0.07 },
-  falloff: { reach: 24, strength: 0.05 },
+  occlusion: { reach: 20, strength: 0.26, bias: 1.5, spill: 5 },
+  ridge: { reach: 5, strength: 0.04, offset: 6 },
+  falloff: { reach: 26, strength: 0.05 },
+  ceiling: 246,
 });
 
 // Knit ribbing on the two elasticated zones — the strongest single cue that
@@ -355,13 +421,67 @@ applySeamRelief(gray, W, H, isBg, { boundary: boundBundHose, shadowed: bodyZone,
 // delivered) — at period 8 the wales aliased into a moiré across the cuff. The
 // waistband is smooth jersey on the reference photo, not rib, so it only gets
 // enough structure to separate it from the body, not a visible wale pattern.
-applyRib(gray, W, H, isBuen, { period: 12, amp: 4.5, fade: 7, knit: 0.85 });
-applyRib(gray, W, H, isBund, { period: 15, amp: 1.8, fade: 9, knit: 0.6 });
+const preKnit = Float32Array.from(gray);
+
+applyRib(gray, W, H, isBuen, { period: 12, amp: 4.5, fade: 7, knit: 0.85, jitter: 0.12, vary: 0.3, seed: 2473 });
+
+// BIL-2473 — the waistband. `amp: 1.8` at 900 px delivery is roughly one level
+// of modulation and is not visible at all: measured on the shipped assets, mean
+// |ΔL*| between pixels 3 px apart was 0.72 in the Bund against 1.58 in the
+// Bündchen. With no texture left, the only structure on the zone was the broad
+// screen-blended sheen, so it rendered as a lacquered surface — the board's
+// "glatte, glänzende Fläche". (Note this was never colour-dependent: the same
+// measurement across all 12 swatches gives σ(L*) 8.3 for Creme and 8.7 for
+// Petrol. Petrol was simply the default, so it is what the board looked at.)
+//
+// The band really is smooth jersey, not rib, so the fix is not a wale pattern:
+// it is the irregular vertical STRETCH CREASES an elasticated band puts in
+// jersey. Two octaves — broad wandering creases plus a fine jersey structure —
+// with jitter/vary on both so neither reads as corduroy.
+applyRib(gray, W, H, isBund, { period: 52, amp: 5.0, fade: 10, knit: 0.25, jitter: 0.55, vary: 0.7, seed: 2473 });
+applyRib(gray, W, H, isBund, { period: 17, amp: 1.9, fade: 10, knit: 0.4, jitter: 0.35, vary: 0.6, seed: 8419 });
+
+// Isolated before the grain is added — the sheen compensation below wants the
+// structured wale crests, not the per-pixel noise.
+const knitCrest = new Float32Array(N);
+for (let p = 0; p < N; p++) knitCrest[p] = Math.max(0, gray[p] - preKnit[p]);
 
 applyGrain(gray, W, H, isBg, { amp: 3.2, cell: 2, seed: 2417 });
 
+// BIL-2473 — damp the sheen over the knit zones. The sheen exists so dark tints
+// keep a lit side (see buildHighlight), and it still does that on the body. On
+// the two knit zones it was the dominant signal and read as specular gloss;
+// now that they carry their own crease structure they need much less of it.
+// Blurred so the sheen does not step at the zone border.
+const sheenDamp = new Float32Array(N);
+for (let p = 0; p < N; p++) sheenDamp[p] = isBund[p] || isBuen[p] ? 0.5 : 1;
+const sheenDampSoft = boxBlurMasked(sheenDamp, W, H, isBg, 7, 2);
+
 const baseRGBA = grayToRGBA(gray, W, H, isBg);
-const highlight = buildHighlight(unit, W, H, isBg, { start: 0.72, gain: 0.3 });
+const highlight = buildHighlight(unit, W, H, isBg, { start: 0.72, gain: 0.3, damp: sheenDampSoft });
+
+// BIL-2473 — carry the knit texture on the SCREEN layer as well, so it survives
+// a dark tint. This is the part of the ticket's "farbabhängiger Rendering-Bug"
+// that turned out to be real.
+//
+// The base is multiplied by the swatch, and multiply happens in gamma space, so
+// a fixed modulation in the base shrinks with the swatch's own value. Measured
+// as mean |ΔL*| between pixels 3 px apart inside the Bündchen: Creme 1.54,
+// Petrol 1.09, Marineblau 0.60 — the rib really does lose ~60% of its bite on
+// the darkest swatches. (Broad shading survives fine, σ(L*) only moves 7.3→5.7,
+// which is why the ticket's "texture disappears at saturated colours" reproduced
+// on fine structure but not on the drape.)
+//
+// Screen is the exact complement: out = 1-(1-mul)(1-h), so ∂out/∂h = 1-mul is
+// LARGEST where the tint is darkest. Feeding the wale crests into the highlight
+// asset therefore adds contrast in proportion to how much the multiply path
+// lost. Only the positive half goes in — screen cannot darken, and the valleys
+// are already carried by the base.
+const KNIT_SHEEN_GAIN = 2.4;
+for (let p = 0; p < N; p++) {
+  if (isBg[p] || !(isBund[p] || isBuen[p])) continue;
+  highlight[p] = Math.min(255, highlight[p] + knitCrest[p] * KNIT_SHEEN_GAIN);
+}
 const highlightRGBA = grayToRGBA(highlight, W, H, isBg);
 
 // -- 5. Masks with a 2 px feather -------------------------------------------
@@ -607,7 +727,19 @@ function boxBlurBinary(src, radius, iterations) {
 function featherMask(zone) {
   const f = new Float32Array(N);
   for (let p = 0; p < N; p++) f[p] = zone[p] ? 255 : 0;
-  const soft = boxBlurBinary(f, 2, 1);
+  // BIL-2473: masked blur, so the backdrop never pulls a zone's alpha down.
+  //
+  // The feather is there to soften the INTERNAL hem between two zones. Blurring
+  // across the backdrop as well feathered the zones against the silhouette too,
+  // and `maskHose = 255 - maskBund - maskBuen` then handed that shortfall to the
+  // body: sampled on the shipped assets at the right cuff's lower silhouette
+  // (x=753, y=938) the pixel was 65% Bündchen + 32% Hose while the base was
+  // still 96% opaque. On any two-colour design that painted a 2-3 px cream rim
+  // along the outside of every coloured cuff — a cut-out halo, and one of the
+  // most literal reads of "schlampig ausgeschnitten" in the board's repro.
+  // The garment's own anti-aliasing lives in the base's alpha channel; the zone
+  // masks must stay fully opaque right up to it.
+  const soft = boxBlurMasked(f, W, H, isBg, 2, 1);
   const out = Buffer.alloc(N);
   for (let p = 0; p < N; p++) {
     if (isBg[p]) continue;
