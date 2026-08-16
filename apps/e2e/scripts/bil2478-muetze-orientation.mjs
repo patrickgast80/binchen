@@ -10,7 +10,7 @@ import AxeBuilder from '@axe-core/playwright';
 import fs from 'node:fs';
 
 const BASE = process.argv[2] ?? 'http://localhost:3000';
-const OUT = 'reports/bil2478';
+const OUT = process.env.BIL2478_OUT ?? 'reports/bil2478';
 fs.mkdirSync(OUT, { recursive: true });
 
 const VIEWPORTS = [
