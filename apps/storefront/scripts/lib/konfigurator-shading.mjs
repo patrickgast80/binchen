@@ -685,6 +685,87 @@ export function applyGatherFolds(gray, W, H, isBg, zone, boundary, {
 }
 
 /**
+ * Gather creases radiating from a cinch point — BIL-2479.
+ *
+ * `applyGatherFolds` above models a garment gathered into a roughly HORIZONTAL
+ * seam, so its crease signal is 1-D along x. The Mütze is a turban cap: both
+ * halves of the shell are cinched into one small knot band in the middle of the
+ * front, and the creases fan out from it in every direction. Sampled on
+ * public/products/muetze/muetze-boho-mint-01.jpeg that fan is by far the
+ * loudest structure on the garment — and it is exactly what the base lost,
+ * because the boho print forces a heavy de-print pass (median 25 + blur 70,
+ * see bil2445-build-muetze-assets.mjs) that erases fold and print alike.
+ *
+ * So the fan is re-synthesised: an angular crease signal around (cx, cy) whose
+ * amplitude decays with radius. Angular frequency is constant, which means the
+ * creases SPLAY as they travel out — the same thing gathered fabric does, since
+ * a fixed amount of surplus width is spread over a growing arc.
+ *
+ * `jitter` wanders the angular spacing and `vary` the per-crease depth; without
+ * both, a constant-frequency fan reads as a pinwheel rather than as cloth.
+ * `inner` keeps the knot band itself flat — the fabric there is compressed under
+ * the band, not creased.
+ *
+ * The accumulated phase is rescaled to close on a whole number of creases, so
+ * the wrap at θ = ±π is continuous and no seam crease is left half-width.
+ */
+export function applyRadialGathers(gray, W, H, isBg, zone, {
+  cx,
+  cy,
+  count = 26,
+  amp = 6,
+  inner = 40,
+  reach = 320,
+  decay = 1.3,
+  jitter = 0.5,
+  vary = 0.6,
+  seed = 2479,
+} = {}) {
+  const hash = (x) => {
+    let h = (x * 2246822519 + seed * 374761393) | 0;
+    h = (h ^ (h >>> 13)) * 1274126177;
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+  };
+
+  const BINS = 2048;
+  const phase = new Float64Array(BINS);
+  const depth = new Float64Array(BINS);
+  let acc = 0;
+  for (let i = 0; i < BINS; i++) {
+    acc += (count / BINS) * (1 + jitter * (hash(i >> 5) - 0.5) * 2);
+    phase[i] = acc;
+    // Coarser cell than the spacing jitter: prominence drifts across groups of
+    // creases instead of alternating from one to the next.
+    depth[i] = 1 - vary * hash((i >> 7) + 7919);
+  }
+  const closed = Math.max(1, Math.round(acc));
+  const scale = closed / acc;
+  for (let i = 0; i < BINS; i++) phase[i] *= scale;
+
+  const TWO_PI = Math.PI * 2;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const p = y * W + x;
+      if (isBg[p] || !zone[p]) continue;
+      const dx = x - cx;
+      const dy = y - cy;
+      const r = Math.sqrt(dx * dx + dy * dy);
+      if (r >= reach) continue;
+      let bin = Math.floor(((Math.atan2(dy, dx) + Math.PI) / TWO_PI) * BINS);
+      if (bin < 0) bin = 0;
+      else if (bin >= BINS) bin = BINS - 1;
+      const w = Math.cos(phase[bin] * TWO_PI);
+      // Soft ridge (w > 0) against a sharper crease valley (w < 0), same
+      // asymmetry as applyGatherFolds — that is how jersey folds catch light.
+      const shaped = w >= 0 ? w * 0.65 : -Math.pow(-w, 1.5);
+      const fade = smoothstep(r / inner) * Math.pow(1 - r / reach, decay);
+      gray[p] += shaped * amp * depth[bin] * fade;
+    }
+  }
+  return gray;
+}
+
+/**
  * Fine achromatic jersey grain.
  *
  * Uses a deterministic hash (no Math.random) so rebuilding the assets from the

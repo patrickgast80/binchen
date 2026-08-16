@@ -24,7 +24,12 @@ interface MuetzePhotoProps {
  */
 const ASSET_BASE = "/konfigurator/muetze-foto";
 const ASSET_W = 900;
-const ASSET_H = 920;
+// BIL-2479: the studio shot has the hat lying on its side, so the asset build
+// now stands it upright before segmenting. That swaps the garment bbox and the
+// delivered base is 900x880, not 900x920. This constant has to track the asset
+// exactly — the preview reserves its box from this ratio, so a stale value both
+// letterboxes the photo and reintroduces the CLS regress of BIL-2206.
+const ASSET_H = 880;
 
 export function MuetzePhoto({ paints, title = "Mütze-Vorschau", className }: MuetzePhotoProps) {
   return (

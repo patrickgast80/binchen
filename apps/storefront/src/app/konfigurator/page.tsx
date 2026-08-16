@@ -29,14 +29,14 @@ const TILES: readonly LiveTile[] = [
     name: "Pumphose",
     tagline: "Bund, Hauptteil und Bündchen einzeln einfärben — Hauptteil mit echten Stoff-Mustern.",
     zones: "3 Zonen",
-    image: { src: "/konfigurator/hose-foto/base.webp", width: 900, height: 900 },
+    image: { src: "/konfigurator/hose-foto/base.webp", width: 900, height: 1006 },
   },
   {
     href: "/konfigurator/muetze",
     name: "Mütze",
     tagline: "Hauptstoff aus echten Mustern, Futter uni frei kombinierbar.",
     zones: "2 Zonen",
-    image: { src: "/konfigurator/muetze-foto/base.webp", width: 900, height: 917 },
+    image: { src: "/konfigurator/muetze-foto/base.webp", width: 900, height: 880 },
   },
 ];
 
@@ -71,10 +71,18 @@ export default function KonfiguratorHubPage() {
                 href={tile.href}
                 className="group flex h-full flex-col overflow-hidden rounded-2xl border border-binchen-border bg-binchen-cream-dark/40 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-binchen-sage focus-visible:ring-offset-2"
               >
-                <div
-                  className="relative w-full overflow-hidden bg-binchen-cream"
-                  style={{ aspectRatio: `${tile.image.width} / ${tile.image.height}` }}
-                >
+                {/*
+                  BIL-2479: the tile box is a fixed square for every garment, not
+                  the photo's own ratio. The photos genuinely differ in shape
+                  (900x1006 Pumphose, 900x880 Mütze once it is stood upright), so
+                  a per-tile ratio gives the cards different image heights and the
+                  titles below stop lining up across the grid. `object-contain`
+                  fits each photo inside the square, and because the ratio is a
+                  constant it can never drift out of sync with a rebuilt asset —
+                  which is exactly how the stale 900x900 / 900x917 values here
+                  survived two asset rebuilds.
+                */}
+                <div className="relative aspect-square w-full overflow-hidden bg-binchen-cream">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={tile.image.src}

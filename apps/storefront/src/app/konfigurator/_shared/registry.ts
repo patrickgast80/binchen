@@ -88,7 +88,7 @@ const MUETZE: KonfigRegistryEntry = {
   productLabel: "Mütze",
   basePhoto: "/konfigurator/muetze-foto/base.webp",
   width: 900,
-  height: 917,
+  height: 880,
   regions: [
     {
       param: "muetze",
