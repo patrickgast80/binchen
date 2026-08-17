@@ -356,7 +356,7 @@ und liefert Live-Client-ID, Live-Secret und Live-Webhook-ID.
    echten Rebuild, ein Container-Restart genügt nicht.
 4. **Redeploy** backend + storefront.
 5. **Verifizieren** (Reihenfolge zählt):
-   - `PAYPAL_MODE`/Host: Backend-Log beim Boot bzw. `pnpm --filter binchen-backend test:paypal:sandbox`
+   - `PAYPAL_MODE`/Host: Backend-Log beim Boot bzw. `pnpm --filter @binchen/backend test:paypal:sandbox`
      verweigert bewusst den Dienst, wenn `PAYPAL_MODE != sandbox` — das ist die
      Absicherung dagegen, dass ein Testskript versehentlich echte Orders anlegt.
    - Storefront: SDK-Tag auf `/checkout/payment` (**mit** befülltem Warenkorb —
@@ -385,9 +385,38 @@ von dort gelesen. Findet sich keine Session, wird der Event mit
 quittiert — 200 an PayPal (kein Retry-Sturm bei At-least-once-Zustellung), aber
 keine stille Falsch-Mutation.
 
-Tests: `pnpm --filter binchen-backend test:paypal` (offline, 18 Checks) und
+### Capture: „approved" ist nicht „bezahlt"
+
+Unsere Orders laufen mit `intent=CAPTURE`. PayPal hält für uns also **keine**
+Autorisierung vor: eine `APPROVED`-Order ist genau ein POST vom Geldfluss
+entfernt, und eine Zustimmung, die niemand captured, verfällt einfach. Bis
+BIL-2482 machte diesen POST **niemand** — `service.ts` nahm an, das Storefront
+capture beim `onApprove` über eine Server-Route, aber `/api/checkout/complete`
+schliesst nur den Warenkorb ab. Im Sandbox-Durchlauf nachgemessen: Kundin
+approved, Medusa legt die Bestellung an, PayPal meldet weiter `captures: []`.
+Live wäre das: Kundin zahlt, sieht die Bestätigungsseite, Bestellung liegt im
+Shop — und es kommt nie Geld an.
+
+Seither captured `authorizePayment` selbst, sobald PayPal `APPROVED` meldet, und
+gibt `CAPTURED` zurück (vom Payment-Modul ausdrücklich vorgesehen: es normalisiert
+auf `AUTHORIZED`, schreibt die Capture und ruft den Provider **nicht** erneut).
+Idempotenz: die PayPal-Order-ID ist zugleich `PayPal-Request-Id`, ein Replay kann
+also nicht doppelt abbuchen; `ORDER_ALREADY_CAPTURED` gilt als verlorenes Rennen,
+nicht als Fehler. `INSTRUMENT_DECLINED` → `REQUIRES_MORE` (Kundin wählt eine
+andere Zahlungsquelle), alles andere wirft → Cart-Completion schlägt fehl, statt
+eine unbezahlte Bestellung anzulegen.
+
+Tests: `pnpm --filter @binchen/backend test:paypal` (offline, 29 Checks) und
 `test:paypal:sandbox` (echte Sandbox-Order: PayPal akzeptiert + spiegelt
 `custom_id`, Replay derselben `PayPal-Request-Id` liefert dieselbe Order-ID).
+Ganze Kette gegen Prod: `node apps/e2e/scripts/bil2482-sandbox-capture.mjs`
+(Cart → Session → Approve → Capture → Webhook → Refund).
+
+**Sandbox-Buyer-Login gibt es nicht** — die beiden Slots in
+`paypal-sandbox.env` sind leer, deshalb endeten alle früheren E2E-Versuche am
+Approve-Link. Das Skript approved daher serverseitig per
+`confirm-payment-source` mit einer Test-Karte; das ist derselbe Zustandsübergang
+wie der Klick der Kundin und braucht keinen Account.
 
 ### Rollback
 
