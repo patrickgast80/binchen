@@ -76,7 +76,8 @@ for (;;) {
       log('WARN: Telegram 409 Conflict (zweite Bridge-Instanz?) — warte 30s');
       await sleep(30000);
     } else {
-      log(`poll error: ${e.message || e} — retry in ${backoffMs / 1000}s`);
+      const cause = e.cause ? ` (${e.cause.code || e.cause.message || e.cause})` : '';
+      log(`poll error: ${e.message || e}${cause} — retry in ${backoffMs / 1000}s`);
       await sleep(backoffMs);
       backoffMs = Math.min(backoffMs * 2, 120000);
     }
