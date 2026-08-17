@@ -44,7 +44,8 @@ export async function GET(
   }
   // satori cannot decode WebP and has no mix-blend-mode, so the garment is
   // composited with sharp and embedded as a PNG data URI. See ./compose.ts.
-  const photo = await composeKonfigPhoto(origin, konfig, colors);
+  const composed = await composeKonfigPhoto(origin, konfig, colors);
+  const photo = composed.dataUri === null ? null : composed;
 
   return new ImageResponse(
     (
@@ -67,6 +68,7 @@ export async function GET(
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            padding: 36,
             backgroundColor: "#FAF7F2",
             borderRight: "1px solid #E5DDD4",
           }}
@@ -168,6 +170,10 @@ export async function GET(
       height: OG_H,
       headers: {
         "cache-control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400",
+        // Says whether the garment made it into the card and where its assets
+        // came from — a blank photo panel is otherwise indistinguishable from
+        // a healthy one in `curl -I`.
+        "x-og-photo": composed.trace,
       },
     },
   );

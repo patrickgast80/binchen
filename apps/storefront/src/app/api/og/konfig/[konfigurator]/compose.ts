@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
 import sharp from "sharp";
 
 import type { KonfigRegistryEntry } from "@/app/konfigurator/_shared/registry";
@@ -19,14 +22,49 @@ import type { KonfigRegistryEntry } from "@/app/konfigurator/_shared/registry";
  * region (mask alpha cuts the zone shape) → optional screen sheen.
  */
 
-/** Longest edge of the composed photo handed to satori. */
-const COMPOSE_MAX_EDGE = 560;
+/**
+ * Longest edge of the composed photo handed to satori. Sized to leave a margin
+ * inside the 576px-wide, 630px-tall photo panel — a garment bleeding into the
+ * panel edge reads as a cropped photo in a WhatsApp preview.
+ */
+const COMPOSE_MAX_EDGE = 500;
 
-async function fetchAsset(url: string): Promise<Buffer | null> {
+/**
+ * Where `public/` ends up relative to `process.cwd()`. The standalone server
+ * chdirs to its own directory (`/app/apps/storefront`), a plain `next start`
+ * runs from the package root — both resolve with the first candidate. The
+ * second covers a runner started from the monorepo root.
+ */
+const PUBLIC_DIRS = [
+  path.join(process.cwd(), "public"),
+  path.join(process.cwd(), "apps", "storefront", "public"),
+];
+
+/**
+ * Reads a `public/` asset from disk, falling back to HTTP.
+ *
+ * Disk first because the HTTP path makes the container request its own public
+ * hostname: that round-trip goes container → bridge → host → Traefik → back,
+ * and it is exactly what failed silently in production (assets served 200 to
+ * the outside world while the share card kept rendering an empty panel).
+ * The fetch stays as a fallback for setups where `public/` is not colocated.
+ */
+async function loadAsset(
+  origin: string,
+  relPath: string,
+): Promise<{ buf: Buffer; source: "fs" | "http" } | null> {
+  const safeRel = relPath.replace(/^\/+/, "").split("/").filter((s) => s !== "..");
+  for (const dir of PUBLIC_DIRS) {
+    try {
+      return { buf: await readFile(path.join(dir, ...safeRel)), source: "fs" };
+    } catch {
+      // next candidate
+    }
+  }
   try {
-    const res = await fetch(url, { cache: "force-cache" });
+    const res = await fetch(`${origin}${relPath}`, { cache: "force-cache" });
     if (!res.ok) return null;
-    return Buffer.from(await res.arrayBuffer());
+    return { buf: Buffer.from(await res.arrayBuffer()), source: "http" };
   } catch {
     return null;
   }
@@ -72,21 +110,28 @@ export interface ComposedPhoto {
   dataUri: string;
   width: number;
   height: number;
+  /**
+   * How the assets were obtained, or why the compose bailed. Surfaced as the
+   * `x-og-photo` response header: a share card that regresses to the text-only
+   * layout can then be diagnosed with `curl -I` instead of a redeploy.
+   */
+  trace: string;
 }
 
 /**
- * Renders the configured garment as a PNG data URI, or `null` when any asset
- * is unreachable — callers fall back to the text-only card rather than shipping
- * a broken image.
+ * Renders the configured garment as a PNG data URI, or a `null` `dataUri` when
+ * an asset is unreachable — callers fall back to the text-only card rather than
+ * shipping a broken image.
  */
 export async function composeKonfigPhoto(
   origin: string,
   konfig: KonfigRegistryEntry,
   /** region param → resolved hex */
   colors: Record<string, string>,
-): Promise<ComposedPhoto | null> {
-  const baseBuf = await fetchAsset(`${origin}${konfig.basePhoto}`);
-  if (!baseBuf) return null;
+): Promise<ComposedPhoto | { dataUri: null; trace: string }> {
+  const base = await loadAsset(origin, konfig.basePhoto);
+  if (!base) return { dataUri: null, trace: "no-base" };
+  const baseBuf = base.buf;
 
   try {
     const meta = await sharp(baseBuf).metadata();
@@ -95,20 +140,20 @@ export async function composeKonfigPhoto(
 
     const layers: sharp.OverlayOptions[] = [];
     for (const region of konfig.regions) {
-      const maskBuf = await fetchAsset(`${origin}${region.src}`);
-      if (!maskBuf) continue;
+      const mask = await loadAsset(origin, region.src);
+      if (!mask) continue;
       layers.push({
-        input: await tintLayer(maskBuf, colors[region.param], srcW, srcH),
+        input: await tintLayer(mask.buf, colors[region.param], srcW, srcH),
         blend: "multiply",
       });
     }
-    if (layers.length === 0) return null;
+    if (layers.length === 0) return { dataUri: null, trace: "no-masks" };
 
     if (konfig.sheenPhoto) {
-      const sheenBuf = await fetchAsset(`${origin}${konfig.sheenPhoto}`);
-      if (sheenBuf) {
+      const sheen = await loadAsset(origin, konfig.sheenPhoto);
+      if (sheen) {
         layers.push({
-          input: await sharp(sheenBuf)
+          input: await sharp(sheen.buf)
             .resize(srcW, srcH, { fit: "fill" })
             .png()
             .toBuffer(),
@@ -142,8 +187,12 @@ export async function composeKonfigPhoto(
       dataUri: `data:image/png;base64,${png.toString("base64")}`,
       width: outW,
       height: outH,
+      trace: `${base.source}:${layers.length}L:${Math.round(png.byteLength / 1024)}kb`,
     };
-  } catch {
-    return null;
+  } catch (err) {
+    return {
+      dataUri: null,
+      trace: `sharp-error:${err instanceof Error ? err.name : "unknown"}`,
+    };
   }
 }

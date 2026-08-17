@@ -6,6 +6,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  // Several agents share one checkout, so a running `next dev` regularly holds
+  // `.next/` and makes a parallel `next build` die with EPERM on Windows.
+  // `NEXT_DIST_DIR=.next-verify pnpm --filter=storefront build` gives that
+  // build its own directory. Unset everywhere else, including Docker.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   experimental: {
     outputFileTracingRoot: path.join(__dirname, "../.."),
   },
