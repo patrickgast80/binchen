@@ -27,7 +27,9 @@ import {
   PayPalClient,
   PayPalMode,
   PayPalOrderResponse,
+  classifyCaptureError,
   customIdFromOrder,
+  needsCapture,
   payPalOrderIdFromResource,
   sessionIdFromResource,
 } from "./client"
@@ -139,16 +141,47 @@ export class PayPalProviderService extends AbstractPaymentProvider<PayPalOptions
     if (!data?.id) {
       throw new MedusaError(MedusaError.Types.INVALID_DATA, "PayPal authorize: missing order id.")
     }
-    // PayPal Smart Buttons hand control back after the buyer approves in their
-    // wallet UI; the storefront's onApprove handler captures via a server route
-    // that calls capturePayment. So at authorize time we simply re-check status
-    // and report whatever PayPal currently says.
-    const order = await this.client.getOrder(data.id)
+
+    // Our orders use intent=CAPTURE, so PayPal never holds an authorization for
+    // us: an APPROVED order is one POST away from the money moving, and until
+    // that POST happens the approval simply expires and the shop is paid
+    // nothing. Nothing else in the stack makes that call — the storefront's
+    // onApprove only completes the cart — so it has to happen here, at the
+    // moment Medusa places the order.
+    //
+    // Returning CAPTURED is a first-class path in the payment module: it
+    // records the capture and, because we already captured with the provider,
+    // does not call capturePayment a second time.
+    let order = await this.client.getOrder(data.id)
+
+    if (needsCapture(order)) {
+      try {
+        // The order id doubles as the idempotency key, so a retry of the same
+        // order never captures twice.
+        order = await this.client.captureOrder(order.id, order.id)
+      } catch (err) {
+        switch (classifyCaptureError(err)) {
+          case "already_captured":
+            order = await this.client.getOrder(data.id)
+            break
+          case "requires_action":
+            this.logger?.warn(`[payment-paypal] capture declined for order ${data.id}; buyer must choose another funding source`)
+            return {
+              status: PaymentSessionStatus.REQUIRES_MORE,
+              data: { ...data, status: order.status },
+            }
+          default:
+            throw err
+        }
+      }
+    }
+
+    const capture = extractCaptureFromOrder(order)
     const status = PAYPAL_TO_MEDUSA_STATUS[order.status] ?? PaymentSessionStatus.PENDING
 
     return {
       status,
-      data: { ...data, status: order.status },
+      data: { ...data, status: order.status, capture_id: capture?.id ?? data.capture_id },
     }
   }
 
@@ -157,8 +190,9 @@ export class PayPalProviderService extends AbstractPaymentProvider<PayPalOptions
     if (!data?.id) {
       throw new MedusaError(MedusaError.Types.INVALID_DATA, "PayPal capture: missing order id.")
     }
-    // If already captured (e.g. storefront onApprove already did it), just
-    // refresh from PayPal — calling capture twice on the same order errors.
+    // If already captured (normally by authorizePayment, sometimes by a webhook
+    // that beat us here), just refresh from PayPal — capturing the same order
+    // twice errors.
     let order: PayPalOrderResponse
     if (data.capture_id) {
       order = await this.client.getOrder(data.id)

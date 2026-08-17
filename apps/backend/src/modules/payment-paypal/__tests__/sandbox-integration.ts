@@ -1,6 +1,6 @@
 // BIL-2482 — sandbox integration proof for the webhook-correlation fix.
 //
-// Run: pnpm --filter binchen-backend test:paypal:sandbox
+// Run: pnpm --filter @binchen/backend test:paypal:sandbox
 //      (reads infra/.vault/paypal-sandbox.env; nothing secret is printed)
 //
 // The unit test pins our own encode/decode. This one asks PayPal whether it

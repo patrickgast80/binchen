@@ -1,6 +1,6 @@
 // BIL-2482 — unit proof for PayPal webhook correlation.
 //
-// Run: pnpm --filter binchen-backend test:paypal
+// Run: pnpm --filter @binchen/backend test:paypal
 //
 // Why this test exists: until now the capture path had never executed once
 // (PayPal event log: 0 events in the shop's lifetime), so nothing caught that
@@ -13,7 +13,9 @@
 
 import {
   PayPalClient,
+  classifyCaptureError,
   customIdFromOrder,
+  needsCapture,
   payPalOrderIdFromResource,
   sessionIdFromResource,
 } from "../client"
@@ -133,6 +135,62 @@ async function main(): Promise<void> {
     check("reads purchase_unit.custom_id", customIdFromOrder(order) === SESSION, customIdFromOrder(order))
     check("pre-cutover order without custom_id -> empty", customIdFromOrder({ id: "o", status: "COMPLETED", purchase_units: [{ reference_id: "r" }] }) === "")
     check("undefined order -> empty", customIdFromOrder(undefined) === "")
+  }
+
+  // ---------------------------------------------------------------- capture
+  // Second half of BIL-2482: an APPROVED order is not a paid order. Proven live
+  // in sandbox — the buyer approved, Medusa placed the order, and PayPal still
+  // reported `captures: []`, because nothing in the stack ever called capture.
+  console.log("needsCapture — which PayPal states still owe us a capture call")
+  {
+    check("APPROVED needs the capture POST", needsCapture({ id: "o", status: "APPROVED" }))
+    check("COMPLETED is already captured", !needsCapture({ id: "o", status: "COMPLETED" }))
+    check("CREATED (nobody approved yet) must not be captured", !needsCapture({ id: "o", status: "CREATED" }))
+    check("VOIDED must not be captured", !needsCapture({ id: "o", status: "VOIDED" }))
+    check("undefined order -> no capture", !needsCapture(undefined))
+  }
+
+  console.log("classifyCaptureError — how a failed capture is handled")
+  {
+    check(
+      "ORDER_ALREADY_CAPTURED is a race, not a failure",
+      classifyCaptureError(new Error("PayPal 422: ORDER_ALREADY_CAPTURED")) === "already_captured",
+    )
+    check(
+      "INSTRUMENT_DECLINED asks the buyer for another funding source",
+      classifyCaptureError(new Error("PayPal 422: INSTRUMENT_DECLINED")) === "requires_action",
+    )
+    check(
+      "unknown errors are fatal (fail without placing an unpaid order)",
+      classifyCaptureError(new Error("PayPal 500: INTERNAL_SERVER_ERROR")) === "fatal",
+    )
+    check("non-Error values still classify", classifyCaptureError("boom") === "fatal")
+  }
+
+  console.log("captureOrder sends the order id as the idempotency key")
+  {
+    const calls = stubFetch((url) =>
+      url.endsWith("/v1/oauth2/token")
+        ? { access_token: "tok", expires_in: 3600 }
+        : {
+            id: "5YU1264040327872K",
+            status: "COMPLETED",
+            purchase_units: [
+              { custom_id: SESSION, payments: { captures: [{ id: "3C679366HH908993F", status: "COMPLETED" }] } },
+            ],
+          },
+    )
+    const client = new PayPalClient({ clientId: "id", clientSecret: "secret", mode: "sandbox" })
+    await client.captureOrder("5YU1264040327872K", "5YU1264040327872K")
+    await client.captureOrder("5YU1264040327872K", "5YU1264040327872K")
+
+    const captures = calls.filter((c) => c.url.endsWith("/capture"))
+    check("capture hits the v2 orders capture endpoint", captures.length === 2, captures.length)
+    check(
+      "PayPal-Request-Id == order id, so a replay cannot double-charge",
+      captures.every((c) => c.headers["PayPal-Request-Id"] === "5YU1264040327872K"),
+      captures.map((c) => c.headers["PayPal-Request-Id"]),
+    )
   }
 
   console.log(failures === 0 ? "\nPASS — all checks green" : `\nFAIL — ${failures} check(s) failed`)

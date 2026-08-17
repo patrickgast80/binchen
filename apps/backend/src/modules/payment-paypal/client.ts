@@ -64,6 +64,31 @@ export function customIdFromOrder(order: PayPalOrderResponse | undefined): strin
 
 export type PayPalCaptureResponse = PayPalOrderResponse
 
+// Capture decision (BIL-2482). Our orders use intent=CAPTURE, so PayPal holds no
+// authorization for us — an APPROVED order is one POST away from the money
+// moving, and an approval nobody captures just expires. These two helpers live
+// here rather than in service.ts so they can be unit-tested: service.ts imports
+// @medusajs/framework, which cannot load outside a booted container.
+export function needsCapture(order: PayPalOrderResponse | undefined): boolean {
+  return order?.status === "APPROVED"
+}
+
+export type CaptureErrorKind = "already_captured" | "requires_action" | "fatal"
+
+// How to react when POST /capture fails:
+//  - already_captured: a retry/webhook/second tab won the race. Re-read, no error.
+//  - requires_action:  the funding source was declined; the buyer must pick
+//                      another one, so the session needs more, it did not fail.
+//  - fatal:            anything else. Let it throw so cart completion fails and
+//                      no order is placed — failing without an order is much
+//                      better than an order nobody paid for.
+export function classifyCaptureError(error: unknown): CaptureErrorKind {
+  const message = error instanceof Error ? error.message : String(error)
+  if (/ORDER_ALREADY_CAPTURED|ALREADY_CAPTURED/i.test(message)) return "already_captured"
+  if (/INSTRUMENT_DECLINED|PAYER_ACTION_REQUIRED/i.test(message)) return "requires_action"
+  return "fatal"
+}
+
 export type PayPalWebhookVerifyRequest = {
   auth_algo: string
   cert_url: string
