@@ -82,7 +82,13 @@ export default function KonfiguratorHubPage() {
                   which is exactly how the stale 900x900 / 900x917 values here
                   survived two asset rebuilds.
                 */}
-                <div className="relative aspect-square w-full overflow-hidden bg-binchen-cream">
+                {/*
+                  BIL-2483: Studio-Grey stage, same token as the live Hose/Mütze preview
+                  and as the catalog cards. Unlike the 1200x1200 product photos these
+                  tile images are transparent cutouts with NO baked passepartout, so the
+                  `p-6` below stays — here the padding IS the mat, not a second frame.
+                */}
+                <div className="relative aspect-square w-full overflow-hidden bg-binchen-studio">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={tile.image.src}

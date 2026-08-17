@@ -113,13 +113,27 @@ export default async function CatalogPage({ searchParams }: { searchParams: Sear
                     return (
                       <li key={product.id}>
                         <Card className="group overflow-hidden transition-shadow hover:shadow-md">
-                          <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-binchen-cream to-binchen-cream-dark">
+                          {/*
+                            BIL-2483: the 1200x1200 thumbnails already carry the Studio-Grey
+                            passepartout (#C8C8C6, see docs/design/STUDIO-LOOK.md), so the tile
+                            background must be that same grey and the image must sit edge to
+                            edge — a cream gradient plus CSS padding on top produced a visible
+                            double frame. The cream gradient survives only as the no-photo
+                            fallback, which is deliberately a different state.
+                          */}
+                          <div
+                            className={`relative aspect-square overflow-hidden ${
+                              product.thumbnail
+                                ? "bg-binchen-studio"
+                                : "bg-gradient-to-br from-binchen-cream to-binchen-cream-dark"
+                            }`}
+                          >
                             {product.thumbnail ? (
                               <Image
                                 src={product.thumbnail}
                                 alt={product.title}
                                 fill
-                                className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+                                className="object-contain transition-transform duration-300 group-hover:scale-105"
                                 sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
                               />
                             ) : (

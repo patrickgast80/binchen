@@ -234,14 +234,22 @@ export default async function HomePage() {
           {featuredProducts.map((product) => (
             <li key={product.id}>
               <Card className="group overflow-hidden transition-shadow hover:shadow-md">
-                {/* Product image */}
-                <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-binchen-cream to-binchen-cream-dark">
+                {/* Product image — BIL-2483: Studio-Grey tile, photo edge to edge (the
+                    passepartout is baked into the 1200x1200 canvas). Cream gradient stays
+                    as the no-photo fallback only. */}
+                <div
+                  className={`relative aspect-square overflow-hidden ${
+                    product.image
+                      ? "bg-binchen-studio"
+                      : "bg-gradient-to-br from-binchen-cream to-binchen-cream-dark"
+                  }`}
+                >
                   {product.image ? (
                     <Image
                       src={product.image}
                       alt={product.alt}
                       fill
-                      className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+                      className="object-contain transition-transform duration-300 group-hover:scale-105"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                   ) : (

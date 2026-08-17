@@ -109,14 +109,21 @@ export default async function CartPage() {
                 const displayTitle = konfig ? konfig.title : item.title;
                 return (
                   <li key={item.id} className="flex gap-4 py-6">
-                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded bg-gradient-to-br from-binchen-cream to-binchen-cream-dark sm:h-24 sm:w-24">
+                    {/* BIL-2483: same Studio-Grey tile as catalog/PDP, no extra padding. */}
+                    <div
+                      className={`relative h-20 w-20 shrink-0 overflow-hidden rounded sm:h-24 sm:w-24 ${
+                        item.thumbnail
+                          ? "bg-binchen-studio"
+                          : "bg-gradient-to-br from-binchen-cream to-binchen-cream-dark"
+                      }`}
+                    >
                       {item.thumbnail ? (
                         <Image
                           src={item.thumbnail}
                           alt={displayTitle}
                           fill
                           sizes="96px"
-                          className="object-contain p-1"
+                          className="object-contain"
                         />
                       ) : null}
                     </div>
