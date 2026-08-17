@@ -114,3 +114,56 @@ Hintergrund zu löschen) und wird hier nicht ungeprüft nachgeschoben.
 
 Die SVG-Platzhalter sind kein Fotografie-Problem, sondern fehlende
 Produktfotos — eigenes Ticket, kein Reshoot im klassischen Sinn.
+
+## Update 2026-08-17 — Ursache für "immer noch uneinheitlich" gefunden + behoben
+
+QA hat am 2026-08-17 live nachgewiesen, dass der Katalog trotz des
+20%-Fixes vom 16.08. weiter uneinheitlich aussah. Zwei getrennte Ursachen:
+
+1. **Der 20%-Fix vom 16.08. lief nur gegen die 6 Karten aus dem damaligen
+   WhatsApp-Foto**, nicht gegen alle 34 Katalog-Produkte. Die übrigen 21
+   Produktfotos liefen noch mit dem alten `PAD_RATIO=0.06` (praktisch
+   unsichtbares Passepartout). Heute erneut korrigiert: **alle 27
+   Medusa-gehosteten Produktfotos** liefen erneut durch
+   `bil2462-apply-normalizer.mjs`, diesmal katalogweit (nicht stichprobenhaft),
+   mit einem auf **`PAD_RATIO=0.12`** reduzierten Wert (20% erzeugte laut
+   Board-Feedback vom 17.08. zu viel Leerraum — 12% ist der Kompromiss:
+   deutlich sichtbarer als die alte unsichtbare 6%-Variante, aber das Produkt
+   füllt wieder den Großteil der Karte). Alle 27 laufen weiterhin im
+   `fallback`-Modus (kein Hintergrund-Repaint, siehe Sicherheits-Checks oben)
+   — aber jetzt mit identischem Rahmenverhältnis, nicht mehr gemischt
+   6%/20%/unbearbeitet.
+2. **Frontend-Ursache, wichtiger als die Bild-Pipeline selbst:** Alle
+   Produktkarten (Katalog `catalog/page.tsx:116`, Startseite `page.tsx:238`,
+   PDP `product/[id]/page.tsx:78`, Warenkorb `cart/page.tsx:112`) rendern das
+   Bild in einem Container mit `bg-gradient-to-br from-binchen-cream
+   to-binchen-cream-dark` **plus** zusätzlichem `object-contain p-3`/`p-4`/`p-6`
+   Padding — obendrauf auf das bereits im Bild eingebackene Grau-Passepartout.
+   Das erzeugt einen sichtbaren Doppelrahmen (innen Studio-Grau aus dem Bild,
+   außen Creme-Verlauf aus dem Card-Container) und unterläuft den
+   einheitlichen Studio-Look strukturell, unabhängig davon wie gut die
+   Bild-Nachbearbeitung ist. Fix-Vorschlag an Frontend siehe BIL-2462-Kommentar
+   / Child-Issue: Card-Hintergrund auf `#C8C8C6` (Studio-Grau, identisch zum
+   Bild-Canvas) statt Creme-Verlauf, `object-contain`-Padding entfernen (das
+   Passepartout ist schon im Bild), da die 1200×1200-Canvas das Padding
+   bereits mitbringt.
+
+Ergebnis: Bild-Pipeline ist jetzt katalogweit konsistent (12% Grau bei allen
+27 echten Fotos + Pumphose-Konfigurator-Sonderfall unten). Der Card-Wrapper
+braucht noch den Frontend-Fix, um den Doppelrahmen-Effekt zu beseitigen.
+
+### Pumphose-Konfigurator-Karte (Sonderfall, kein Medusa-Upload)
+
+`pumphose-01.jpg` liegt als Storefront-Static-Asset vor (nicht im
+Medusa-Upload-Pipeline-Pfad), daher übersprang der Batch-Lauf sie
+automatisch (`SKIP_NON_STATIC`). Manuell durch denselben Normalizer
+geschickt: das Ausgangsfoto hat bereits einen **echten weißen
+Studio-Hintergrund** (kein Passepartout-Nachtrag), und die weißen
+Bündchen des Kleidungsstücks sind vom weißen Hintergrund farblich nicht
+sicher unterscheidbar — die Segmentierung verweigert hier zurecht den
+Eingriff (sonst würde sie echte weiße Stoffdetails mitlöschen, siehe
+„nichts wegretuschieren"). Ergebnis: Grau-Passepartout jetzt im gleichen
+12%-Verhältnis wie alle anderen Karten, aber der weiße Innenrand um das
+Foto bleibt sichtbar (Doppelrahmen-Effekt bei dieser einen Karte). Braucht
+einen echten Reshoot auf Studio-Grau-Hintergrund, um das vollständig zu
+lösen — bis dahin ist das der beste sichere Zwischenstand.
