@@ -1,0 +1,69 @@
+{
+  "comment": "Fake Telegram getUpdates payloads (BIL-2481). Allowlisted test user id: 1000001.",
+  "updates": [
+    {
+      "update_id": 900001,
+      "message": {
+        "message_id": 11,
+        "date": 1786694400,
+        "chat": { "id": 1000001, "type": "private" },
+        "from": { "id": 1000001, "first_name": "Sabine", "username": "sabine_binchen" },
+        "text": "Bitte die Muetzen-Fotos nochmal pruefen"
+      }
+    },
+    {
+      "update_id": 900002,
+      "message": {
+        "message_id": 12,
+        "date": 1786694460,
+        "chat": { "id": 1000001, "type": "private" },
+        "from": { "id": 1000001, "first_name": "Sabine", "username": "sabine_binchen" },
+        "text": "BIL-2478: Die Rotation sieht jetzt gut aus, danke!"
+      }
+    },
+    {
+      "update_id": 900003,
+      "message": {
+        "message_id": 13,
+        "date": 1786694520,
+        "chat": { "id": 1000001, "type": "private" },
+        "from": { "id": 1000001, "first_name": "Sabine", "username": "sabine_binchen" },
+        "text": "/new Neue Stoffmuster fotografieren\nDie drei neuen Herbststoffe brauchen Produktfotos."
+      }
+    },
+    {
+      "update_id": 900004,
+      "message": {
+        "message_id": 14,
+        "date": 1786694580,
+        "chat": { "id": 66666, "type": "private" },
+        "from": { "id": 66666, "first_name": "Spammer" },
+        "text": "buy crypto now"
+      }
+    },
+    {
+      "update_id": 900005,
+      "message": {
+        "message_id": 15,
+        "date": 1786694640,
+        "chat": { "id": 1000001, "type": "private" },
+        "from": { "id": 1000001, "first_name": "Sabine", "username": "sabine_binchen" },
+        "caption": "BIL-2462: So sieht der Stoff in echt aus",
+        "photo": [
+          { "file_id": "photo-small", "width": 90, "height": 90 },
+          { "file_id": "photo-big", "width": 1280, "height": 1280 }
+        ]
+      }
+    },
+    {
+      "update_id": 900006,
+      "message": {
+        "message_id": 16,
+        "date": 1786694700,
+        "chat": { "id": 1000001, "type": "private" },
+        "from": { "id": 1000001, "first_name": "Sabine", "username": "sabine_binchen" },
+        "text": "/help"
+      }
+    }
+  ]
+}

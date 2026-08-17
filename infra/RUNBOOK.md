@@ -292,3 +292,25 @@ Fallback bestehen und wird aktiv, sobald ein CEO das Secret doch setzt.
 
 **Rollback des Pollers:**
 `ssh deploy@188.245.40.74 'crontab -l | grep -v binchen-autodeploy-poll | crontab -'`
+
+## Telegram-Bridge (BIL-2481)
+
+Lokaler Long-Polling-Daemon auf der **Windows-Maschine** (nicht Hetzner!),
+verbindet Telegram-Bot mit der lokalen Paperclip-API (127.0.0.1:3100).
+Vollständige Doku: `tools/telegram-bridge/README.md`.
+
+**Bridge antwortet nicht:**
+1. Läuft der Prozess? `tasklist | findstr node` bzw. `bridge.log` prüfen
+   (`tools/telegram-bridge/bridge.log`).
+2. Log sagt 401 → Paperclip-Key in `infra/.vault/telegram-bridge.env` abgelaufen;
+   neuen Key eintragen (Board: Agents → DevOps → API keys), Bridge liest die Datei
+   beim nächsten Request selbst neu.
+3. Log sagt Telegram 409 → zweite Bridge-Instanz läuft; eine beenden.
+
+**Start/Stop:** `tools\telegram-bridge\start-bridge.cmd` bzw. Task
+`BinchenTelegramBridge` (schtasks). Rollback = Prozess stoppen; die Bridge ist
+rein additiv (nur Kommentare/Issues/Attachments).
+
+**Secrets:** `infra/.vault/telegram-bridge.env` (gitignored) — Bot-Token
+(@BotFather, Revoke via `/revoke`) + Paperclip Agent-API-Key `telegram-bridge`
+(Scope task_bridge, Projekt-beschränkt; Board kann ihn jederzeit löschen).
