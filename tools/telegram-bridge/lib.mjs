@@ -41,11 +41,15 @@ export function loadConfig(envFilePath) {
       .split(',').map((s) => Number(s.trim())).filter((n) => Number.isFinite(n) && n !== 0),
     paperclipUrl: get('PAPERCLIP_API_URL', 'http://127.0.0.1:3100'),
     paperclipToken: get('PAPERCLIP_TOKEN', ''),
+    // Zusatz-Keys anderer Actors (z. B. QA-Key für BIL-1): Boundary-403 wird pro Key durchprobiert.
+    extraTokens: get('PAPERCLIP_EXTRA_TOKENS', '')
+      .split(',').map((s) => s.trim()).filter(Boolean),
     companyId: get('PAPERCLIP_COMPANY_ID_BRIDGE', get('PAPERCLIP_COMPANY_ID', '')),
     projectId: get('PAPERCLIP_PROJECT_ID', ''),
     defaultIssueKey: get('DEFAULT_ISSUE_KEY', 'BIL-1'),
     mediaDir: get('MEDIA_DIR', path.join(path.dirname(envFilePath), 'telegram-media')),
     stateFile: get('STATE_FILE', path.join(path.dirname(envFilePath), 'telegram-bridge.state.json')),
+    spoolFile: get('SPOOL_FILE', path.join(path.dirname(envFilePath), 'telegram-bridge.spool.jsonl')),
   };
 }
 
@@ -76,14 +80,16 @@ export function formatComment(msg, body, attachmentLine = '') {
 
 // ---------------------------------------------------------------- clients
 
-// tokenProvider(forceReload) -> string. Re-reads the vault env file on 401 so an
-// operator can swap in a fresh token without restarting the bridge.
+// tokenProvider(forceReload) -> string[] (Primär-Key zuerst, dann PAPERCLIP_EXTRA_TOKENS).
+// Re-reads the vault env file on 401/403 so an operator can swap or add tokens
+// without restarting the bridge.
 export function makeTokenProvider(cfg) {
-  let cached = cfg.paperclipToken;
+  let cached = [cfg.paperclipToken, ...(cfg.extraTokens || [])].filter(Boolean);
   return (forceReload) => {
-    if (forceReload || !cached) {
+    if (forceReload || !cached.length) {
       const fresh = loadConfig(cfg.envFilePath);
-      if (fresh.paperclipToken) cached = fresh.paperclipToken;
+      const next = [fresh.paperclipToken, ...(fresh.extraTokens || [])].filter(Boolean);
+      if (next.length) cached = next;
     }
     return cached;
   };
@@ -91,14 +97,21 @@ export function makeTokenProvider(cfg) {
 
 export function makePaperclipClient({ apiUrl, tokenProvider, companyId, projectId, fetchImpl = fetch }) {
   async function req(method, urlPath, { json, form } = {}) {
-    let res;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const headers = { Authorization: `Bearer ${tokenProvider(attempt > 0)}` };
+    const attempt = (token) => {
+      const headers = { Authorization: `Bearer ${token}` };
       let body;
       if (json !== undefined) { headers['Content-Type'] = 'application/json'; body = JSON.stringify(json); }
       if (form !== undefined) body = form;
-      res = await fetchImpl(apiUrl + urlPath, { method, headers, body });
-      if (res.status !== 401) break;
+      return fetchImpl(apiUrl + urlPath, { method, headers, body });
+    };
+    let res = await attempt(tokenProvider(false)[0]);
+    if (res.status === 401) res = await attempt(tokenProvider(true)[0]);
+    if (res.status === 403) {
+      // Authorization-Boundary ist actor-gebunden — Zusatz-Keys anderer Actors durchprobieren.
+      for (const token of tokenProvider(true).slice(1)) {
+        res = await attempt(token);
+        if (res.status !== 403) break;
+      }
     }
     return res;
   }
@@ -168,6 +181,51 @@ export function makeTelegramClient({ botToken, fetchImpl = fetch, apiBase = 'htt
   };
 }
 
+// ---------------------------------------------------------------- spool
+// Nachrichten, die wegen Boundary-403 nicht zugestellt werden konnten, landen
+// als JSONL auf Platte und werden periodisch nachgeliefert — kein Board-Input geht verloren.
+
+export function loadSpool(spoolFile) {
+  try {
+    return fs.readFileSync(spoolFile, 'utf8').split(/\r?\n/).filter(Boolean).map((l) => JSON.parse(l));
+  } catch { return []; }
+}
+
+export function saveSpool(spoolFile, entries) {
+  fs.mkdirSync(path.dirname(spoolFile), { recursive: true });
+  fs.writeFileSync(spoolFile, entries.map((e) => JSON.stringify(e)).join('\n') + (entries.length ? '\n' : ''));
+}
+
+export function appendSpool(spoolFile, entry) {
+  fs.mkdirSync(path.dirname(spoolFile), { recursive: true });
+  fs.appendFileSync(spoolFile, JSON.stringify(entry) + '\n');
+}
+
+// Versucht alle Spool-Einträge zuzustellen; liefert Anzahl erfolgreicher Zustellungen.
+// Fehlgeschlagene Einträge bleiben im Spool für den nächsten Versuch.
+export async function flushSpool({ spoolFile, pc, tg, log }) {
+  const entries = loadSpool(spoolFile);
+  if (!entries.length) return 0;
+  const remaining = [];
+  let delivered = 0;
+  for (const e of entries) {
+    try {
+      const target = await pc.resolveIssue(e.issueKey);
+      if (!target) { remaining.push(e); continue; }
+      const comment = await pc.postComment(target.id, e.body);
+      delivered++;
+      log(`spool: delivered comment ${comment.id || '?'} on ${e.issueKey} (queued ${e.queuedAt})`);
+      if (tg && e.chatId) {
+        try { await tg.sendMessage(e.chatId, `✅ Nachgeliefert: Kommentar auf ${e.issueKey} (id ${comment.id || 'ok'})`); } catch { /* chat unreachable */ }
+      }
+    } catch {
+      remaining.push(e);
+    }
+  }
+  saveSpool(spoolFile, remaining);
+  return delivered;
+}
+
 // ---------------------------------------------------------------- handler
 
 const MIME_BY_EXT = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif' };
@@ -234,7 +292,24 @@ export async function handleUpdate(update, ctx) {
         ? `\n\n📎 Foto hochgeladen: Attachment \`${att.id}\` (${media.filename})`
         : `\n\n📎 Foto lokal: \`${media.localPath}\` (Upload fehlgeschlagen)`;
     }
-    const comment = await pc.postComment(target.id, formatComment(msg, route.body, attachmentLine));
+    const body = formatComment(msg, route.body, attachmentLine);
+    let comment;
+    try {
+      comment = await pc.postComment(target.id, body);
+    } catch (e) {
+      if (cfg.spoolFile && /\b403\b/.test(String(e.message))) {
+        appendSpool(cfg.spoolFile, {
+          issueKey: target.identifier, body, chatId, queuedAt: new Date().toISOString(),
+        });
+        await tg.sendMessage(chatId,
+          `⏸️ Kein Schreibrecht auf ${target.identifier} mit dem aktuellen API-Key. `
+          + 'Nachricht ist gespeichert und wird automatisch nachgeliefert, sobald ein passender Key hinterlegt ist (BIL-2481).',
+          msg.message_id);
+        log(`spooled update ${update.update_id} for ${target.identifier} (403 boundary)`);
+        return { ok: 'spooled', identifier: target.identifier };
+      }
+      throw e;
+    }
     await tg.sendMessage(chatId, `✅ Kommentar auf ${target.identifier} (id ${comment.id || 'ok'})`, msg.message_id);
     log(`comment ${comment.id || '?'} on ${target.identifier} from update ${update.update_id}`);
     return { ok: 'comment', identifier: target.identifier, commentId: comment.id };

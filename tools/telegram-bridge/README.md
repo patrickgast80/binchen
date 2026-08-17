@@ -30,6 +30,16 @@ ignoriert** (nur geloggt, keine Antwort — kein Oracle für Fremde).
    (`5e251e01-8c35-4243-9a64-ebccc2ffed74`). Agenten selbst dürfen das nicht
    (`POST /api/agents/{id}/keys` → 403 „Board access required", verifiziert 2026-08-17).
    Key als `PAPERCLIP_TOKEN` in dieselbe Env-Datei.
+   **Wichtig — Boundary:** ein Agent-Key darf nur Issues kommentieren, die diesem
+   Agenten zugewiesen sind („Issue is outside this actor's authorization boundary",
+   verifiziert 2026-08-17). Für das Default-Ziel BIL-1 (Assignee: QA) braucht die
+   Bridge daher zusätzlich einen Key des **BIL-1-Assignee-Agenten** (aktuell
+   *Agents → QA → API keys*), eingetragen als `PAPERCLIP_EXTRA_TOKENS`
+   (kommasepariert, mehrere möglich). Die Bridge probiert bei 403 alle Keys durch
+   und liest die Env-Datei dabei neu ein — nachträglich ergänzte Keys wirken ohne
+   Neustart. Nicht zustellbare Nachrichten gehen **nicht verloren**: sie landen im
+   Spool (`infra/.vault/telegram-bridge.spool.jsonl`) und werden alle 5 min
+   automatisch nachgeliefert, mit Telegram-Bestätigung.
    *Fallback ohne Board-Key:* aktuelles Agent-JWT eintragen; die Bridge liest die
    Env-Datei bei jedem 401 neu ein, ein Token-Tausch braucht also keinen Neustart —
    aber das JWT muss dann stündlich manuell erneuert werden. Nur als Notlösung.

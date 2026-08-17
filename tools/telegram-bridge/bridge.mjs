@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   loadConfig, makeTokenProvider, makePaperclipClient, makeTelegramClient,
-  handleUpdate, loadState, saveState,
+  handleUpdate, loadState, saveState, loadSpool, flushSpool,
 } from './lib.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -51,11 +51,18 @@ const saveMedia = async (filename, buffer) => {
 const state = loadState(cfg.stateFile);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-log(`bridge up — default issue ${cfg.defaultIssueKey}, allowlist [${cfg.allowedUserIds.join(', ')}], offset ${state.offset}`);
+log(`bridge up — default issue ${cfg.defaultIssueKey}, allowlist [${cfg.allowedUserIds.join(', ')}], offset ${state.offset}, spool ${loadSpool(cfg.spoolFile).length}`);
 
+const FLUSH_INTERVAL_MS = 5 * 60 * 1000;
+let nextFlushAt = 0;
 let backoffMs = 5000;
 for (;;) {
   try {
+    if (Date.now() >= nextFlushAt) {
+      nextFlushAt = Date.now() + FLUSH_INTERVAL_MS;
+      const delivered = await flushSpool({ spoolFile: cfg.spoolFile, pc, tg, log });
+      if (delivered) log(`spool flush: ${delivered} Nachricht(en) nachgeliefert`);
+    }
     const updates = await tg.getUpdates(state.offset || undefined, 50);
     backoffMs = 5000;
     for (const update of updates) {

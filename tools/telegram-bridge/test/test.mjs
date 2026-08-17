@@ -5,9 +5,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import os from 'node:os';
 import {
   routeMessage, formatComment, parseEnvFile, handleUpdate,
   makePaperclipClient, makeTelegramClient, HELP_TEXT,
+  loadSpool, saveSpool, appendSpool, flushSpool,
 } from '../lib.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -161,11 +163,85 @@ test('paperclip client: 401 triggers one token reload + retry', async () => {
     if (attempt === 1) return { status: 401, ok: false, text: async () => 'expired' };
     return { status: 200, ok: true, json: async () => ({ id: 'i1', identifier: 'BIL-1' }) };
   };
-  const provider = (force) => (force ? 'fresh-token' : 'stale-token');
+  const provider = (force) => (force ? ['fresh-token'] : ['stale-token']);
   const pc = makePaperclipClient({ apiUrl: 'http://x', tokenProvider: provider, companyId: 'c', projectId: 'p', fetchImpl });
   const issue = await pc.resolveIssue('BIL-1');
   assert.equal(issue.id, 'i1');
   assert.deepEqual(tokens, ['Bearer stale-token', 'Bearer fresh-token']);
+});
+
+test('paperclip client: 403 boundary tries extra tokens in order', async () => {
+  const tokens = [];
+  const fetchImpl = async (url, opts) => {
+    tokens.push(opts.headers.Authorization);
+    if (opts.headers.Authorization !== 'Bearer qa-key') {
+      return { status: 403, ok: false, text: async () => 'boundary' };
+    }
+    return { status: 201, ok: true, json: async () => ({ comment: { id: 'c1' } }) };
+  };
+  const provider = () => ['devops-key', 'other-key', 'qa-key'];
+  const pc = makePaperclipClient({ apiUrl: 'http://x', tokenProvider: provider, companyId: 'c', projectId: 'p', fetchImpl });
+  const comment = await pc.postComment('uuid-BIL-1', 'hallo');
+  assert.equal(comment.id, 'c1');
+  assert.deepEqual(tokens, ['Bearer devops-key', 'Bearer other-key', 'Bearer qa-key']);
+});
+
+test('paperclip client: 403 on all tokens stays 403', async () => {
+  const fetchImpl = async () => ({ status: 403, ok: false, text: async () => 'boundary' });
+  const provider = () => ['a', 'b'];
+  const pc = makePaperclipClient({ apiUrl: 'http://x', tokenProvider: provider, companyId: 'c', projectId: 'p', fetchImpl });
+  await assert.rejects(() => pc.postComment('uuid', 'x'), /403/);
+});
+
+// ---------------------------------------------------------------- spool
+
+function tmpSpool(name) {
+  return path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-spool-')), name);
+}
+
+test('handler: 403 on default target spools message + friendly reply', async () => {
+  const { ctx, calls } = makeFakes();
+  const spoolFile = tmpSpool('spool.jsonl');
+  ctx.cfg.spoolFile = spoolFile;
+  ctx.pc.postComment = async () => { throw new Error('Paperclip comment failed: 403 boundary'); };
+  const res = await handleUpdate(fixtures[0], ctx);
+  assert.equal(res.ok, 'spooled');
+  const entries = loadSpool(spoolFile);
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].issueKey, 'BIL-1');
+  assert.match(entries[0].body, /Muetzen-Fotos/);
+  assert.match(calls.replies[0].text, /gespeichert/);
+  assert.ok(!/Bridge-Fehler/.test(calls.replies[0].text), 'no raw error reply');
+});
+
+test('flushSpool delivers entries, keeps failures, notifies chat', async () => {
+  const spoolFile = tmpSpool('spool.jsonl');
+  appendSpool(spoolFile, { issueKey: 'BIL-1', body: 'nachricht 1', chatId: 42, queuedAt: 't0' });
+  appendSpool(spoolFile, { issueKey: 'BIL-403', body: 'nachricht 2', chatId: 42, queuedAt: 't1' });
+  const replies = [];
+  const pc = {
+    resolveIssue: async (key) => ({ id: `uuid-${key}`, identifier: key }),
+    postComment: async (issueId, body) => {
+      if (issueId === 'uuid-BIL-403') throw new Error('403 boundary');
+      return { id: 'c-9' };
+    },
+  };
+  const tg = { sendMessage: async (chatId, text) => replies.push(text) };
+  const delivered = await flushSpool({ spoolFile, pc, tg, log: () => {} });
+  assert.equal(delivered, 1);
+  const remaining = loadSpool(spoolFile);
+  assert.equal(remaining.length, 1);
+  assert.equal(remaining[0].issueKey, 'BIL-403');
+  assert.match(replies[0], /Nachgeliefert.*BIL-1/);
+});
+
+test('spool round-trip: save/load/empty', async () => {
+  const spoolFile = tmpSpool('spool.jsonl');
+  assert.deepEqual(loadSpool(spoolFile), []);
+  saveSpool(spoolFile, [{ a: 1 }, { b: 2 }]);
+  assert.equal(loadSpool(spoolFile).length, 2);
+  saveSpool(spoolFile, []);
+  assert.deepEqual(loadSpool(spoolFile), []);
 });
 
 test('telegram client: getUpdates calls correct URL, non-ok raises with code', async () => {
