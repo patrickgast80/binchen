@@ -164,14 +164,22 @@ export default async function seed({ container }: ExecArgs) {
   // Price set currency
   const EUR = "eur"
 
-  // BIL-2425: image URLs point at self-hosted storefront assets under
-  // https://bilulu.de/products/*.svg. Interim branded placeholders — CEO can
-  // swap for real photos by (a) uploading a new file at the same URL, or
-  // (b) editing product.thumbnail / product.images via Medusa Admin.
-  //
   // BIL-2430: The Pumphose (Konfigurator base product) uses REAL photos from
-  // apps/storefront/public/products/pumphose/pumphose-*.jpg — the SVG rule
-  // only applies to the five seed placeholders that still lack real photos.
+  // apps/storefront/public/products/pumphose/pumphose-*.jpg.
+  //
+  // BIL-2490 (board order 2026-08-17): the five SVG-placeholder demo articles
+  // that used to live here were deleted from the live catalog and removed from
+  // this seed. Removing them from `products` is the actual fix — the idempotency
+  // check below is per-SKU, so as long as an entry stays in this array, deleting
+  // the product in Admin only survives until the next container boot, which is
+  // exactly how they came back the first time (fresh prod_01M08M1Q* ids).
+  //
+  // Retired SKUs — do not re-add without a board decision:
+  //   STR-WALD-56, BODY-RAIN-62, BODY-RAIN-68, HOSE-MUS-74, JACK-WEND-86, SLEEP-STERN-98
+  // Their full pre-delete shape is in apps/backend/scripts/bil2490/deleted-demos-snapshot.json.
+  //
+  // This seed is now catalog-bootstrap only: it creates the Konfigurator base
+  // product on an empty database. Real articles are managed in Medusa Admin.
   const IMG_BASE = "https://bilulu.de/products"
   const PUMPHOSE_BASE = `${IMG_BASE}/pumphose`
   const products = [
@@ -199,103 +207,6 @@ export default async function seed({ container }: ExecArgs) {
         careInstructions: "30°C Schonwaschgang, liegend trocknen",
       },
       priceEur: 39,
-    },
-    {
-      title: "Bio-Baumwolle Strampler – Waldtiere",
-      description: "Weicher Strampler aus 100% GOTS-zertifizierter Bio-Baumwolle mit liebevoll gestickten Waldtieren. Handgemacht in Deutschland.",
-      variants: [{ title: "56 / 0-2 Monate", sku: "STR-WALD-56" }],
-      thumbnail: `${IMG_BASE}/strampler-waldtiere.svg`,
-      images: [`${IMG_BASE}/strampler-waldtiere.svg`],
-      meta: {
-        sizeLabel: "56",
-        sizeCmMin: 56,
-        sizeCmMax: 56,
-        fabric: "100% Bio-Baumwolle (GOTS)",
-        ageMonthsMin: 0,
-        ageMonthsMax: 2,
-        ageCategory: "newborn",
-        careInstructions: "30°C Schonwaschgang, nicht bleichen, liegend trocknen",
-      },
-      // BIL-2400: Medusa v2 stores prices as decimal major units, not cents.
-      // The old comment "// 38.00 EUR in cents" was wrong — passing 3800 was
-      // published by the Store API as 3800 EUR. Retail target for handmade
-      // baby clothing is ~29–55 EUR, so we now pass major-unit values directly.
-      priceEur: 38,
-    },
-    {
-      title: "Jersey Bodysuits Set – Regenbogen (2er-Pack)",
-      description: "Zwei handgenähte Kurzarm-Bodys aus weichem Baumwoll-Jersey. Doppelter Kragen für leichtes An- und Ausziehen.",
-      variants: [
-        { title: "62 / 2-4 Monate", sku: "BODY-RAIN-62" },
-        { title: "68 / 4-6 Monate", sku: "BODY-RAIN-68" },
-      ],
-      thumbnail: `${IMG_BASE}/bodysuit-regenbogen.svg`,
-      images: [`${IMG_BASE}/bodysuit-regenbogen.svg`],
-      meta: {
-        sizeLabel: "62-68",
-        sizeCmMin: 62,
-        sizeCmMax: 68,
-        fabric: "95% Baumwoll-Jersey, 5% Elasthan",
-        ageMonthsMin: 2,
-        ageMonthsMax: 6,
-        ageCategory: "baby",
-        careInstructions: "40°C, links waschen",
-      },
-      priceEur: 42,
-    },
-    {
-      title: "Musselinhose – Salbeigrün",
-      description: "Luftige Sommerhose aus doppellagigem Musselin. Gummizug, handgenähte Säume.",
-      variants: [{ title: "74-80 / 9-12 Monate", sku: "HOSE-MUS-74" }],
-      thumbnail: `${IMG_BASE}/musselinhose-salbei.svg`,
-      images: [`${IMG_BASE}/musselinhose-salbei.svg`],
-      meta: {
-        sizeLabel: "74-80",
-        sizeCmMin: 74,
-        sizeCmMax: 80,
-        fabric: "100% Musselin (Bio-Baumwolle)",
-        ageMonthsMin: 9,
-        ageMonthsMax: 12,
-        ageCategory: "baby",
-        careInstructions: "30°C Schonwaschgang, liegend trocknen",
-      },
-      priceEur: 29,
-    },
-    {
-      title: "Wendejacke – Punkte & Streifen",
-      description: "Handgenähte Wendejacke, außen Punkte, innen Streifen. Mit Druckknöpfen, kein Reißverschluss.",
-      variants: [{ title: "86-92 / 18-24 Monate", sku: "JACK-WEND-86" }],
-      thumbnail: `${IMG_BASE}/wendejacke-punkte.svg`,
-      images: [`${IMG_BASE}/wendejacke-punkte.svg`],
-      meta: {
-        sizeLabel: "86-92",
-        sizeCmMin: 86,
-        sizeCmMax: 92,
-        fabric: "Jersey-Baumwolle, ungefüttert",
-        ageMonthsMin: 18,
-        ageMonthsMax: 24,
-        ageCategory: "toddler",
-        careInstructions: "30°C Schonwaschgang",
-      },
-      priceEur: 55,
-    },
-    {
-      title: "Spielanzug mit Füßen – Sternchen",
-      description: "Warmer Schlafanzug aus French-Terry, mit Füßen und Reißverschluss vorne. Handgenäht.",
-      variants: [{ title: "98-104 / 3 Jahre", sku: "SLEEP-STERN-98" }],
-      thumbnail: `${IMG_BASE}/spielanzug-sternchen.svg`,
-      images: [`${IMG_BASE}/spielanzug-sternchen.svg`],
-      meta: {
-        sizeLabel: "98-104",
-        sizeCmMin: 98,
-        sizeCmMax: 104,
-        fabric: "French-Terry (80% Baumwolle, 20% Polyester)",
-        ageMonthsMin: 30,
-        ageMonthsMax: 42,
-        ageCategory: "child",
-        careInstructions: "40°C, Trockner geeignet",
-      },
-      priceEur: 48,
     },
   ]
 
