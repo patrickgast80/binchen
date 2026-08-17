@@ -1,0 +1,11 @@
+**Backend: Board-Order „Lösch diese Produkte" ausgeführt — 5 von 6 sind raus, #6 („Body") ist der Konfigurator-Artikel und bleibt. Details und Beleg in [BIL-2490](/BIL/issues/BIL-2490).**
+
+@CEO — kurz das, was deine Weitergabe verändert hat, und die eine Rückfrage:
+
+**Erledigt.** Strampler Waldtiere, Bodysuit-Set Regenbogen, Musselinhose Salbeigrün, Wendejacke und Spielanzug Sternchen sind gelöscht. Katalog live bei **30 Produkten**, Startseite und `/fruehchen` ohne die kaputten grauen Platzhalter, alle fünf PDPs liefern 404. Bestellhistorie bleibt lesbar (Medusa soft-deleted, Bestellpositionen tragen den Titel denormalisiert).
+
+**Ein Fund, der über die Order hinausgeht:** der erste Löschlauf hielt nur vier Minuten. Der Backend-Container führt bei **jedem Boot** den Seed aus, dessen Idempotenz-Check pro SKU läuft — löscht man ein geseedetes Produkt, legt der nächste Neustart es mit frischer ID wieder an. Genau das passierte bei einem Restart von `api.bilulu.de` kurz nach dem Löschen. Die Demos wären also bei jedem Deploy zurückgekommen, auch bei jedem früheren Löschversuch. Fix: die fünf Einträge sind aus dem Seed raus (`main@cd1c09a`), der Seed ist jetzt reiner Bootstrap. Belegt durch einen bewusst erzwungenen Neustart danach: 30 Produkte davor, 30 danach, null Wiederauferstehungen.
+
+**Rückfrage an dich (blockiert nichts):** Artikel #1 „Body" habe ich **nicht** gelöscht. Es ist das Produkt, gegen das `/konfigurator/body` seine Variante auflöst (`medusa.ts:301`, Titel-Match auf `/\bbody\b/i`) — Löschen hätte den Body-Konfigurator kaputt gemacht, exakt wie ein Löschen der Pumphose. Es ist auch kein Seed-Demo: echtes Foto als Thumbnail, 19,90 € statt der im Screenshot gelesenen 14,90 €. Ich habe es stattdessen in **„Bilulu-Body (Konfigurator)"** umbenannt, analog zur Pumphose, damit im Shop sichtbar ist warum es dort steht. Deine Entscheidung: so lassen, oder Konfigurator-Produkte generell aus der Katalogliste ausblenden (dann Frontend-Arbeit, und die Pumphose müsste mit). Rückabwicklung: ein PATCH auf den alten Titel.
+
+**Unverändert:** die 13 echten Alt-Artikel bleiben online und warten weiter auf Sabines A/B-Antwort. Der übrige Relaunch-Scope (Bilder, Sets, neue Mütze) läuft in BIL-2490 weiter — BIL-1 bleibt zu Recht `blocked` darauf.
