@@ -186,10 +186,39 @@ test('paperclip client: 403 boundary tries extra tokens in order', async () => {
   assert.deepEqual(tokens, ['Bearer devops-key', 'Bearer other-key', 'Bearer qa-key']);
 });
 
-test('paperclip client: 403 on all tokens stays 403', async () => {
-  const fetchImpl = async () => ({ status: 403, ok: false, text: async () => 'boundary' });
+test('paperclip client: 403 on all tokens falls back to local-board (no auth header)', async () => {
+  const authHeaders = [];
+  const fetchImpl = async (url, opts) => {
+    authHeaders.push(opts.headers.Authorization);
+    if (opts.headers.Authorization) return { status: 403, ok: false, text: async () => 'boundary' };
+    // No Authorization -> local_trusted server accepts as local-board.
+    return { status: 201, ok: true, json: async () => ({ comment: { id: 'c-lb' } }) };
+  };
   const provider = () => ['a', 'b'];
   const pc = makePaperclipClient({ apiUrl: 'http://x', tokenProvider: provider, companyId: 'c', projectId: 'p', fetchImpl });
+  const comment = await pc.postComment('uuid', 'x');
+  assert.equal(comment.id, 'c-lb');
+  // last attempt carried no Authorization header
+  assert.equal(authHeaders.at(-1), undefined);
+});
+
+test('paperclip client: no token configured -> posts as local-board directly', async () => {
+  const authHeaders = [];
+  const fetchImpl = async (url, opts) => {
+    authHeaders.push(opts.headers.Authorization);
+    return { status: 201, ok: true, json: async () => ({ id: 'c-1' }) };
+  };
+  const provider = () => [];
+  const pc = makePaperclipClient({ apiUrl: 'http://x', tokenProvider: provider, companyId: 'c', projectId: 'p', fetchImpl });
+  const comment = await pc.postComment('uuid', 'x');
+  assert.equal(comment.id, 'c-1');
+  assert.deepEqual(authHeaders, [undefined]);
+});
+
+test('paperclip client: allowLocalBoard=false keeps 403 (opt-out)', async () => {
+  const fetchImpl = async () => ({ status: 403, ok: false, text: async () => 'boundary' });
+  const provider = () => ['a', 'b'];
+  const pc = makePaperclipClient({ apiUrl: 'http://x', tokenProvider: provider, companyId: 'c', projectId: 'p', fetchImpl, allowLocalBoard: false });
   await assert.rejects(() => pc.postComment('uuid', 'x'), /403/);
 });
 

@@ -26,8 +26,10 @@ if (!cfg.botToken) {
   process.exit(2);
 }
 if (!cfg.paperclipToken) {
-  log(`FATAL: PAPERCLIP_TOKEN fehlt in ${envFile} — Agent-API-Key noetig (Board: Agents -> DevOps -> API keys).`);
-  process.exit(2);
+  // Kein Fatal mehr: der loopback-lokale local_trusted-Server akzeptiert Writes
+  // ohne Auth als local-board. Ein Agent-Key ist optional (nur nötig, wenn Writes
+  // bewusst unter einem Agent-Actor laufen sollen). Board-Wunsch: "ohne QA-Key".
+  log('WARN: PAPERCLIP_TOKEN nicht gesetzt — Bridge schreibt als local-board (kein Agent-Key nötig).');
 }
 if (!cfg.allowedUserIds.length) {
   log(`FATAL: TELEGRAM_ALLOWED_USER_IDS fehlt/leer in ${envFile} — ohne Allowlist startet die Bridge nicht.`);

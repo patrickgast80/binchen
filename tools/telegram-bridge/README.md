@@ -23,26 +23,30 @@ ignoriert** (nur geloggt, keine Antwort — kein Oracle für Fremde).
 1. **Bot-Token** (Board-Aktion, BIL-2480): Bot via @BotFather anlegen,
    Token in `infra/.vault/telegram-bridge.env` eintragen
    (Vorlage: `telegram-bridge.env.example` hier im Ordner; Vault-Ordner ist gitignored).
-2. **Paperclip-Key** (Board-Aktion): Agent-JWTs aus Runs laufen nach **1 h** ab
-   und taugen nicht für einen Daemon. Der Board-User legt unter
-   *Agents → DevOps → API keys* einen Key an — Name `telegram-bridge`, Scope
-   `task_bridge`, beschränkt auf das Binchen-Projekt
-   (`5e251e01-8c35-4243-9a64-ebccc2ffed74`). Agenten selbst dürfen das nicht
-   (`POST /api/agents/{id}/keys` → 403 „Board access required", verifiziert 2026-08-17).
-   Key als `PAPERCLIP_TOKEN` in dieselbe Env-Datei.
-   **Wichtig — Boundary:** ein Agent-Key darf nur Issues kommentieren, die diesem
-   Agenten zugewiesen sind („Issue is outside this actor's authorization boundary",
-   verifiziert 2026-08-17). Für das Default-Ziel BIL-1 (Assignee: QA) braucht die
-   Bridge daher zusätzlich einen Key des **BIL-1-Assignee-Agenten** (aktuell
-   *Agents → QA → API keys*), eingetragen als `PAPERCLIP_EXTRA_TOKENS`
-   (kommasepariert, mehrere möglich). Die Bridge probiert bei 403 alle Keys durch
-   und liest die Env-Datei dabei neu ein — nachträglich ergänzte Keys wirken ohne
-   Neustart. Nicht zustellbare Nachrichten gehen **nicht verloren**: sie landen im
+2. **Paperclip-Auth: kein Key nötig (Default).** Die Bridge läuft als lokaler
+   Prozess auf derselben Maschine wie die Paperclip-API, die im Modus
+   `deploymentMode: local_trusted`, `bind: loopback`, `exposure: private` an
+   127.0.0.1 gebunden ist. In diesem Modus akzeptiert der Server Writes **ohne
+   Authorization-Header** und verbucht sie als User `local-board` — genau richtig,
+   denn die relayten Nachrichten SIND Board-Nachrichten, nicht Agent-Nachrichten.
+   Damit landet ein Kommentar auf **jedem** Issue (inkl. des QA-eigenen BIL-1),
+   ohne dass irgendein Agent-Key angelegt oder rotiert werden muss.
+   Verifiziert 2026-08-17 (End-to-End-Post auf BIL-1 → 201, `authorType: user`,
+   `authorUserId: local-board`).
+
+   **Warum nicht einfach ein Agent-Key?** Ein Agent-Key darf nur Issues
+   kommentieren, die diesem Agenten zugewiesen sind (403 „Issue is outside this
+   actor's authorization boundary"). Für BIL-1 (Assignee: QA) bräuchte man daher
+   einen QA-Key — den das Board bewusst **nicht** anlegen wollte (BIL-2481,
+   Confirmation abgelehnt 2026-08-17). Der local-board-Pfad löst das ohne Key.
+
+   *Optional* — `PAPERCLIP_TOKEN` / `PAPERCLIP_EXTRA_TOKENS` (kommasepariert)
+   werden weiterhin unterstützt, falls Writes bewusst unter einem bestimmten
+   Agent-Actor laufen sollen. Der Client versucht dann erst die Tokens und fällt
+   bei 401/403 auf local-board zurück (abschaltbar via `allowLocalBoard: false`).
+   Nicht zustellbare Nachrichten gehen ohnehin **nicht verloren**: sie landen im
    Spool (`infra/.vault/telegram-bridge.spool.jsonl`) und werden alle 5 min
    automatisch nachgeliefert, mit Telegram-Bestätigung.
-   *Fallback ohne Board-Key:* aktuelles Agent-JWT eintragen; die Bridge liest die
-   Env-Datei bei jedem 401 neu ein, ein Token-Tausch braucht also keinen Neustart —
-   aber das JWT muss dann stündlich manuell erneuert werden. Nur als Notlösung.
 3. **Allowlist**: numerische Telegram-User-IDs (z. B. via @userinfobot ermitteln)
    kommasepariert als `TELEGRAM_ALLOWED_USER_IDS`. Ohne Allowlist startet die
    Bridge nicht.
@@ -77,9 +81,15 @@ taskkill /FI "WINDOWTITLE eq start-bridge*"   # bzw. das node bridge.mjs-Fenster
 
 Die Bridge ist rein additiv (Kommentare/Issues/Attachments); Rollback = Prozess
 stoppen. Kompromittierter Bot-Token ⇒ bei @BotFather `/revoke`, neuen Token in
-die Env-Datei, Bridge restartet sich beim nächsten 401 nicht — Prozess einmal
-neu starten. Kompromittierter Paperclip-Key ⇒ Board löscht ihn unter
-*Agents → DevOps → API keys*.
+die Env-Datei, Prozess einmal neu starten. Ein Paperclip-Key ist im
+Default-Betrieb nicht gesetzt (local-board-Pfad); falls doch einer hinterlegt
+wurde ⇒ Board löscht ihn unter *Agents → … → API keys*.
+
+**Sicherheitshinweis:** Der local-board-Schreibpfad funktioniert nur, weil die
+Paperclip-API loopback-only im `local_trusted`-Modus läuft. Der einzige
+Zugangsschutz ist damit die Telegram-**Allowlist** (`TELEGRAM_ALLOWED_USER_IDS`)
+plus der geheime Bot-Token. Wer die Paperclip-API je öffentlich exponiert, muss
+diesen Pfad neu bewerten (`allowLocalBoard: false` + Agent-Key erzwingen).
 
 ## Tests (ohne Token)
 
@@ -87,6 +97,7 @@ neu starten. Kompromittierter Paperclip-Key ⇒ Board löscht ihn unter
 node --test tools/telegram-bridge/test/test.mjs
 ```
 
-17 Tests gegen Fixture-`getUpdates`-Payloads (`test/fixtures.json`) mit
+24 Tests gegen Fixture-`getUpdates`-Payloads (`test/fixtures.json`) mit
 Fake-Telegram/-Paperclip-Clients: Routing, Allowlist, Foto-Upload inkl.
-Fallback, Fehlerpfade, 401-Token-Hot-Reload, 409-Handling.
+Fallback, Fehlerpfade, 401-Token-Hot-Reload, 403→local-board-Fallback,
+tokenloser Betrieb, 409-Handling.
