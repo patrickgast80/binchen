@@ -85,8 +85,15 @@ export default function KonfiguratorHubPage() {
                 {/*
                   BIL-2483: Studio-Grey stage, same token as the live Hose/Mütze preview
                   and as the catalog cards. Unlike the 1200x1200 product photos these
-                  tile images are transparent cutouts with NO baked passepartout, so the
-                  `p-6` below stays — here the padding IS the mat, not a second frame.
+                  tile images are transparent cutouts with NO baked passepartout, so a
+                  padding stays here — the padding IS the mat, not a second frame.
+
+                  It is `p-[12%]`, not a fixed `p-6`: the mat has to match the 12 %
+                  (`PAD_RATIO = 0.12`, bil2462-studio-normalize.mjs) that the product
+                  photos carry inside their canvas. A fixed 24px drifts with the grid —
+                  6.7 % of the 358px tile at 390w, 8.4 % of the 286px tile at 1440w —
+                  so it read as a narrower mat than every neighbouring card. A
+                  percentage resolves against the tile width and stays put.
                 */}
                 <div className="relative aspect-square w-full overflow-hidden bg-binchen-studio">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -97,7 +104,7 @@ export default function KonfiguratorHubPage() {
                     height={tile.image.height}
                     loading="lazy"
                     decoding="async"
-                    className="h-full w-full object-contain p-6 transition-transform duration-300 group-hover:scale-[1.03]"
+                    className="h-full w-full object-contain p-[12%] transition-transform duration-300 group-hover:scale-[1.03]"
                   />
                 </div>
                 <div className="flex flex-1 flex-col gap-2 p-5">
