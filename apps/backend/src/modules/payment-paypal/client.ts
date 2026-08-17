@@ -18,12 +18,48 @@ export type PayPalOrderResponse = {
   status: string
   purchase_units?: Array<{
     reference_id?: string
+    custom_id?: string
     amount?: PayPalAmount
     payments?: {
       captures?: Array<{ id: string; status: string; amount?: PayPalAmount }>
       refunds?: Array<{ id: string; status: string; amount?: PayPalAmount }>
     }
   }>
+}
+
+// PayPal caps purchase_unit.custom_id at 127 chars. Medusa session ids are
+// ~30, but slice defensively so a long id degrades instead of 400-ing the order.
+export const PAYPAL_CUSTOM_ID_MAX = 127
+
+// Webhook correlation (BIL-2482). PayPal's capture/refund resources do NOT echo
+// purchase_unit.reference_id — only `custom_id` / `invoice_id` survive into the
+// event. We set custom_id at order creation, so that is the primary key back to
+// the Medusa payment session. `invoice_id` is read as a fallback for orders that
+// were created before this was wired up (we never write it — PayPal enforces
+// per-merchant uniqueness on it).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function sessionIdFromResource(resource: Record<string, any> | undefined): string {
+  const custom = resource?.custom_id
+  if (typeof custom === "string" && custom) return custom
+  const invoice = resource?.invoice_id
+  if (typeof invoice === "string" && invoice) return invoice
+  return ""
+}
+
+// Last-resort correlation hop: capture/refund resources carry the originating
+// PayPal order id under supplementary_data.related_ids.order_id. With it we can
+// re-fetch the order and read custom_id off the purchase unit.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function payPalOrderIdFromResource(resource: Record<string, any> | undefined): string {
+  const id = resource?.supplementary_data?.related_ids?.order_id
+  return typeof id === "string" ? id : ""
+}
+
+export function customIdFromOrder(order: PayPalOrderResponse | undefined): string {
+  for (const unit of order?.purchase_units ?? []) {
+    if (unit.custom_id) return unit.custom_id
+  }
+  return ""
 }
 
 export type PayPalCaptureResponse = PayPalOrderResponse
@@ -106,10 +142,14 @@ export class PayPalClient {
 
   // PayPal-Request-Id is the idempotency key — PayPal returns the original
   // response if the same key is replayed within ~6 hours.
+  // `customId` is the Medusa payment session id; it is the only field that
+  // travels into the capture/refund webhook resources, so webhook correlation
+  // depends on it being set here (see sessionIdFromResource).
   async createOrder(
     amount: PayPalAmount,
     referenceId: string,
     idempotencyKey: string,
+    customId?: string,
   ): Promise<PayPalOrderResponse> {
     return this.request<PayPalOrderResponse>("POST", "/v2/checkout/orders", {
       intent: "CAPTURE",
@@ -117,6 +157,7 @@ export class PayPalClient {
         {
           reference_id: referenceId,
           amount,
+          ...(customId ? { custom_id: customId.slice(0, PAYPAL_CUSTOM_ID_MAX) } : {}),
         },
       ],
     }, { "PayPal-Request-Id": idempotencyKey })

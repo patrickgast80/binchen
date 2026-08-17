@@ -23,7 +23,14 @@ import {
   WebhookActionResult,
 } from "@medusajs/framework/types"
 
-import { PayPalClient, PayPalMode, PayPalOrderResponse } from "./client"
+import {
+  PayPalClient,
+  PayPalMode,
+  PayPalOrderResponse,
+  customIdFromOrder,
+  payPalOrderIdFromResource,
+  sessionIdFromResource,
+} from "./client"
 
 export type PayPalOptions = {
   clientId: string
@@ -113,7 +120,9 @@ export class PayPalProviderService extends AbstractPaymentProvider<PayPalOptions
     const idempotencyKey = (input.context?.idempotency_key ?? referenceId).toString().slice(0, 36)
     const amount = toPayPalAmount(input.amount as BigNumber, input.currency_code)
 
-    const order = await this.client.createOrder(amount, referenceId, idempotencyKey)
+    // custom_id carries the Medusa session id into the capture/refund webhook
+    // resources — reference_id does not survive the round trip (BIL-2482).
+    const order = await this.client.createOrder(amount, referenceId, idempotencyKey, sessionId)
 
     return {
       id: order.id,
@@ -243,6 +252,38 @@ export class PayPalProviderService extends AbstractPaymentProvider<PayPalOptions
     return { data: input.data ?? {} }
   }
 
+  // Maps a webhook resource back to the Medusa payment session. Primary key is
+  // `custom_id` (written at order creation); the order re-fetch covers orders
+  // created before that was wired up, so the rollout window is not a blind spot.
+  // Never throws — a correlation failure must not turn into a 500 that makes
+  // PayPal retry an event we already received (at-least-once delivery).
+  private async resolveSessionId(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resource: Record<string, any>,
+    eventType: string | undefined,
+  ): Promise<string> {
+    const direct = sessionIdFromResource(resource)
+    if (direct) return direct
+
+    const orderId = payPalOrderIdFromResource(resource)
+    if (orderId) {
+      try {
+        const order = await this.client.getOrder(orderId)
+        const fromOrder = customIdFromOrder(order)
+        if (fromOrder) return fromOrder
+      } catch (err) {
+        this.logger?.warn(
+          `[payment-paypal] session lookup via order ${orderId} failed: ${err instanceof Error ? err.message : String(err)}`,
+        )
+      }
+    }
+
+    this.logger?.warn(
+      `[payment-paypal] no session id on webhook event_type=${eventType ?? "<none>"} paypal_order_id=${orderId || "<none>"} — event acknowledged but not applied`,
+    )
+    return ""
+  }
+
   async getWebhookActionAndData(payload: ProviderWebhookPayload["payload"]): Promise<WebhookActionResult> {
     const event = payload.data as { event_type?: string; resource?: Record<string, unknown> } | undefined
     const eventType = event?.event_type
@@ -265,10 +306,16 @@ export class PayPalProviderService extends AbstractPaymentProvider<PayPalOptions
       }
     }
 
-    const sessionId =
-      ((resource as { custom_id?: string }).custom_id as string | undefined) ??
-      ((resource as { invoice_id?: string }).invoice_id as string | undefined) ??
-      ""
+    const sessionId = await this.resolveSessionId(resource, eventType)
+    if (!sessionId) {
+      // Without a session there is nothing for Medusa to mutate; reporting
+      // SUCCESSFUL with an empty id would only surface as an opaque lookup
+      // error. The event is still 200-acked and logged above.
+      return {
+        action: PaymentActions.NOT_SUPPORTED,
+        data: { session_id: "", amount: new BigNumber(0) },
+      }
+    }
 
     switch (eventType) {
       case "PAYMENT.CAPTURE.COMPLETED": {

@@ -11,7 +11,9 @@
     "seed:inventory": "medusa exec ./src/scripts/seed-inventory.ts",
     "migrate": "medusa db:migrate",
     "lint": "tsc --noEmit --pretty",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:paypal": "ts-node --transpileOnly src/modules/payment-paypal/__tests__/correlation.test.ts",
+    "test:paypal:sandbox": "ts-node --transpileOnly src/modules/payment-paypal/__tests__/sandbox-integration.ts"
   },
   "dependencies": {
     "@medusajs/framework": "^2.15.5",

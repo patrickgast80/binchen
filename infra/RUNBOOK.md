@@ -314,3 +314,89 @@ rein additiv (nur Kommentare/Issues/Attachments).
 **Secrets:** `infra/.vault/telegram-bridge.env` (gitignored) — Bot-Token
 (@BotFather, Revoke via `/revoke`) + Paperclip Agent-API-Key `telegram-bridge`
 (Scope task_bridge, Projekt-beschränkt; Board kann ihn jederzeit löschen).
+
+---
+
+## PayPal Live-Cutover (BIL-2482)
+
+Der PayPal-Button ist seit 2026-08-14 im Shop sichtbar, läuft aber mit
+**Sandbox**-Credentials. Eine echte Kundin landet im Sandbox-Login und kommt nicht
+durch; Vorkasse/Überweisung daneben ist unberührt und grün. PayPal-Event-Log:
+0 Events — es hat real noch nie jemand bezahlt.
+
+**Kein Code-Change nötig.** Modus, Host und Webhook-Signaturprüfung hängen
+ausschließlich an Env (`medusa-config.ts:49-59` → `client.ts:42-45`):
+`PAYPAL_MODE=live` schaltet auf `https://api-m.paypal.com`, `PAYPAL_WEBHOOK_ID`
+ist die einzige Quelle für die Signaturprüfung. Ist die Webhook-ID leer, werden
+**alle** Events verworfen (`client.ts` `verifyWebhookSignature` → `false`) —
+d.h. eine vergessene Live-Webhook-ID fällt sofort und leise-sicher auf, nicht
+still-vertrauend.
+
+### Playbook: Sandbox → Live
+
+Voraussetzung: Board legt unter developer.paypal.com im **Live**-Tab eine App an
+und liefert Live-Client-ID, Live-Secret und Live-Webhook-ID.
+
+1. **Webhook zuerst** bei PayPal registrieren (Live-App → Webhooks → Add):
+   URL `https://api.bilulu.de/hooks/payment/paypal`, Events
+   `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.DENIED`, `PAYMENT.CAPTURE.REFUNDED`.
+   Die resultierende Webhook-ID ist `PAYPAL_WEBHOOK_ID`.
+2. **Vault**: Werte nach `infra/.vault/paypal-live.env` (gitignored, gleiche Keys
+   wie `paypal-sandbox.env`). Sandbox-Datei **nicht** überschreiben — sie ist der
+   Rollback-Stand und die Grundlage der Integrationstests.
+3. **Coolify-Env** (DevOps), 5 Variablen, beide Apps:
+   | App | Variable | Wert |
+   |---|---|---|
+   | backend | `PAYPAL_CLIENT_ID` | Live-Client-ID |
+   | backend | `PAYPAL_CLIENT_SECRET` | Live-Secret |
+   | backend | `PAYPAL_WEBHOOK_ID` | Live-Webhook-ID aus Schritt 1 |
+   | backend | `PAYPAL_MODE` | `live` |
+   | storefront | `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | Live-Client-ID (dieselbe wie backend) |
+   `NEXT_PUBLIC_*` wird zur **Build**-Zeit inlined → Storefront braucht einen
+   echten Rebuild, ein Container-Restart genügt nicht.
+4. **Redeploy** backend + storefront.
+5. **Verifizieren** (Reihenfolge zählt):
+   - `PAYPAL_MODE`/Host: Backend-Log beim Boot bzw. `pnpm --filter binchen-backend test:paypal:sandbox`
+     verweigert bewusst den Dienst, wenn `PAYPAL_MODE != sandbox` — das ist die
+     Absicherung dagegen, dass ein Testskript versehentlich echte Orders anlegt.
+   - Storefront: SDK-Tag auf `/checkout/payment` (**mit** befülltem Warenkorb —
+     ohne Cart redirected die Route auf `/cart`, dann ist gar kein Tag da) muss die
+     **Live**-Client-ID tragen, nicht mehr die aus `paypal-sandbox.env`.
+   - Signaturprüfung: erst der erste echte Event beweist sie. Ein Event mit
+     falscher/alter Webhook-ID wird verworfen und loggt
+     `[payment-paypal] dropped unverified webhook event_type=…` — dieses Log ist
+     das Alarmsignal für „Webhook-ID passt nicht zur App".
+6. **Einmal-Verifikation mit echtem Geld** (Inhaberin, Kleinstbetrag): Bestellung
+   → Approve → im PayPal-Konto Refund. Deckt genau die drei Pfade ab, die im
+   Sandbox nie liefen (Approve/Capture/Refund). Erwartet: Order wird bezahlt,
+   `PAYMENT.CAPTURE.COMPLETED` korreliert auf die Payment-Session (s.u.), Refund
+   kommt an.
+
+### Webhook-Korrelation (Grund, warum Schritt 6 vorher nie funktioniert hätte)
+
+PayPal spiegelt `purchase_unit.reference_id` **nicht** in die Capture-/Refund-
+Ressource. Nur `custom_id`/`invoice_id` überleben in das Event. Bis BIL-2482 setzte
+`createOrder` kein `custom_id` → jeder Capture-Webhook wäre mit leerer
+`session_id` bei Medusa angekommen. Seither trägt `custom_id` die Medusa-
+Payment-Session-ID; als Fallback für Orders aus der Rollout-Lücke wird über
+`supplementary_data.related_ids.order_id` die Order nachgeladen und `custom_id`
+von dort gelesen. Findet sich keine Session, wird der Event mit
+`[payment-paypal] no session id on webhook …` geloggt und als `NOT_SUPPORTED`
+quittiert — 200 an PayPal (kein Retry-Sturm bei At-least-once-Zustellung), aber
+keine stille Falsch-Mutation.
+
+Tests: `pnpm --filter binchen-backend test:paypal` (offline, 18 Checks) und
+`test:paypal:sandbox` (echte Sandbox-Order: PayPal akzeptiert + spiegelt
+`custom_id`, Replay derselben `PayPal-Request-Id` liefert dieselbe Order-ID).
+
+### Rollback
+
+Umgekehrt zu Schritt 3: die 4 Backend-Variablen zurück auf die Werte aus
+`infra/.vault/paypal-sandbox.env`, `NEXT_PUBLIC_PAYPAL_CLIENT_ID` auf die
+Sandbox-ID — beide Apps redeployen. Kein Code-Revert, keine Migration.
+
+**Sofort-Mitigation ohne Live-Creds** (Variante B): im Storefront
+`NEXT_PUBLIC_PAYPAL_CLIENT_ID` **leeren** + Rebuild. Der Code fällt sauber auf
+„nur Vorkasse" zurück (`apps/storefront/src/app/checkout/payment/page.tsx:38`
+`paypalReady = Boolean(PAYPAL_CLIENT_ID)`). Eine Variable, sofort reversibel,
+kein Backend-Deploy.

@@ -72,9 +72,10 @@ Most variables are pre-configured in `render.yaml`. The following must be set ma
 1. Sign in at https://developer.paypal.com — Business account required for live; sandbox is auto-provisioned.
 2. **Apps & Credentials** → **Create App**. Use the **Sandbox** tab for dev/integration, the **Live** tab for production.
 3. Copy `Client ID` → `PAYPAL_CLIENT_ID`, `Secret` → `PAYPAL_CLIENT_SECRET`.
-4. **Webhooks** tab (under the app) → **Add Webhook** with URL `https://binchen-backend.onrender.com/hooks/payment/paypal` (or the matching sandbox URL during dev), subscribe to events
+4. **Webhooks** tab (under the app) → **Add Webhook** with URL `https://api.bilulu.de/hooks/payment/paypal`, subscribe to events
    `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.DENIED`, `PAYMENT.CAPTURE.REFUNDED`. Copy the resulting Webhook ID → `PAYPAL_WEBHOOK_ID`.
-5. Set `PAYPAL_MODE=sandbox` while integrating; flip to `PAYPAL_MODE=live` at go-live cutover (re-issue Render rotate with the live app's client id/secret/webhook id).
+   The webhook id must belong to the **same app** as the client id — a mismatch silently drops every event (signature verification returns `false`).
+5. Set `PAYPAL_MODE=sandbox` while integrating; flip to `PAYPAL_MODE=live` at go-live cutover. Full playbook incl. the storefront's build-time `NEXT_PUBLIC_PAYPAL_CLIENT_ID` and rollback: `infra/RUNBOOK.md` → *PayPal Live-Cutover (BIL-2482)*.
 
 ---
 
