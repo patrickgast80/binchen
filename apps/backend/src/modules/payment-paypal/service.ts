@@ -222,9 +222,36 @@ export class PayPalProviderService extends AbstractPaymentProvider<PayPalOptions
   }
 
   async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
-    // PayPal Orders v2 has no explicit cancel endpoint; an unapproved order
-    // expires automatically. Mark the local data and move on.
     const data = (input.data as PayPalSessionData | undefined) ?? { id: "" }
+
+    // Since authorizePayment captures, a cancel can arrive on money that has
+    // already moved: Medusa's complete-cart step cancels the payment if a later
+    // step fails, and its cancelPayment does not check for captures. Voiding
+    // locally would leave the customer charged with no order and nobody the
+    // wiser, so give the money back instead.
+    if (data.capture_id) {
+      try {
+        // Full refund; capture id as idempotency key so a replayed compensation
+        // cannot refund twice.
+        await this.client.refundCapture(data.capture_id, undefined, `cancel-${data.capture_id}`)
+        this.logger?.warn(`[payment-paypal] cancel after capture — refunded capture ${data.capture_id} for order ${data.id}`)
+        return { data: { ...data, status: "REFUNDED" } }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        if (!/ALREADY_REFUNDED|CAPTURE_FULLY_REFUNDED/i.test(message)) {
+          // Swallow rather than throw: this usually runs inside a compensation,
+          // and cascading would bury whatever failed first. The log line is the
+          // alarm — it means real money needs a manual refund.
+          this.logger?.error(
+            `[payment-paypal] MANUAL REFUND NEEDED — cancel of captured payment failed. capture_id=${data.capture_id} paypal_order=${data.id}: ${message}`,
+          )
+        }
+        return { data: { ...data, status: "REFUNDED" } }
+      }
+    }
+
+    // Nothing captured: PayPal Orders v2 has no explicit cancel endpoint, an
+    // unapproved order simply expires. Mark the local data and move on.
     return { data: { ...data, status: "VOIDED" } }
   }
 
