@@ -1,35 +1,40 @@
 {
-  "at": "2026-08-17T19:42:58.650Z",
+  "at": "2026-08-17T20:02:55.191Z",
   "dryRun": false,
   "countBefore": 35,
   "countAfter": 30,
   "results": [
     {
-      "id": "prod_01KZN83FK70K2EWR3PX9Z0KVF8",
+      "handle": "bio-baumwolle-strampler-waldtiere",
+      "id": "prod_01M08M1QB4DTFJRJ5K9VJ0V280",
       "title": "Bio-Baumwolle Strampler – Waldtiere",
       "result": "deleted",
       "deleted": true
     },
     {
-      "id": "prod_01KZN83FQPX92VFVRN95WA8A6Y",
+      "handle": "jersey-bodysuits-set-regenbogen-2er-pack",
+      "id": "prod_01M08M1QFCBS001DR5JF8XZAS7",
       "title": "Jersey Bodysuits Set – Regenbogen (2er-Pack)",
       "result": "deleted",
       "deleted": true
     },
     {
-      "id": "prod_01KZN83FTBD5F874C66RSRDB5K",
+      "handle": "musselinhose-salbeigrun",
+      "id": "prod_01M08M1QJJ3YZTBHAVRG297XRK",
       "title": "Musselinhose – Salbeigrün",
       "result": "deleted",
       "deleted": true
     },
     {
-      "id": "prod_01KZN83FW3BHYXMJBKS9BASND0",
+      "handle": "wendejacke-punkte-streifen",
+      "id": "prod_01M08M1QMQCMNG7NBGW0MJDQZG",
       "title": "Wendejacke – Punkte & Streifen",
       "result": "deleted",
       "deleted": true
     },
     {
-      "id": "prod_01KZN83FY1J19YHD40SE1T5Q14",
+      "handle": "spielanzug-mit-fuen-sternchen",
+      "id": "prod_01M08M1QPFR0F8JCNWB239QWCS",
       "title": "Spielanzug mit Füßen – Sternchen",
       "result": "deleted",
       "deleted": true

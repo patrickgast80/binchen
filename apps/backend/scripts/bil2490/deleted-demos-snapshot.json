@@ -1,28 +1,28 @@
 {
-  "at": "2026-08-17T19:42:56.113Z",
+  "at": "2026-08-17T20:02:53.963Z",
   "backend": "https://api.bilulu.de",
   "products": [
     {
-      "id": "prod_01KZN83FK70K2EWR3PX9Z0KVF8",
+      "id": "prod_01M08M1QB4DTFJRJ5K9VJ0V280",
       "title": "Bio-Baumwolle Strampler – Waldtiere",
       "handle": "bio-baumwolle-strampler-waldtiere",
       "status": "published",
       "thumbnail": "https://bilulu.de/products/strampler-waldtiere.svg",
       "images": [
         {
-          "id": "img_01KZN83FKAKJEYFNXZ59DZVZ1Q",
+          "id": "img_01M08M1QB863YJV2H30QWRHQFW",
           "url": "https://bilulu.de/products/strampler-waldtiere.svg",
           "metadata": null,
           "rank": 0,
-          "product_id": "prod_01KZN83FK70K2EWR3PX9Z0KVF8",
-          "created_at": "2026-08-10T07:09:59.276Z",
-          "updated_at": "2026-08-10T07:09:59.276Z",
+          "product_id": "prod_01M08M1QB4DTFJRJ5K9VJ0V280",
+          "created_at": "2026-08-17T19:44:18.794Z",
+          "updated_at": "2026-08-17T19:44:18.794Z",
           "deleted_at": null
         }
       ],
       "variants": [
         {
-          "id": "variant_01KZN83FK7FW84TG00GAMHH1K1",
+          "id": "variant_01M08M1QB5Q0X6H45WQGNCYCMF",
           "title": "56 / 0-2 Monate",
           "sku": "STR-WALD-56",
           "barcode": null,
@@ -41,20 +41,20 @@
           "metadata": null,
           "variant_rank": 0,
           "thumbnail": null,
-          "product_id": "prod_01KZN83FK70K2EWR3PX9Z0KVF8",
-          "created_at": "2026-08-10T07:09:59.275Z",
-          "updated_at": "2026-08-10T07:09:59.275Z",
+          "product_id": "prod_01M08M1QB4DTFJRJ5K9VJ0V280",
+          "created_at": "2026-08-17T19:44:18.794Z",
+          "updated_at": "2026-08-17T19:44:18.794Z",
           "deleted_at": null,
           "prices": [
             {
-              "id": "price_01KZN83FNSWMGPVHGZNNBTBX2M",
+              "id": "price_01M08M1QDMYSHX8RS14Z5WX9Y0",
               "amount": 38,
               "currency_code": "eur",
               "min_quantity": null,
               "max_quantity": null,
-              "variant_id": "variant_01KZN83FK7FW84TG00GAMHH1K1",
-              "created_at": "2026-08-10T07:09:59.354Z",
-              "updated_at": "2026-08-10T07:09:59.354Z",
+              "variant_id": "variant_01M08M1QB5Q0X6H45WQGNCYCMF",
+              "created_at": "2026-08-17T19:44:18.869Z",
+              "updated_at": "2026-08-17T19:44:18.869Z",
               "rules": {}
             }
           ]
@@ -62,26 +62,26 @@
       ]
     },
     {
-      "id": "prod_01KZN83FQPX92VFVRN95WA8A6Y",
+      "id": "prod_01M08M1QFCBS001DR5JF8XZAS7",
       "title": "Jersey Bodysuits Set – Regenbogen (2er-Pack)",
       "handle": "jersey-bodysuits-set-regenbogen-2er-pack",
       "status": "published",
       "thumbnail": "https://bilulu.de/products/bodysuit-regenbogen.svg",
       "images": [
         {
-          "id": "img_01KZN83FQQKSA6CEAJDWN3G68G",
+          "id": "img_01M08M1QFDB876VMGBEFJVYQNA",
           "url": "https://bilulu.de/products/bodysuit-regenbogen.svg",
           "metadata": null,
           "rank": 0,
-          "product_id": "prod_01KZN83FQPX92VFVRN95WA8A6Y",
-          "created_at": "2026-08-10T07:09:59.416Z",
-          "updated_at": "2026-08-10T07:09:59.416Z",
+          "product_id": "prod_01M08M1QFCBS001DR5JF8XZAS7",
+          "created_at": "2026-08-17T19:44:18.926Z",
+          "updated_at": "2026-08-17T19:44:18.926Z",
           "deleted_at": null
         }
       ],
       "variants": [
         {
-          "id": "variant_01KZN83FQPXJQAVVVPC4RXZK7K",
+          "id": "variant_01M08M1QFC6G722G042KXH08GD",
           "title": "62 / 2-4 Monate",
           "sku": "BODY-RAIN-62",
           "barcode": null,
@@ -100,26 +100,26 @@
           "metadata": null,
           "variant_rank": 0,
           "thumbnail": null,
-          "product_id": "prod_01KZN83FQPX92VFVRN95WA8A6Y",
-          "created_at": "2026-08-10T07:09:59.416Z",
-          "updated_at": "2026-08-10T07:09:59.416Z",
+          "product_id": "prod_01M08M1QFCBS001DR5JF8XZAS7",
+          "created_at": "2026-08-17T19:44:18.925Z",
+          "updated_at": "2026-08-17T19:44:18.925Z",
           "deleted_at": null,
           "prices": [
             {
-              "id": "price_01KZN83FSAZ1WD6YJPSC2AWPXQ",
+              "id": "price_01M08M1QHD15PPZBKBWCPBNNE7",
               "amount": 42,
               "currency_code": "eur",
               "min_quantity": null,
               "max_quantity": null,
-              "variant_id": "variant_01KZN83FQPXJQAVVVPC4RXZK7K",
-              "created_at": "2026-08-10T07:09:59.467Z",
-              "updated_at": "2026-08-10T07:09:59.467Z",
+              "variant_id": "variant_01M08M1QFC6G722G042KXH08GD",
+              "created_at": "2026-08-17T19:44:18.990Z",
+              "updated_at": "2026-08-17T19:44:18.990Z",
               "rules": {}
             }
           ]
         },
         {
-          "id": "variant_01KZN83FQP21D9SGQYWDBWHWV4",
+          "id": "variant_01M08M1QFC19H8TD80D5PYQJ03",
           "title": "68 / 4-6 Monate",
           "sku": "BODY-RAIN-68",
           "barcode": null,
@@ -138,34 +138,34 @@
           "metadata": null,
           "variant_rank": 0,
           "thumbnail": null,
-          "product_id": "prod_01KZN83FQPX92VFVRN95WA8A6Y",
-          "created_at": "2026-08-10T07:09:59.416Z",
-          "updated_at": "2026-08-10T07:09:59.416Z",
+          "product_id": "prod_01M08M1QFCBS001DR5JF8XZAS7",
+          "created_at": "2026-08-17T19:44:18.926Z",
+          "updated_at": "2026-08-17T19:44:18.926Z",
           "deleted_at": null
         }
       ]
     },
     {
-      "id": "prod_01KZN83FTBD5F874C66RSRDB5K",
+      "id": "prod_01M08M1QJJ3YZTBHAVRG297XRK",
       "title": "Musselinhose – Salbeigrün",
       "handle": "musselinhose-salbeigrun",
       "status": "published",
       "thumbnail": "https://bilulu.de/products/musselinhose-salbei.svg",
       "images": [
         {
-          "id": "img_01KZN83FTD4TEN0AWD4RGVQ3X7",
+          "id": "img_01M08M1QJK2RS43X3P453A0V2X",
           "url": "https://bilulu.de/products/musselinhose-salbei.svg",
           "metadata": null,
           "rank": 0,
-          "product_id": "prod_01KZN83FTBD5F874C66RSRDB5K",
-          "created_at": "2026-08-10T07:09:59.502Z",
-          "updated_at": "2026-08-10T07:09:59.502Z",
+          "product_id": "prod_01M08M1QJJ3YZTBHAVRG297XRK",
+          "created_at": "2026-08-17T19:44:19.029Z",
+          "updated_at": "2026-08-17T19:44:19.029Z",
           "deleted_at": null
         }
       ],
       "variants": [
         {
-          "id": "variant_01KZN83FTB95QFJX8HKW6NHAJ6",
+          "id": "variant_01M08M1QJJA5420Q4KJ4V56VAH",
           "title": "74-80 / 9-12 Monate",
           "sku": "HOSE-MUS-74",
           "barcode": null,
@@ -184,20 +184,20 @@
           "metadata": null,
           "variant_rank": 0,
           "thumbnail": null,
-          "product_id": "prod_01KZN83FTBD5F874C66RSRDB5K",
-          "created_at": "2026-08-10T07:09:59.502Z",
-          "updated_at": "2026-08-10T07:09:59.502Z",
+          "product_id": "prod_01M08M1QJJ3YZTBHAVRG297XRK",
+          "created_at": "2026-08-17T19:44:19.029Z",
+          "updated_at": "2026-08-17T19:44:19.029Z",
           "deleted_at": null,
           "prices": [
             {
-              "id": "price_01KZN83FVETZYDKR2WXHZ4TBV4",
+              "id": "price_01M08M1QKT9YPGK3J32Y516FEZ",
               "amount": 29,
               "currency_code": "eur",
               "min_quantity": null,
               "max_quantity": null,
-              "variant_id": "variant_01KZN83FTB95QFJX8HKW6NHAJ6",
-              "created_at": "2026-08-10T07:09:59.535Z",
-              "updated_at": "2026-08-10T07:09:59.535Z",
+              "variant_id": "variant_01M08M1QJJA5420Q4KJ4V56VAH",
+              "created_at": "2026-08-17T19:44:19.067Z",
+              "updated_at": "2026-08-17T19:44:19.067Z",
               "rules": {}
             }
           ]
@@ -205,26 +205,26 @@
       ]
     },
     {
-      "id": "prod_01KZN83FW3BHYXMJBKS9BASND0",
+      "id": "prod_01M08M1QMQCMNG7NBGW0MJDQZG",
       "title": "Wendejacke – Punkte & Streifen",
       "handle": "wendejacke-punkte-streifen",
       "status": "published",
       "thumbnail": "https://bilulu.de/products/wendejacke-punkte.svg",
       "images": [
         {
-          "id": "img_01KZN83FW41ER3E24R207Q8REN",
+          "id": "img_01M08M1QMRHY9B8R2H0BDWJT3D",
           "url": "https://bilulu.de/products/wendejacke-punkte.svg",
           "metadata": null,
           "rank": 0,
-          "product_id": "prod_01KZN83FW3BHYXMJBKS9BASND0",
-          "created_at": "2026-08-10T07:09:59.557Z",
-          "updated_at": "2026-08-10T07:09:59.557Z",
+          "product_id": "prod_01M08M1QMQCMNG7NBGW0MJDQZG",
+          "created_at": "2026-08-17T19:44:19.097Z",
+          "updated_at": "2026-08-17T19:44:19.097Z",
           "deleted_at": null
         }
       ],
       "variants": [
         {
-          "id": "variant_01KZN83FW3XXQXCXPZ5HW8PPSX",
+          "id": "variant_01M08M1QMQKV5W8PV8W74KTE42",
           "title": "86-92 / 18-24 Monate",
           "sku": "JACK-WEND-86",
           "barcode": null,
@@ -243,20 +243,20 @@
           "metadata": null,
           "variant_rank": 0,
           "thumbnail": null,
-          "product_id": "prod_01KZN83FW3BHYXMJBKS9BASND0",
-          "created_at": "2026-08-10T07:09:59.557Z",
-          "updated_at": "2026-08-10T07:09:59.557Z",
+          "product_id": "prod_01M08M1QMQCMNG7NBGW0MJDQZG",
+          "created_at": "2026-08-17T19:44:19.097Z",
+          "updated_at": "2026-08-17T19:44:19.097Z",
           "deleted_at": null,
           "prices": [
             {
-              "id": "price_01KZN83FX315VDP8ABZ3NDCQVN",
+              "id": "price_01M08M1QNS2TJCXZ7J6CZCRFRM",
               "amount": 55,
               "currency_code": "eur",
               "min_quantity": null,
               "max_quantity": null,
-              "variant_id": "variant_01KZN83FW3XXQXCXPZ5HW8PPSX",
-              "created_at": "2026-08-10T07:09:59.588Z",
-              "updated_at": "2026-08-10T07:09:59.588Z",
+              "variant_id": "variant_01M08M1QMQKV5W8PV8W74KTE42",
+              "created_at": "2026-08-17T19:44:19.130Z",
+              "updated_at": "2026-08-17T19:44:19.130Z",
               "rules": {}
             }
           ]
@@ -264,26 +264,26 @@
       ]
     },
     {
-      "id": "prod_01KZN83FY1J19YHD40SE1T5Q14",
+      "id": "prod_01M08M1QPFR0F8JCNWB239QWCS",
       "title": "Spielanzug mit Füßen – Sternchen",
       "handle": "spielanzug-mit-fuen-sternchen",
       "status": "published",
       "thumbnail": "https://bilulu.de/products/spielanzug-sternchen.svg",
       "images": [
         {
-          "id": "img_01KZN83FY2VHQF5K8ATR66K85E",
+          "id": "img_01M08M1QPFYPB0K6D59158TDEG",
           "url": "https://bilulu.de/products/spielanzug-sternchen.svg",
           "metadata": null,
           "rank": 0,
-          "product_id": "prod_01KZN83FY1J19YHD40SE1T5Q14",
-          "created_at": "2026-08-10T07:09:59.618Z",
-          "updated_at": "2026-08-10T07:09:59.618Z",
+          "product_id": "prod_01M08M1QPFR0F8JCNWB239QWCS",
+          "created_at": "2026-08-17T19:44:19.152Z",
+          "updated_at": "2026-08-17T19:44:19.152Z",
           "deleted_at": null
         }
       ],
       "variants": [
         {
-          "id": "variant_01KZN83FY13GHWF824G4XRHYEB",
+          "id": "variant_01M08M1QPFW3D7Z9EDM9BQ4FE5",
           "title": "98-104 / 3 Jahre",
           "sku": "SLEEP-STERN-98",
           "barcode": null,
@@ -302,20 +302,20 @@
           "metadata": null,
           "variant_rank": 0,
           "thumbnail": null,
-          "product_id": "prod_01KZN83FY1J19YHD40SE1T5Q14",
-          "created_at": "2026-08-10T07:09:59.618Z",
-          "updated_at": "2026-08-10T07:09:59.618Z",
+          "product_id": "prod_01M08M1QPFR0F8JCNWB239QWCS",
+          "created_at": "2026-08-17T19:44:19.152Z",
+          "updated_at": "2026-08-17T19:44:19.152Z",
           "deleted_at": null,
           "prices": [
             {
-              "id": "price_01KZN83FYMAP7QF74KSG86PM7T",
+              "id": "price_01M08M1QQCQG7TJMGPFP3TFWHS",
               "amount": 48,
               "currency_code": "eur",
               "min_quantity": null,
               "max_quantity": null,
-              "variant_id": "variant_01KZN83FY13GHWF824G4XRHYEB",
-              "created_at": "2026-08-10T07:09:59.636Z",
-              "updated_at": "2026-08-10T07:09:59.636Z",
+              "variant_id": "variant_01M08M1QPFW3D7Z9EDM9BQ4FE5",
+              "created_at": "2026-08-17T19:44:19.182Z",
+              "updated_at": "2026-08-17T19:44:19.182Z",
               "rules": {}
             }
           ]
