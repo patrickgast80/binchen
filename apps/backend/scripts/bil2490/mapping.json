@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "issue": "BIL-2490",
+    "source": "assets/bil2490/normalized (21 Dateien, sortiert -> Foto-Nummern 1..21)",
+    "board_decision": "BIL-1 Kommentar 0ca66cb0 (2026-08-17): Bilder bei den 14 bestehenden Gruppen ersetzen, #15 neu anlegen, Set-Preise ok, Bordeaux-Schleife = EIN Produkt",
+    "price_units": "Medusa v2 Major Units -- 16.9 bedeutet 16,90 EUR. NIEMALS mit 100 multiplizieren.",
+    "photo_order": "erster Eintrag wird das Titelbild (Flach-Foto), Mannequin-Fotos danach -- Lehre aus BIL-2485"
+  },
+  "groups": [
+    { "n": 1, "product_id": "prod_01KZ0VZZTJGYMY6DQTNCN7P4C3", "photos": [1], "label": "Pumphose kurz \"Dinos\" türkis/orange" },
+    { "n": 2, "product_id": "prod_01KZ0VZQ16YTDT81JT5WAFSSZ0", "photos": [13, 2], "label": "Turban-Mütze \"Aquarell-Blüten\" creme/bordeaux" },
+    { "n": 3, "product_id": "prod_01KZ0VZSG4DBE6M148W1TK681B", "photos": [3, 19], "label": "SET Dreieckstuch + Halstuch \"Schmetterlinge & Pusteblumen\" hellblau",
+      "title": "Set Dreieckstuch + Halstuch \"Schmetterlinge & Pusteblumen\" hellblau",
+      "price_eur": 24.9,
+      "description": "Zweiteiliges Set aus einem Stoff: Dreieckstuch und Halstuch aus zartem hellblauem Baumwoll-Jersey mit Schmetterlingen und Pusteblumen. Beide Teile stammen aus derselben Stoffbahn und passen darum perfekt zusammen. Handgefertigt mit Liebe – ein Unikat.\n\nGröße: ca. 0-12 Monate." },
+    { "n": 4, "product_id": "prod_01KZ0VZN6J66D6AKW54HNX0TK8", "photos": [4], "label": "Mütze \"Winter-Kinder Schneeflocken\" marineblau",
+      "title": "Mütze \"Winter-Kinder Schneeflocken\" marineblau",
+      "description": "Zauberhafte Wintermütze aus weichem Baumwoll-Jersey in Marineblau, bedruckt mit fröhlichen Kindern in Wintermützen und Schneeflocken. Ideal für kühle Herbst- und Wintertage. Handgefertigt mit Liebe.\n\nGröße: ca. 0-6 Monate." },
+    { "n": 5, "product_id": "prod_01KZ0VZTMRNYR9XPP2G8FKVM1S", "photos": [5], "label": "Pumphose kurz \"Blätter-Aquarell\" creme/lila" },
+    { "n": 6, "product_id": "prod_01KZ0VZNNRMQY35F79W7XBAN39", "photos": [6], "label": "Mütze \"Boho-Regenbogen\" mint mit Schleife" },
+    { "n": 7, "product_id": "prod_01KZ0VZMJWFC9Z00XVNDFYZ6M2", "photos": [15, 7, 16], "label": "SET \"Boho-Regenbogen\" creme: Mütze + Loop-Schal" },
+    { "n": 8, "product_id": "prod_01KZ0VZP4NSTXGTYAT43J51ZTN", "photos": [17, 8], "label": "SET Dreieckstuch + Halstuch \"Kleiner Zoo\" rosa",
+      "title": "Set Dreieckstuch + Halstuch \"Kleiner Zoo\" rosa",
+      "price_eur": 22.9,
+      "description": "Zweiteiliges Set aus einem Stoff: Dreieckstuch und Halstuch aus rosa Baumwoll-Jersey mit dem verspielten Motiv \"Kleiner Zoo\". Beide Teile stammen aus derselben Stoffbahn und passen darum perfekt zusammen. Handgefertigt mit Liebe – ein Unikat.\n\nGröße: ca. 0-12 Monate." },
+    { "n": 9, "product_id": "prod_01KZ0VZRGEBK53BWPX0T9BPS4V", "photos": [11], "label": "SET \"Marienkäfer\" blau: Turban + Dreieckstuch" },
+    { "n": 10, "product_id": "prod_01KZ0VZT9CCH4RQHQ0F52CTMXG", "photos": [12], "label": "Pumphose kurz \"Regenbogen-Schmetterlinge\" navy" },
+    { "n": 11, "product_id": "prod_01KZ0VZS1Y5TFKDJTV2KXERNJV", "photos": [10, 14], "label": "Turban-Mütze \"Bunte Wildblumen\" weiß" },
+    { "n": 12, "product_id": "prod_01KZ0VZSWB1BA91FBFGKDY6QKV", "photos": [18], "label": "Pumphose kurz \"Eukalyptus\" hellblau" },
+    { "n": 13, "product_id": "prod_01KZ0VZPGYHS67NC37E7MYME0Z", "photos": [20], "label": "Turban-Mütze \"Rosen\" weiß/lila" },
+    { "n": 14, "product_id": "prod_01KZ0VZQHSK3F3JZDC0GVARFV8", "photos": [21], "label": "Mütze \"Rosen\" navy/pink" },
+    { "n": 15, "product_id": null, "photos": [9], "label": "Mütze \"Winter-Kinder Herzen\" navy (NEU)",
+      "create": {
+        "title": "Mütze \"Winter-Kinder Herzen\" marineblau",
+        "handle": "muetze-winter-kinder-herzen-navy",
+        "price_eur": 16.9,
+        "collection_id": "pcol_01KZ0VZKS8B1FA0Y84XB3YF8SZ",
+        "sku": "BIL-2490-muetze-winter-kinder-herzen-navy",
+        "description": "Zauberhafte Wintermütze aus weichem Baumwoll-Jersey in Marineblau, bedruckt mit fröhlichen Kindern in Wintermützen und rosa Herzen. Ideal für kühle Herbst- und Wintertage. Handgefertigt mit Liebe – ein Unikat.\n\nGröße: ca. 0-6 Monate.",
+        "metadata": { "handmade": true, "material": "Baumwoll-Jersey", "source_issue": "BIL-2490" }
+      } }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "at": "2026-08-17T19:42:58.650Z",
+  "dryRun": false,
+  "countBefore": 35,
+  "countAfter": 30,
+  "results": [
+    {
+      "id": "prod_01KZN83FK70K2EWR3PX9Z0KVF8",
+      "title": "Bio-Baumwolle Strampler – Waldtiere",
+      "result": "deleted",
+      "deleted": true
+    },
+    {
+      "id": "prod_01KZN83FQPX92VFVRN95WA8A6Y",
+      "title": "Jersey Bodysuits Set – Regenbogen (2er-Pack)",
+      "result": "deleted",
+      "deleted": true
+    },
+    {
+      "id": "prod_01KZN83FTBD5F874C66RSRDB5K",
+      "title": "Musselinhose – Salbeigrün",
+      "result": "deleted",
+      "deleted": true
+    },
+    {
+      "id": "prod_01KZN83FW3BHYXMJBKS9BASND0",
+      "title": "Wendejacke – Punkte & Streifen",
+      "result": "deleted",
+      "deleted": true
+    },
+    {
+      "id": "prod_01KZN83FY1J19YHD40SE1T5Q14",
+      "title": "Spielanzug mit Füßen – Sternchen",
+      "result": "deleted",
+      "deleted": true
+    }
+  ],
+  "stillThere": []
+}
