@@ -202,30 +202,31 @@ check(
 );
 
 // ------------------------------------- 6. signed webhook actually delivered
-let events = [];
-for (let i = 0; i < 10; i++) {
-  await sleep(6000);
+// PayPal's webhooks-events API reports no per-transmission delivery status, so
+// "did our endpoint accept it" is not answerable from here — it is answerable
+// from the backend log (see the note printed at the end). What IS checkable
+// here: PayPal recorded a real capture event and it carries our custom_id, i.e.
+// the correlation key survives into the event that matters.
+// PayPal's event log lags the capture by up to a minute or two.
+let captureEvent = null;
+for (let i = 0; i < 15; i++) {
+  await sleep(8000);
   const ev = await j(`${PP}/v1/notifications/webhooks-events?page_size=20`, { headers: ppAuth });
-  events = (ev.body?.events ?? []).filter(
-    (e) => e.resource?.custom_id === sessionId || e.resource?.id === capture?.id,
+  captureEvent = (ev.body?.events ?? []).find(
+    (e) => e.event_type === "PAYMENT.CAPTURE.COMPLETED" && e.resource?.custom_id === sessionId,
   );
-  console.log(`  poll webhook events: ${events.length} for this session`);
-  if (events.some((e) => e.event_type === "PAYMENT.CAPTURE.COMPLETED")) break;
+  console.log(`  poll capture event: ${captureEvent ? captureEvent.id : "none yet"}`);
+  if (captureEvent) break;
 }
-const captureEvent = events.find((e) => e.event_type === "PAYMENT.CAPTURE.COMPLETED");
 check(
-  "PayPal delivered a signed PAYMENT.CAPTURE.COMPLETED webhook",
+  "PayPal recorded a PAYMENT.CAPTURE.COMPLETED event for this payment",
   Boolean(captureEvent),
-  captureEvent ? `event=${captureEvent.id} status=${captureEvent.status}` : "no capture event in PayPal's log",
+  captureEvent ? `event=${captureEvent.id}` : "no capture event in PayPal's log",
 );
 check(
-  "deployed handler ACCEPTED the signed webhook (signature verified in prod)",
-  captureEvent?.status === "SUCCESS",
-  `delivery status=${captureEvent?.status ?? "-"}${
-    captureEvent?.status === "SUCCESS"
-      ? " -> PAYPAL_WEBHOOK_ID in prod matches; verifyWebhookSignature passed"
-      : " -> a non-SUCCESS here means our endpoint rejected or errored"
-  }`,
+  "the event carries custom_id, so the handler can correlate it to the session",
+  captureEvent?.resource?.custom_id === sessionId,
+  `event.custom_id=${captureEvent?.resource?.custom_id ?? "-"} vs session=${sessionId}`,
 );
 
 // ------------------------------------------------------------- 7. refund path
@@ -241,19 +242,29 @@ check(
 );
 
 let refundEvent = null;
-for (let i = 0; i < 10; i++) {
-  await sleep(6000);
+for (let i = 0; i < 15; i++) {
+  await sleep(8000);
   const ev = await j(`${PP}/v1/notifications/webhooks-events?page_size=20`, { headers: ppAuth });
   refundEvent = (ev.body?.events ?? []).find(
     (e) => e.event_type === "PAYMENT.CAPTURE.REFUNDED" && e.resource?.custom_id === sessionId,
   );
-  console.log(`  poll refund event: ${refundEvent ? refundEvent.status : "none yet"}`);
+  console.log(`  poll refund event: ${refundEvent ? refundEvent.id : "none yet"}`);
   if (refundEvent) break;
 }
 check(
-  "refund webhook delivered and accepted by the deployed handler",
-  refundEvent?.status === "SUCCESS",
-  refundEvent ? `event=${refundEvent.id} status=${refundEvent.status}` : "no refund event yet (PayPal can lag)",
+  "PayPal recorded a PAYMENT.CAPTURE.REFUNDED event for this payment",
+  Boolean(refundEvent),
+  refundEvent ? `event=${refundEvent.id}` : "no refund event yet (PayPal's log can lag a few minutes)",
+);
+
+console.log(
+  [
+    "",
+    "Delivery acceptance is not in PayPal's API — confirm it on the backend:",
+    "  ssh deploy@188.245.40.74 \"docker logs --since 20m \\$(docker ps --format '{{.Names}}' | grep ^k3apwpfen4qlb1hc1jdnli6f) 2>&1 | grep 'hooks/payment'\"",
+    "  expect: POST /hooks/payment/paypal status=200 user_agent=PayPal/...",
+    "  and NO '[payment-paypal] dropped unverified webhook' / 'no session id' lines.",
+  ].join("\n"),
 );
 
 writeReport();
