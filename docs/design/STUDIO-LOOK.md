@@ -16,14 +16,15 @@ handgenähten Sachen zeigen, aber ohne den optischen Lärm einer Wohnzimmer-Kuli
 - **EXIF-Orientierung:** in Pixel gebacken (Sharp `.rotate()` vor der weiteren Bearbeitung).
 
 ## Hintergrund
-- **Studio-Grau:** RGB **`200 / 200 / 198`** (Hex `#C8C8C6`). Neutral, minimal wärmer als True-Grey — passt zu Creme-, Salbei- und Terracotta-Akzenten der Marke, ohne selbst ins Auge zu springen.
-- **Reinheit:** Die vier Ecken jedes finalen Bildes müssen innerhalb ±3 pro Kanal um diesen Zielwert liegen. Kein Farbstich, kein sichtbares Rechteck vom Ursprungs-Backdrop.
-- **Verboten:** dunkler Vinyl-Boden, Holzmaserung, Teppich, Bettdecke, Sofa, Wand mit Steckdose, Tisch mit Kante.
+- **Foto-eigene Backdrop-Farbe:** Seit Board-Direktive 2026-08-17 füllt die Canvas mit der tatsächlich am Rand des jeweiligen Fotos gemessenen Farbe (`pickCanvasBg` in `bil2462-studio-normalize.mjs`), nicht mehr mit einem für alle Bilder festen Grau. Jedes Foto behält so seinen eigenen, echten Studio-Hintergrund statt eines aufgezwungenen Einheitstons.
+- **Fallback:** RGB **`200 / 200 / 198`** (Hex `#C8C8C6`) nur, wenn die gemessene Randfarbe nicht plausibel nach Studio-Hintergrund aussieht (zu dunkel/gesättigt — z. B. Kleidungsstück füllt den ganzen Rand, oder ein nicht-neutraler Tisch/Boden).
+- **Verboten:** dunkler Vinyl-Boden, Holzmaserung, Teppich, Bettdecke, Sofa, Wand mit Steckdose, Tisch mit Kante — diese Fotos sollten neu geschossen werden statt sich auf den Fallback zu verlassen.
 
 ## Ränder & Komposition
-- **Innenrand:** **12 %** freier Canvas rundum (`PAD_RATIO` in `bil2462-studio-normalize.mjs`; Verlauf: 6 % bis 2026-08-16 war auf Karten-Größe im Katalog praktisch unsichtbar → 20 % testweise → 12 % als Ziel seit BIL-2483, siehe hub-mat `p-[12%]`-Angleich). Kein Kleidungsstück berührt die Bildkante.
+- **Innenrand:** **5 %** freier Canvas rundum (`PAD_RATIO` in `bil2462-studio-normalize.mjs`; Verlauf: 6 % war auf Karten-Größe praktisch unsichtbar → 20 % testweise → 12 % ab BIL-2483 → 5 % seit Board-Direktive 2026-08-17 "Grösse des Produkts maximieren", möglich weil der Rand jetzt die foto-eigene Backdrop-Farbe trägt statt eines fest-grauen Rechtecks). Kein Kleidungsstück berührt die Bildkante.
 - **Zentrierung:** Schwerpunkt des Produktes sitzt im **optischen Zentrum** (leicht oberhalb der geometrischen Mitte, ca. 48 % vom oberen Rand).
 - **Ausrichtung:** senkrechte Kanten (Bündchen, Nahtlinien) sind visuell senkrecht — max. ±2° Kippen. Kein diagonales Präsentieren.
+- **Produkt-Orientierung:** Mützen liegen mit der Öffnung (Bündchen/Saum) nach unten, Pumphosen mit dem Bund oben und den Beinabschlüssen nach unten — einheitlich über die ganze Serie (Board-Direktive 2026-08-17). Bei neuen Fotos direkt so ablegen; bei Nachbearbeitung per `--rotate` in `bil2462-studio-normalize.mjs`.
 - **Falten:** flach ausgelegt, Bündchen glatt gezogen, keine Handmulden im Stoff. Wenn ein Kleidungsstück Volumen braucht (z. B. Turban), mit unsichtbarem Papier ausstopfen — nicht knautschen.
 
 ## Licht
@@ -52,9 +53,10 @@ Kacheln die Kamera bewegen — das Motiv wandert, die Kamera bleibt fix.
 1. Sabine schießt in ihrem Home-Setup (siehe [FOTO-GUIDELINE-SABINE.md](./FOTO-GUIDELINE-SABINE.md)) und lädt die Rohbilder in einen Ordner hoch.
 2. Design-Agent führt `apps/storefront/scripts/bil2462-studio-normalize.mjs` aus:
    - EXIF-Orientation gebacken
+   - Optional `--rotate 90|180|270`, wenn die Ausrichtung (Mützen-Öffnung/Pumphosen-Beine nach unten) korrigiert werden muss
    - Creme-Rahmen automatisch erkannt und weggeschnitten
    - Trim auf den Kleidungs-Bounding-Box
-   - Hintergrund-Farbangleich (Median-Farbe der Randzone → Ziel-Grau `200/200/198`)
+   - Hintergrund-Farbangleich (Median-Farbe der Randzone des jeweiligen Fotos → eigene Canvas-Füllfarbe; Fallback-Grau `200/200/198` nur bei unplausiblem Rand)
    - Sanfte Rand-Blende (2 % Feather), damit kein Rechteck-Seam sichtbar bleibt
    - Zentriert auf 1200 × 1200 Canvas
 3. Ergebnis wird über Medusa-Admin (`POST /admin/uploads` → `PATCH product.thumbnail`) hochgeladen.
@@ -75,6 +77,7 @@ Ein Bild muss **neu aufgenommen** werden, wenn eines dieser Merkmale zutrifft:
 - Innensaum / Overlock-Naht sichtbar (Kleidungsstück lag falsch herum)
 - Weißabgleich sichtbar warm/kalt gegenüber der Serie
 - Motiv-Auflösung unter 900 × 900 nach Zuschnitt
+- Öffnung/Bund nicht eindeutig erkennbar (z. B. Pumphose so gefaltet, dass weder Bund noch Beinabschlüsse sichtbar sind) — die Ausrichtung lässt sich dann nicht sicher korrigieren
 
 ## Änderungen dieses Standards
 Bevor dieser Standard geändert wird: Rücksprache mit CEO + Board. Der Standard

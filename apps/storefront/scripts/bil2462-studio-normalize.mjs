@@ -27,17 +27,20 @@ import sharp from "sharp";
 
 const FRAME_TARGET = { r: 238, g: 233, b: 217 };
 const FRAME_TOLERANCE = 22;
-const CANVAS_BG = { r: 200, g: 200, b: 198 };
+// Fallback only — used when a photo's own backdrop can't be read as a plausible
+// studio colour (see pickCanvasBg). Board directive 2026-08-17: the canvas
+// should match EACH PHOTO's own backdrop colour, not a single fixed grey for
+// every product. This is now a safety net, not the target.
+const CANVAS_BG_FALLBACK = { r: 200, g: 200, b: 198 };
 const CANVAS_SIZE = 1200;
-// 0.06 kept the grey mat too thin to read at catalog-card scale (invisible on
-// most cards). 0.20 fixed that but over-corrected — board feedback 2026-08-17
-// (Telegram/Patrick) was that products now sit too small with too much empty
-// canvas around them ("sollen die Groesse des Fensters einnehmen"). 0.12 is
-// the compromise: still clearly wider than the old invisible 6% sliver, but
-// the product fills most of the frame again. Verified idempotent against
-// already-padded live thumbnails (padCrop strips prior padding before
-// re-measuring).
-const PAD_RATIO = 0.12;
+// History: 0.06 kept the mat too thin to read at catalog-card scale against a
+// FIXED grey canvas. 0.20 over-corrected (too much empty space). 0.12 was the
+// compromise while every canvas was the same flat grey. Board feedback
+// 2026-08-17 asked explicitly to maximize product size in frame — and now
+// that the canvas colour matches each photo's own backdrop (see
+// pickCanvasBg), a thin mat no longer reads as an ugly grey slab, so it's
+// safe to go tighter again.
+const PAD_RATIO = 0.05;
 const CHAIN_DELTA = 24; // per-channel tolerance vs. the neighbour that queued this pixel
 const SEED_DELTA = 26; // per-channel tolerance vs. the sampled border colour (first ring only)
 const MIN_COMPONENT_RATIO = 0.004; // keep any foreground island >= 0.4% of canvas (multi-part flatlays)
@@ -89,7 +92,19 @@ async function findContentCrop(pngBuf, target, tolerance) {
 }
 
 const findFrameCrop = (pngBuf) => findContentCrop(pngBuf, FRAME_TARGET, FRAME_TOLERANCE);
-const findPaddingCrop = (pngBuf) => findContentCrop(pngBuf, CANVAS_BG, 4);
+// A prior run's canvas fill is now sampled PER PHOTO (see pickCanvasBg), not
+// one fixed global colour, so this can no longer target a constant. Instead
+// sample the buffer's own corner pixel: the final composite always centres
+// the garment on a solid `canvasBg` create-canvas, so pixel (0,0) of an
+// already-normalized image IS exactly that run's padding colour. Tight
+// tolerance keeps this a no-op on raw, never-normalized photos (real
+// backdrops have photographic noise/gradient that rarely holds a whole
+// row/col within ±4 of one corner pixel).
+async function findPaddingCrop(pngBuf) {
+  const { data } = await sharp(pngBuf).raw().toBuffer({ resolveWithObject: true });
+  const target = { r: data[0], g: data[1], b: data[2] };
+  return findContentCrop(pngBuf, target, 4);
+}
 
 /**
  * Chained flood fill from the border: a pixel joins the background if it is
@@ -121,11 +136,14 @@ function segmentBackground(data, w, h, channels) {
   // (e.g. a dark navy-print Mütze filling the frame): averaging that ring
   // yields a "seed" that IS the garment colour, and a naive flood fill from
   // it then repaints the real fabric as background — deleting product detail.
-  // Refuse the segmentation outright rather than risk that.
+  // Refuse the segmentation outright rather than risk that. `seed` is still
+  // returned even on refusal — normalizeOne/pickCanvasBg re-runs the same
+  // plausibility check to decide the CANVAS fill colour, which is a much
+  // lower-stakes use than flood-filling pixels.
   const chroma = Math.max(seed.r, seed.g, seed.b) - Math.min(seed.r, seed.g, seed.b);
   const brightness = (seed.r + seed.g + seed.b) / 3;
   if (chroma > 26 || brightness < 150) {
-    return { isBg: null, reason: `implausible backdrop seed rgb(${seed.r.toFixed(0)},${seed.g.toFixed(0)},${seed.b.toFixed(0)})` };
+    return { isBg: null, seed, reason: `implausible backdrop seed rgb(${seed.r.toFixed(0)},${seed.g.toFixed(0)},${seed.b.toFixed(0)})` };
   }
 
   const isBg = new Uint8Array(N);
@@ -159,7 +177,7 @@ function segmentBackground(data, w, h, channels) {
   // that is only half backdrop (garment silhouette touching several edges)
   // means the seed is unreliable even though it happened to look plausible.
   if (ringMatch / ringN < 0.7) {
-    return { isBg: null, reason: `border ring only ${Math.round((ringMatch / ringN) * 100)}% uniform` };
+    return { isBg: null, seed, reason: `border ring only ${Math.round((ringMatch / ringN) * 100)}% uniform` };
   }
 
   while (qh < qt) {
@@ -171,7 +189,25 @@ function segmentBackground(data, w, h, channels) {
     if (y > 0) tryPush(p - w, ref);
     if (y < h - 1) tryPush(p + w, ref);
   }
-  return { isBg, reason: null };
+  return { isBg, seed, reason: null };
+}
+
+/**
+ * Decide the canvas fill colour from a photo's own sampled backdrop (`seed`,
+ * the average border-ring colour computed in segmentBackground). Board
+ * directive 2026-08-17: the mat should match each photo's own background
+ * instead of forcing one fixed grey everywhere. Falls back to the brand
+ * default grey when the sampled colour doesn't plausibly look like a studio
+ * backdrop (garment fills the frame, dark/saturated ring) — same plausibility
+ * bar as the flood-fill safety gate, since an unsafe-to-flood-fill seed is
+ * equally unsafe to paint the whole canvas with.
+ */
+function pickCanvasBg(seed) {
+  if (!seed) return CANVAS_BG_FALLBACK;
+  const chroma = Math.max(seed.r, seed.g, seed.b) - Math.min(seed.r, seed.g, seed.b);
+  const brightness = (seed.r + seed.g + seed.b) / 3;
+  if (chroma > 26 || brightness < 150) return CANVAS_BG_FALLBACK;
+  return { r: Math.round(seed.r), g: Math.round(seed.g), b: Math.round(seed.b) };
 }
 
 /** Drop foreground islands smaller than minSize (JPEG speckle at the studio edge). */
@@ -228,9 +264,15 @@ function featherEdges(isBg, w, h) {
   return tmp; // 0..255 foreground weight
 }
 
-async function normalizeOne(inFile, outFile) {
+async function normalizeOne(inFile, outFile, rotateDeg = 0) {
   // 1) bake EXIF orientation
   let pngBuf = await sharp(inFile).rotate().png().toBuffer();
+
+  // 1b) canonical product orientation (board 2026-08-17: Mützen-Öffnung immer
+  // unten, Hosenbeine immer unten) — a fixed 90/180/270 correction decided per
+  // product by the caller (--rotate), since "which way is up" needs a human/
+  // visual read of the actual garment, not something derivable from pixels.
+  if (rotateDeg) pngBuf = await sharp(pngBuf).rotate(rotateDeg).png().toBuffer();
 
   // 2) crop decorative cream frame if present (older photo batches)
   const crop = await findFrameCrop(pngBuf);
@@ -256,13 +298,15 @@ async function normalizeOne(inFile, outFile) {
   const legacyMeta = await sharp(legacyTrimmed).metadata();
   const legacyArea = legacyMeta.width * legacyMeta.height;
 
-  // 4) segment background vs. garment, repaint background as studio grey —
-  // but only if it passes the plausibility gates in segmentBackground() AND
-  // doesn't shrink the garment far below what the legacy trim already found
-  // (a sign the flood fill ate into real fabric rather than backdrop).
+  // 4) segment background vs. garment, repaint background with THIS PHOTO's
+  // own backdrop colour — but only if it passes the plausibility gates in
+  // segmentBackground() AND doesn't shrink the garment far below what the
+  // legacy trim already found (a sign the flood fill ate into real fabric
+  // rather than backdrop).
   const { data, info } = await sharp(pngBuf).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h, channels } = info;
   const seg = segmentBackground(data, w, h, channels);
+  const canvasBg = pickCanvasBg(seg.seed);
 
   let mode, outBuf, note;
   if (seg.isBg) {
@@ -301,9 +345,9 @@ async function normalizeOne(inFile, outFile) {
       for (let p = 0; p < w * h; p++) {
         const i = p * channels, o = p * 3;
         const fw = featherW[p] / 255; // 1 = fully garment, 0 = fully background
-        painted[o] = Math.round(data[i] * fw + CANVAS_BG.r * (1 - fw));
-        painted[o + 1] = Math.round(data[i + 1] * fw + CANVAS_BG.g * (1 - fw));
-        painted[o + 2] = Math.round(data[i + 2] * fw + CANVAS_BG.b * (1 - fw));
+        painted[o] = Math.round(data[i] * fw + canvasBg.r * (1 - fw));
+        painted[o + 1] = Math.round(data[i + 1] * fw + canvasBg.g * (1 - fw));
+        painted[o + 2] = Math.round(data[i + 2] * fw + canvasBg.b * (1 - fw));
       }
       const long = Math.max(cropR - cropL + 1, cropB - cropT + 1);
       const pad = Math.round(long * PAD_RATIO);
@@ -343,12 +387,17 @@ async function normalizeOne(inFile, outFile) {
   const resized = await sharp(outBuf).resize({ width: targetW, height: targetH, fit: "inside" }).toBuffer();
 
   await sharp({
-    create: { width: CANVAS_SIZE, height: CANVAS_SIZE, channels: 3, background: CANVAS_BG },
+    create: { width: CANVAS_SIZE, height: CANVAS_SIZE, channels: 3, background: canvasBg },
   }).composite([{ input: resized, gravity: "center" }])
     .jpeg({ quality: 88, chromaSubsampling: "4:4:4" })
     .toFile(outFile);
 
-  console.log(`normalized: ${path.basename(inFile)} -> ${path.basename(outFile)} [${mode}] ${note}`);
+  console.log(`normalized: ${path.basename(inFile)} -> ${path.basename(outFile)} [${mode}] bg rgb(${canvasBg.r},${canvasBg.g},${canvasBg.b}) ${note}`);
+}
+
+const rotateDeg = args.rotate ? Number(args.rotate) : 0;
+if (rotateDeg && ![90, 180, 270, -90, -180, -270].includes(rotateDeg)) {
+  console.error("--rotate must be 90, 180 or 270 (optionally negative)"); process.exit(1);
 }
 
 const inStat = fs.statSync(args.in);
@@ -356,10 +405,10 @@ if (inStat.isDirectory()) {
   fs.mkdirSync(args.out, { recursive: true });
   const files = fs.readdirSync(args.in).filter((f) => /\.(jpe?g|png)$/i.test(f));
   for (const f of files) {
-    try { await normalizeOne(path.join(args.in, f), path.join(args.out, f.replace(/\.png$/i, ".jpg"))); }
+    try { await normalizeOne(path.join(args.in, f), path.join(args.out, f.replace(/\.png$/i, ".jpg")), rotateDeg); }
     catch (e) { console.error(`FAIL ${f}: ${e.stack || e.message}`); }
   }
 } else {
   fs.mkdirSync(path.dirname(args.out), { recursive: true });
-  await normalizeOne(args.in, args.out);
+  await normalizeOne(args.in, args.out, rotateDeg);
 }
