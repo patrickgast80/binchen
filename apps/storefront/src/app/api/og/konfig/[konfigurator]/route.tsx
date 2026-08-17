@@ -4,9 +4,12 @@ import type { NextRequest } from "next/server";
 import {
   KONFIG_REGISTRY,
   isKonfiguratorId,
+  selectionFromSearch,
   swatchHexOrDefault,
   swatchNameOrDefault,
 } from "@/app/konfigurator/_shared/registry";
+
+import { composeKonfigPhoto } from "./compose";
 
 // Coolify serves Node runtimes reliably; edge is unnecessary for a route we
 // hit only when a social preview is generated.
@@ -32,9 +35,16 @@ export async function GET(
     name: swatchNameOrDefault(search.get(r.param), r.defaultColor),
   }));
 
-  // Absolute URL so satori can fetch the base photo without an origin guess.
+  // Absolute origin so the compositor can pull the assets without guessing.
   const origin = request.nextUrl.origin;
-  const basePhotoAbs = `${origin}${konfig.basePhoto}`;
+  const selection = selectionFromSearch(konfig, search);
+  const colors: Record<string, string> = {};
+  for (const r of konfig.regions) {
+    colors[r.param] = swatchHexOrDefault(selection[r.param], r.defaultColor);
+  }
+  // satori cannot decode WebP and has no mix-blend-mode, so the garment is
+  // composited with sharp and embedded as a PNG data URI. See ./compose.ts.
+  const photo = await composeKonfigPhoto(origin, konfig, colors);
 
   return new ImageResponse(
     (
@@ -61,14 +71,16 @@ export async function GET(
             borderRight: "1px solid #E5DDD4",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={basePhotoAbs}
-            alt=""
-            width={480}
-            height={Math.round((konfig.height / konfig.width) * 480)}
-            style={{ objectFit: "contain" }}
-          />
+          {photo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={photo.dataUri}
+              alt=""
+              width={photo.width}
+              height={photo.height}
+              style={{ objectFit: "contain" }}
+            />
+          ) : null}
         </div>
 
         {/* Right: brand + color legend */}

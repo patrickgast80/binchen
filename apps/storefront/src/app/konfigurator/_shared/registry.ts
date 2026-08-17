@@ -26,6 +26,12 @@ export interface KonfigRegistryEntry {
   basePhoto: string;
   width: number;
   height: number;
+  /**
+   * Optional screen-blend sheen layer (only built for konfigurators whose base
+   * photo lost its lit side to the multiply stack). Consumed by the OG
+   * compositor; the client photo components reference it directly.
+   */
+  sheenPhoto?: string;
   /** Ordered list of tintable regions, matching the *-photo.tsx overlay order. */
   regions: readonly KonfigMaskEntry[];
 }
@@ -35,8 +41,9 @@ const HOSE: KonfigRegistryEntry = {
   path: "/konfigurator/hose",
   productLabel: "Hose",
   basePhoto: "/konfigurator/hose-foto/base.webp",
+  sheenPhoto: "/konfigurator/hose-foto/highlight.webp",
   width: 900,
-  height: 1003,
+  height: 1006,
   regions: [
     {
       param: "bund",
@@ -87,6 +94,7 @@ const MUETZE: KonfigRegistryEntry = {
   path: "/konfigurator/muetze",
   productLabel: "Mütze",
   basePhoto: "/konfigurator/muetze-foto/base.webp",
+  sheenPhoto: "/konfigurator/muetze-foto/highlight.webp",
   width: 900,
   height: 880,
   regions: [
