@@ -1,0 +1,141 @@
+{
+  "base": "https://bilulu.de",
+  "fabric": "stoff-09",
+  "deploy": {
+    "want": {
+      "stoff-03": "d2be7c5fd5e7",
+      "stoff-08": "1ac2f57e9070",
+      "stoff-09": "7f08c4854dcc",
+      "stoff-10": "4be313dc3aa1",
+      "stoff-11": "92b53bc8aa20",
+      "stoff-16": "f66a640c5082",
+      "stoff-18": "14215dc11546",
+      "stoff-20": "9332109b3050",
+      "stoff-22": "07cdca009dd8",
+      "stoff-23": "2e3736a4f758",
+      "stoff-25": "a45a3514f3d9",
+      "stoff-31": "0a7fe8454f97"
+    },
+    "live": {
+      "stoff-03": "d2be7c5fd5e7",
+      "stoff-08": "1ac2f57e9070",
+      "stoff-09": "7f08c4854dcc",
+      "stoff-10": "4be313dc3aa1",
+      "stoff-11": "92b53bc8aa20",
+      "stoff-16": "f66a640c5082",
+      "stoff-18": "14215dc11546",
+      "stoff-20": "9332109b3050",
+      "stoff-22": "07cdca009dd8",
+      "stoff-23": "2e3736a4f758",
+      "stoff-25": "a45a3514f3d9",
+      "stoff-31": "0a7fe8454f97"
+    },
+    "attempts": 1
+  },
+  "shots": [
+    {
+      "url": "https://bilulu.de/konfigurator/hose?hose=stoff-09&rot=0",
+      "shot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\mobile-rot0.webp",
+      "zoom": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\mobile-rot0-zoom.webp",
+      "sheetTop": 582,
+      "box": {
+        "x": 41,
+        "y": 130.25,
+        "width": 308,
+        "height": 344.265625
+      },
+      "errors": []
+    },
+    {
+      "url": "https://bilulu.de/konfigurator/hose?hose=stoff-09&rot=0",
+      "shot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\desktop-rot0.webp",
+      "zoom": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\desktop-rot0-zoom.webp",
+      "sheetTop": 900,
+      "box": {
+        "x": 164.1875,
+        "y": 137,
+        "width": 448,
+        "height": 500.75
+      },
+      "errors": []
+    },
+    {
+      "url": "https://bilulu.de/konfigurator/hose?hose=stoff-09&rot=90",
+      "shot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\mobile-rot90.webp",
+      "zoom": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\mobile-rot90-zoom.webp",
+      "sheetTop": 582,
+      "box": {
+        "x": 41,
+        "y": 130.25,
+        "width": 308,
+        "height": 344.265625
+      },
+      "errors": []
+    },
+    {
+      "url": "https://bilulu.de/konfigurator/hose?hose=stoff-09&rot=90",
+      "shot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\desktop-rot90.webp",
+      "zoom": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\desktop-rot90-zoom.webp",
+      "sheetTop": 900,
+      "box": {
+        "x": 164.1875,
+        "y": 137,
+        "width": 448,
+        "height": 500.75
+      },
+      "errors": []
+    },
+    {
+      "url": "https://bilulu.de/konfigurator/hose?hose=stoff-09&rot=180",
+      "shot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\mobile-rot180.webp",
+      "zoom": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\mobile-rot180-zoom.webp",
+      "sheetTop": 582,
+      "box": {
+        "x": 41,
+        "y": 130.25,
+        "width": 308,
+        "height": 344.265625
+      },
+      "errors": []
+    },
+    {
+      "url": "https://bilulu.de/konfigurator/hose?hose=stoff-09&rot=180",
+      "shot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\desktop-rot180.webp",
+      "zoom": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\desktop-rot180-zoom.webp",
+      "sheetTop": 900,
+      "box": {
+        "x": 164.1875,
+        "y": 137,
+        "width": 448,
+        "height": 500.75
+      },
+      "errors": []
+    },
+    {
+      "url": "https://bilulu.de/konfigurator/hose?hose=stoff-09&rot=270",
+      "shot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\mobile-rot270.webp",
+      "zoom": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\mobile-rot270-zoom.webp",
+      "sheetTop": 582,
+      "box": {
+        "x": 41,
+        "y": 130.25,
+        "width": 308,
+        "height": 344.265625
+      },
+      "errors": []
+    },
+    {
+      "url": "https://bilulu.de/konfigurator/hose?hose=stoff-09&rot=270",
+      "shot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\desktop-rot270.webp",
+      "zoom": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2508\\live\\desktop-rot270-zoom.webp",
+      "sheetTop": 900,
+      "box": {
+        "x": 164.1875,
+        "y": 137,
+        "width": 448,
+        "height": 500.75
+      },
+      "errors": []
+    }
+  ]
+}
