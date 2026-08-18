@@ -1,0 +1,11 @@
+{
+  "base": "https://bilulu.de",
+  "entryCount": 1,
+  "stats": {
+    "w": 240,
+    "h": 200,
+    "opaque": 48000,
+    "distinctColours": 1957
+  },
+  "consoleErrors": []
+}

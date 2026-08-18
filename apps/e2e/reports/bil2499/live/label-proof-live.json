@@ -1,0 +1,30 @@
+{
+  "base": "https://bilulu.de",
+  "route": "/api/og/konfig/hose-kurz",
+  "combinations": [
+    "default",
+    "cream",
+    "navy",
+    "stoff-14",
+    "stoff-01-rot90"
+  ],
+  "window": {
+    "left": 310,
+    "top": 92,
+    "width": 92,
+    "height": 92
+  },
+  "invariantComponents": 3,
+  "borderFreeComponents": 2,
+  "tagPixels": 1026,
+  "tagBbox": {
+    "x": 23,
+    "y": 34,
+    "w": 36,
+    "h": 37
+  },
+  "bboxFillRatio": 0.7703,
+  "interiorPixels": 600,
+  "interiorHoles": 0,
+  "maxDeviationInWindow": 151
+}
