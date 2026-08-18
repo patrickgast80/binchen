@@ -1,0 +1,221 @@
+{
+  "at": "2026-08-18T07:53:17.690Z",
+  "checks": [
+    {
+      "name": "store listing has 16 published (15 relaunch + Pumphose konfigurator)",
+      "ok": true,
+      "detail": "got 16"
+    },
+    {
+      "name": "admin has 17 (the 16 above + draft Body konfigurator)",
+      "ok": true,
+      "detail": "got 17"
+    },
+    {
+      "name": "Body konfigurator still exists in admin as draft (BIL-2496 hid it, delete did not remove it)",
+      "ok": true,
+      "detail": "status=draft"
+    },
+    {
+      "name": "all 13 legacy handles absent from store listing",
+      "ok": true,
+      "detail": "none leak"
+    },
+    {
+      "name": "all 13 legacy handles absent from admin listing",
+      "ok": true,
+      "detail": "none remain"
+    },
+    {
+      "name": "konfigurator regex /pumphose.*konfigurator/i resolves to exactly 1 product (store)",
+      "ok": true,
+      "detail": "Bilulu-Pumphose (Konfigurator)"
+    },
+    {
+      "name": "konfigurator regex /\\bbody\\b/i resolves to exactly 1 product (admin)",
+      "ok": true,
+      "detail": "Bilulu-Body (Konfigurator)"
+    },
+    {
+      "name": "PDP Bilulu-Pumphose (Konfigurator)",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Set Mütze + Loop-Schal \"Boho-Regenbogen\" creme",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Mütze \"Winter-Kinder Schneeflocken\" marineblau",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Mütze \"Boho-Regenbogen\" mint mit Schleife",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Set Dreieckstuch + Halstuch \"Kleiner Zoo\" rosa",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Turban-Mütze \"Rosen\" lila mit Schleife",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Turban-Mütze \"Aquarell-Blüten\" bordeaux",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Baby-Mütze \"Rosen\" navy mit pinker Schleife",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Set Mütze + Halstuch \"Marienkäfer\" blau-rot",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Turban-Mütze \"Bunte Wildblumen\"",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Set Dreieckstuch + Halstuch \"Schmetterlinge & Pu",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Pumphose \"Eukalyptus\" creme",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Pumphose \"Regenbogen-Schmetterlinge\" navy",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Pumphose \"Blätter-Aquarell\" creme",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Pumphose \"Dinos\" türkis mit orangen Bündchen",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "PDP Mütze \"Winter-Kinder Herzen\" marineblau",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "deleted PDP turban-pastell-aquarell",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-rosen-rosa",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-wildblumen-weiss",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-wale-marine",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-vintage-rosen",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-anker-sterne",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-pferde-blumen",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-regenbogen-wolken",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-dinos-rosa-braun",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-fuechse-waldgeist",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-dinos-rosa-tuerkis",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "deleted PDP pumphose-erdbeeren",
+      "ok": true,
+      "detail": "HTTP 404"
+    },
+    {
+      "name": "page /",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "page /catalog",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "page /fruehchen",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "page /konfigurator/hose",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "page /konfigurator/turban",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "page /konfigurator/muetze",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "page /konfigurator/dreieckstuch",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "page /konfigurator/body is the known BIL-2496 404 (Body draft)",
+      "ok": true,
+      "detail": "HTTP 404"
+    }
+  ],
+  "pass": true
+}

@@ -679,65 +679,6 @@
     ]
   },
   {
-    "id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR",
-    "title": "Pumphose \"Wale\" altrosa",
-    "handle": "pumphose-wale-altrosa",
-    "status": "published",
-    "thumbnail": "https://api.bilulu.de/static/1786983868672-prod_01KZ0VZYX96XZEMFFB19AQTCFR.jpg",
-    "images": [
-      {
-        "id": "img_01KZ67GKWK0WXSZ5EJYZDRHCRJ",
-        "url": "https://api.bilulu.de/static/1785841864522-photo-39.jpg",
-        "metadata": null,
-        "rank": 0,
-        "product_id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR",
-        "created_at": "2026-08-04T11:11:04.596Z",
-        "updated_at": "2026-08-04T11:11:04.596Z",
-        "deleted_at": null
-      }
-    ],
-    "variants": [
-      {
-        "id": "variant_01KZ0VZYZDH4CSB0BGHDDXK7QM",
-        "title": "Standard",
-        "sku": "BIL-2432-pumphose-wale-altrosa",
-        "barcode": null,
-        "ean": null,
-        "upc": null,
-        "allow_backorder": false,
-        "manage_inventory": true,
-        "hs_code": null,
-        "origin_country": null,
-        "mid_code": null,
-        "material": null,
-        "weight": null,
-        "length": null,
-        "height": null,
-        "width": null,
-        "metadata": null,
-        "variant_rank": 0,
-        "thumbnail": null,
-        "product_id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR",
-        "created_at": "2026-08-02T09:13:32.398Z",
-        "updated_at": "2026-08-02T09:13:32.398Z",
-        "deleted_at": null,
-        "prices": [
-          {
-            "id": "price_01KZ0VZZ1JGENYW3ZFPRNFVT70",
-            "amount": 26.9,
-            "currency_code": "eur",
-            "min_quantity": null,
-            "max_quantity": null,
-            "variant_id": "variant_01KZ0VZYZDH4CSB0BGHDDXK7QM",
-            "created_at": "2026-08-02T09:13:32.467Z",
-            "updated_at": "2026-08-02T10:07:51.190Z",
-            "rules": {}
-          }
-        ]
-      }
-    ]
-  },
-  {
     "id": "prod_01KZ0VZZC7V6PMQH9R54KNM10R",
     "title": "Pumphose \"Erdbeeren\" beere-türkis",
     "handle": "pumphose-erdbeeren",

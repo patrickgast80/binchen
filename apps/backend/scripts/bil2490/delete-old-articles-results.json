@@ -1,6 +1,6 @@
 {
-  "dry_run": true,
-  "at": "2026-08-18T07:00:58.259Z",
+  "dry_run": false,
+  "at": "2026-08-18T07:51:35.493Z",
   "plan": [
     {
       "handle": "turban-pastell-aquarell",
@@ -71,8 +71,8 @@
     {
       "handle": "pumphose-wale-altrosa",
       "title": "Pumphose \"Wale\" altrosa",
-      "action": "delete",
-      "id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR"
+      "action": "already_deleted",
+      "id": null
     },
     {
       "handle": "pumphose-erdbeeren",
