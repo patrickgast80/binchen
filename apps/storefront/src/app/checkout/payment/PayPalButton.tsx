@@ -33,7 +33,11 @@ export default function PayPalButton({ clientId, orderId, cartId }: PayPalButton
           });
           if (!res.ok) {
             const { error } = (await res.json().catch(() => ({}))) as { error?: string };
-            router.push(`/checkout/payment?error=${encodeURIComponent(error ?? "payment_failed")}`);
+            // BIL-2502 — `via=paypal` tells the page the buyer already approved,
+            // so it must not claim that nothing was charged.
+            router.push(
+              `/checkout/payment?error=${encodeURIComponent(error ?? "payment_failed")}&via=paypal`,
+            );
             return;
           }
           const { orderId: completedOrderId } = (await res.json()) as { orderId: string };

@@ -1,0 +1,34 @@
+{
+  "fault": "shipping",
+  "at": "2026-08-18T08:41:12.530Z",
+  "results": [
+    {
+      "viewport": "mobile",
+      "cartId": "cart_01M0A0G1R1TV2NWERPXGM8E77R",
+      "product": "Bilulu-Pumphose (Konfigurator)",
+      "optionId": "so_01KXV8T7TQDH4K92XKNJJGVCNT",
+      "urlBefore": "http://localhost:3477/checkout/payment",
+      "urlAfter": "http://localhost:3477/checkout/payment?error=shipping_unavailable",
+      "redirected": true,
+      "alertsBeforeSubmit": 0,
+      "alertText": "Für diese Bestellung fehlt gerade eine Versandart\n\nBitte geh einen Schritt zurück und wähle den Versand noch einmal aus. Bleibt es dabei, schreib uns bitte an info@bilulu.de — wir nehmen deine Bestellung dann direkt auf. Es wurde nichts abgebucht.\n\nWarenkorb prüfen",
+      "leaksRawCode": false,
+      "leaksMedusaMessage": false,
+      "consoleErrors": []
+    },
+    {
+      "viewport": "desktop",
+      "cartId": "cart_01M0A0G4W5CM0DAE5DM6G652GG",
+      "product": "Bilulu-Pumphose (Konfigurator)",
+      "optionId": "so_01KXV8T7TQDH4K92XKNJJGVCNT",
+      "urlBefore": "http://localhost:3477/checkout/payment",
+      "urlAfter": "http://localhost:3477/checkout/payment?error=shipping_unavailable",
+      "redirected": true,
+      "alertsBeforeSubmit": 0,
+      "alertText": "Für diese Bestellung fehlt gerade eine Versandart\n\nBitte geh einen Schritt zurück und wähle den Versand noch einmal aus. Bleibt es dabei, schreib uns bitte an info@bilulu.de — wir nehmen deine Bestellung dann direkt auf. Es wurde nichts abgebucht.\n\nWarenkorb prüfen",
+      "leaksRawCode": false,
+      "leaksMedusaMessage": false,
+      "consoleErrors": []
+    }
+  ]
+}

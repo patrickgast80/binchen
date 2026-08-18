@@ -1,0 +1,34 @@
+{
+  "fault": "http500",
+  "at": "2026-08-18T08:41:20.829Z",
+  "results": [
+    {
+      "viewport": "mobile",
+      "cartId": "cart_01M0A0G9S6BV6EKJBS29CPQ5KQ",
+      "product": "Bilulu-Pumphose (Konfigurator)",
+      "optionId": "so_01KXV8T7TQDH4K92XKNJJGVCNT",
+      "urlBefore": "http://localhost:3477/checkout/payment",
+      "urlAfter": "http://localhost:3477/checkout/payment?error=backend_unavailable",
+      "redirected": true,
+      "alertsBeforeSubmit": 0,
+      "alertText": "Unser Shop ist gerade kurz nicht erreichbar\n\nDas liegt an uns, nicht an dir. Dein Warenkorb bleibt erhalten — bitte versuche es in ein paar Minuten noch einmal. Es wurde nichts abgebucht.",
+      "leaksRawCode": false,
+      "leaksMedusaMessage": false,
+      "consoleErrors": []
+    },
+    {
+      "viewport": "desktop",
+      "cartId": "cart_01M0A0GCXEJVR0FT93ERMC0H0P",
+      "product": "Bilulu-Pumphose (Konfigurator)",
+      "optionId": "so_01KXV8T7TQDH4K92XKNJJGVCNT",
+      "urlBefore": "http://localhost:3477/checkout/payment",
+      "urlAfter": "http://localhost:3477/checkout/payment?error=backend_unavailable",
+      "redirected": true,
+      "alertsBeforeSubmit": 0,
+      "alertText": "Unser Shop ist gerade kurz nicht erreichbar\n\nDas liegt an uns, nicht an dir. Dein Warenkorb bleibt erhalten — bitte versuche es in ein paar Minuten noch einmal. Es wurde nichts abgebucht.",
+      "leaksRawCode": false,
+      "leaksMedusaMessage": false,
+      "consoleErrors": []
+    }
+  ]
+}

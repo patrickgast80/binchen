@@ -10,6 +10,7 @@ import {
   createPaymentSession,
 } from "@/lib/medusa";
 import { completeOfflineOrderAction } from "./actions";
+import { checkoutErrorCopy, paymentReassurance } from "./checkout-errors";
 import PayPalButton from "./PayPalButton";
 
 export const metadata: Metadata = {
@@ -21,7 +22,15 @@ export const dynamic = "force-dynamic";
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
 
-export default async function PaymentPage() {
+export default async function PaymentPage({
+  searchParams,
+}: {
+  searchParams: { error?: string | string[]; via?: string | string[] };
+}) {
+  // BIL-2502 — the server action and the PayPal island both redirect back here
+  // with `?error=`. Until now nothing read it, so a failed order looked exactly
+  // like a page reload.
+  const errorCopy = checkoutErrorCopy(searchParams.error);
   const cart = await loadCart();
   if (!cart || cart.items.length === 0) {
     redirect("/cart");
@@ -70,6 +79,26 @@ export default async function PaymentPage() {
       </nav>
 
       <h1 className="font-display text-3xl font-semibold text-binchen-ink sm:text-4xl">Bezahlung</h1>
+
+      {errorCopy ? (
+        <div
+          role="alert"
+          data-testid="checkout-error"
+          className="mt-6 rounded-lg border border-binchen-terracotta/40 bg-binchen-terracotta/10 p-4 sm:p-6"
+        >
+          <p className="font-body text-base font-semibold text-binchen-terracotta-text">
+            {errorCopy.title}
+          </p>
+          <p className="mt-2 font-body text-sm leading-relaxed text-binchen-ink">
+            {errorCopy.body} {paymentReassurance(searchParams.via)}
+          </p>
+          {errorCopy.retryable ? null : (
+            <Button asChild variant="ghost" className="mt-3 -ml-3">
+              <Link href="/cart">Warenkorb prüfen</Link>
+            </Button>
+          )}
+        </div>
+      ) : null}
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_320px]">
         <section aria-labelledby="payment-h">
