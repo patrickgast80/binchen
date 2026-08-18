@@ -18,7 +18,9 @@ import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 //   medusa exec ./src/scripts/seed-inventory.ts
 //
 // Optional env override: SEED_INVENTORY_QTY (default 50, in the 25–100 range
-// recommended by BIL-2386).
+// recommended by BIL-2386). This value applies ONLY when a level is created for
+// the first time — see 4b: existing levels are never overwritten, because the
+// handmade one-offs carry stock 1 and this script runs on every container boot.
 const DEFAULT_QTY = 50
 const STOCK_LOCATION_NAME = "Binchen Atelier"
 const SALES_CHANNEL_NAME = "Online Store"
@@ -95,7 +97,7 @@ export default async function seedInventory({ container }: ExecArgs) {
   logger.info(`Found ${variants.length} variants in catalog.`)
 
   let levelsCreated = 0
-  let levelsUpdated = 0
+  let levelsLeftAlone = 0
   let inventoryItemsCreated = 0
   let skippedUnmanaged = 0
 
@@ -130,8 +132,23 @@ export default async function seedInventory({ container }: ExecArgs) {
       )
     }
 
-    // 4b. For each inventory item, upsert the stocked_quantity at the Atelier
-    //     location.
+    // 4b. For each inventory item, make sure a level EXISTS at the Atelier
+    //     location — but never touch one that is already there.
+    //
+    //     BIL-2490: this used to overwrite stocked_quantity with targetQty (50)
+    //     on every run, and the Dockerfile runs this script on every container
+    //     boot. Binchen sells handmade one-offs, so the shop's real stock is 1
+    //     per article — every deploy silently reset all of them to 50 and made
+    //     each unique item orderable 50 times. Any correction in Medusa Admin
+    //     survived only until the next deploy, which is why the catalog looked
+    //     fine to whoever set it and was wrong again an hour later.
+    //
+    //     Seeding bootstraps an empty catalog; it does not own live stock.
+    //     Operator-set quantities are the source of truth, so an existing level
+    //     is left exactly as it is. A variant that is legitimately sold out
+    //     therefore stays sold out instead of being resurrected to 50 — which
+    //     is the correct behaviour for one-offs and the opposite of what
+    //     BIL-2386 assumed when it introduced the blanket upsert.
     for (const invId of inventoryItemIds) {
       const existing = await inventoryModule.listInventoryLevels({
         inventory_item_id: invId,
@@ -139,15 +156,7 @@ export default async function seedInventory({ container }: ExecArgs) {
       })
 
       if (existing && existing.length > 0) {
-        await inventoryModule.updateInventoryLevels([
-          {
-            id: existing[0].id,
-            inventory_item_id: invId,
-            location_id: stockLocation.id,
-            stocked_quantity: targetQty,
-          },
-        ])
-        levelsUpdated++
+        levelsLeftAlone++
       } else {
         await inventoryModule.createInventoryLevels([
           {
@@ -162,7 +171,7 @@ export default async function seedInventory({ container }: ExecArgs) {
   }
 
   logger.info(
-    `Inventory seed done: ${levelsCreated} level(s) created, ${levelsUpdated} updated, ` +
+    `Inventory seed done: ${levelsCreated} level(s) created, ${levelsLeftAlone} left untouched, ` +
       `${inventoryItemsCreated} inventory_item(s) backfilled, ` +
       `${skippedUnmanaged} variant(s) skipped (manage_inventory=false).`,
   )

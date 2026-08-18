@@ -106,6 +106,33 @@ for (const { re, surface } of KONFIGURATOR_REGEXES) {
     hits.length ? hits.map((h) => h.title).join(" | ") : "NO MATCH — add-to-cart broken");
 }
 
+// Stock discipline: the 15 relaunch articles are handmade one-offs and must sit
+// at stocked_quantity 1. The konfigurator bases are made-to-order and keep >1.
+// This must survive a container boot — seed-inventory.js used to reset every
+// variant to 50 on each deploy, which made unique items orderable 50 times.
+console.log("\n--- stock (handmade one-offs must be 1) ---");
+{
+  const { jsonFetch } = await import("./lib.mjs");
+  const { login } = await import("./lib.mjs");
+  const tok = await login();
+  const auth = { authorization: `Bearer ${tok}` };
+  const inv = await jsonFetch(`${BACKEND}/admin/inventory-items?limit=200&fields=id,*location_levels`, { headers: auth });
+  const byId = new Map(inv.inventory_items.map((i) => [i.id, i]));
+  const full = await jsonFetch(`${BACKEND}/admin/products?limit=100&fields=id,title,*variants,*variants.inventory_items`, { headers: auth });
+  const offenders = [];
+  for (const p of full.products) {
+    if (/konfigurator/i.test(p.title)) continue;
+    for (const v of p.variants ?? []) {
+      for (const x of v.inventory_items ?? []) {
+        const lvl = byId.get(x.inventory_item_id ?? x.inventory?.id)?.location_levels?.[0];
+        if (lvl && lvl.stocked_quantity !== 1) offenders.push(`${p.title}=${lvl.stocked_quantity}`);
+      }
+    }
+  }
+  check("all one-off articles at stocked_quantity 1", offenders.length === 0,
+    offenders.length ? offenders.join(", ") : "15/15 at 1");
+}
+
 // Every surviving PDP must render.
 console.log("\n--- PDPs ---");
 for (const p of products) {

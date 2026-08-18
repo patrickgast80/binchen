@@ -1,0 +1,136 @@
+{
+  "apply": true,
+  "at": "2026-08-18T08:02:44.986Z",
+  "actions": [
+    {
+      "product": "Bilulu-Pumphose (Konfigurator)",
+      "action": "keep_made_to_order",
+      "stocked": 50
+    },
+    {
+      "product": "Set Mütze + Loop-Schal \"Boho-Regenbogen\" creme",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZMXYVWD81RA4AE3945ZM",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Mütze \"Winter-Kinder Schneeflocken\" marineblau",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZNDG5N1ZRCWMC9V6D9S0",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Mütze \"Boho-Regenbogen\" mint mit Schleife",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZNXGPS5HH68E7RR9ZW73",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Set Dreieckstuch + Halstuch \"Kleiner Zoo\" rosa",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZPC6RR2M107H0RKWYFMD",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Turban-Mütze \"Rosen\" lila mit Schleife",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZPRN5W4EJGCQHNHGDJA4",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Turban-Mütze \"Aquarell-Blüten\" bordeaux",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZQ8MBW3VJRXEGN1N2S3K",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Baby-Mütze \"Rosen\" navy mit pinker Schleife",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZQS3ANQ50FY4NM65TKHY",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Set Mütze + Halstuch \"Marienkäfer\" blau-rot",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZRRJRX9JZ1PB8AKVAC5H",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Turban-Mütze \"Bunte Wildblumen\"",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZS8YTFC4P4BF4W1JR9AW",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Set Dreieckstuch + Halstuch \"Schmetterlinge & Pusteblumen\" hellblau",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZSQD6Z3PBGACHVDXVWSS",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Pumphose \"Eukalyptus\" creme",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZT3Z28TMCVTKKRZ33GM5",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Pumphose \"Regenbogen-Schmetterlinge\" navy",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZTF78XXPGQRMV1HQQ8JB",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Pumphose \"Blätter-Aquarell\" creme",
+      "action": "set",
+      "levelId": "ilev_01KZ0VZTVMJZ9J879TBW2MX3RH",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Pumphose \"Dinos\" türkis mit orangen Bündchen",
+      "action": "set",
+      "levelId": "ilev_01KZ0W0004YNPWD5GPCM64R9DM",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    },
+    {
+      "product": "Bilulu-Body (Konfigurator)",
+      "action": "keep_made_to_order",
+      "stocked": 50
+    },
+    {
+      "product": "Mütze \"Winter-Kinder Herzen\" marineblau",
+      "action": "set",
+      "levelId": "ilev_01M08JS60W5VTZNHEVCJQ5S913",
+      "from": 50,
+      "to": 1,
+      "clampedByReserved": false
+    }
+  ]
+}
