@@ -257,13 +257,22 @@ Host selbst). `crontab -l` als `deploy` läuft alle 5 Minuten:
 `/home/deploy/bin/binchen-autodeploy-poll.sh` — vergleicht per anonymem
 `git ls-remote` (Repo ist public) den `main`-HEAD mit dem zuletzt getriggerten
 SHA (`/home/deploy/.binchen-autodeploy-last`) und POSTet bei Abweichung genau
-**einen** Deploy pro App (Storefront + Backend) an die Coolify-API. Kein
-Retry-Loop (Board-Zwei-Strike-Regel): schlägt ein Build fehl, gibt es erst
-beim nächsten Push einen neuen Versuch.
+**einen** Deploy pro App (Storefront + Backend) an die Coolify-API.
+
+**Retry-Semantik (BIL-2517):** max. **zwei** Build-Versuche pro SHA und App —
+initialer Deploy plus genau ein automatischer Retry, wenn Coolify den letzten
+Build dieses SHAs als `failed` meldet (per
+`GET /deployments/applications/{uuid}?take=1` beim nächsten Cron-Tick; deckt
+transiente Clone-/Netz-Flakes ab, siehe BIL-2517: einmaliger GitHub-Clone-Fehler
+ließ Prod still stale). Scheitert auch der Retry, schreibt der Poller einmalig
+`GIVING_UP` ins Log und stoppt für diesen SHA (Board-Zwei-Strike-Regel) — dann
+manuell in Coolify untersuchen, nicht blind neu anstoßen. Bereits verbrauchte
+Retries stehen in `/home/deploy/.binchen-autodeploy-retried` (`sha uuid` je Zeile).
 
 Kanonische Script-Kopie: `infra/hetzner/binchen-autodeploy-poll.sh`.
 Secrets: `/home/deploy/.binchen-autodeploy.env` (600, COOLIFY_PAT + App-UUIDs).
-Log: `/home/deploy/binchen-autodeploy.log` (eine Zeile pro Deploy-POST).
+Log: `/home/deploy/binchen-autodeploy.log` (eine Zeile pro Deploy-POST;
+`retry`/`GIVING_UP` als 4. Feld markieren die Retry-Pfade).
 
 **Warum kein GitHub-Weg?** Coolifys GitHub-App-Webhook hat auf diesem Repo nie
 gefeuert (BIL-2397), und das Actions-Secret `COOLIFY_PAT` wurde nie gesetzt —
