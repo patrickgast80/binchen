@@ -23,6 +23,37 @@ export async function login() {
   return body.token;
 }
 
+/**
+ * BIL-2501: resolve the shipping profile a NEW product must be attached to.
+ *
+ * Two profiles with type="default" exist in prod ("Default Shipping Profile" from
+ * Medusa's own seed, and "Default" from our seed-shipping.ts). Picking by
+ * `?limit=1` or by `type === "default"` is a coin flip — and the losing side has
+ * zero shipping options, which makes POST /store/carts/{id}/complete fail with
+ *   "The cart items require shipping profiles that are not satisfied by the
+ *    current shipping methods"
+ * only at the very last checkout step. That is how BIL-2490 shipped 16 unsellable
+ * products. Resolve by DATA instead: the profile that owns shipping options.
+ */
+export async function resolveShippingProfileId(token) {
+  const headers = { authorization: `Bearer ${token}` };
+  const { shipping_profiles: profiles } = await jsonFetch(`${BACKEND}/admin/shipping-profiles?limit=100`, { headers });
+  const { shipping_options: options } = await jsonFetch(
+    `${BACKEND}/admin/shipping-options?limit=100&fields=id,name,shipping_profile_id`, { headers });
+
+  const counts = new Map();
+  for (const o of options) counts.set(o.shipping_profile_id, (counts.get(o.shipping_profile_id) ?? 0) + 1);
+
+  const withOptions = profiles.filter((p) => (counts.get(p.id) ?? 0) > 0);
+  if (withOptions.length === 1) return withOptions[0].id;
+  if (withOptions.length === 0) {
+    throw new Error("No shipping profile owns any shipping option — run seed-shipping before creating products.");
+  }
+  throw new Error(
+    `Ambiguous shipping profile: ${withOptions.length} profiles own options ` +
+    `(${withOptions.map((p) => `${p.id} "${p.name}"`).join(", ")}). Pass shipping_profile_id explicitly.`);
+}
+
 export async function listProducts(token) {
   const out = [];
   for (let offset = 0; ; offset += 100) {

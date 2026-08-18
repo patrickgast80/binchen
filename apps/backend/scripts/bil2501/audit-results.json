@@ -1,0 +1,203 @@
+{
+  "generated_at": "2026-08-18T08:23:50.511Z",
+  "profiles": [
+    {
+      "id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "name": "Default Shipping Profile",
+      "type": "default",
+      "options": []
+    },
+    {
+      "id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "name": "Default",
+      "type": "default",
+      "options": [
+        {
+          "id": "so_01KXV8T7TQDH4K92XKNJJGVCNT",
+          "name": "Standard DE"
+        },
+        {
+          "id": "so_01KXV8T7TRTCEJ2N8E6HQPNYKH",
+          "name": "Standard EU"
+        },
+        {
+          "id": "so_01KXV8T7TSZ4HTK8Z91GN07VHK",
+          "name": "Standard WORLD"
+        }
+      ]
+    }
+  ],
+  "shipping_options": [
+    {
+      "id": "so_01KXV8T7TQDH4K92XKNJJGVCNT",
+      "name": "Standard DE",
+      "shipping_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV"
+    },
+    {
+      "id": "so_01KXV8T7TRTCEJ2N8E6HQPNYKH",
+      "name": "Standard EU",
+      "shipping_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV"
+    },
+    {
+      "id": "so_01KXV8T7TSZ4HTK8Z91GN07VHK",
+      "name": "Standard WORLD",
+      "shipping_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod_01KZ0PC73515RHSB8XJB1MJJBR",
+      "title": "Bilulu-Pumphose (Konfigurator)",
+      "handle": "bilulu-pumphose-konfigurator",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZMJWFC9Z00XVNDFYZ6M2",
+      "title": "Set Mütze + Loop-Schal \"Boho-Regenbogen\" creme",
+      "handle": "set-boho-regenbogen-creme",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZN6J66D6AKW54HNX0TK8",
+      "title": "Mütze \"Winter-Kinder Schneeflocken\" marineblau",
+      "handle": "muetze-winter-kinder-navy",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZNNRMQY35F79W7XBAN39",
+      "title": "Mütze \"Boho-Regenbogen\" mint mit Schleife",
+      "handle": "muetze-boho-regenbogen-mint",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZP4NSTXGTYAT43J51ZTN",
+      "title": "Set Dreieckstuch + Halstuch \"Kleiner Zoo\" rosa",
+      "handle": "halstuch-zoo-rosa",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZPGYHS67NC37E7MYME0Z",
+      "title": "Turban-Mütze \"Rosen\" lila mit Schleife",
+      "handle": "turban-rosen-lila",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZQ16YTDT81JT5WAFSSZ0",
+      "title": "Turban-Mütze \"Aquarell-Blüten\" bordeaux",
+      "handle": "turban-aquarell-blueten-bordeaux",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZQHSK3F3JZDC0GVARFV8",
+      "title": "Baby-Mütze \"Rosen\" navy mit pinker Schleife",
+      "handle": "muetze-rosen-navy",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZRGEBK53BWPX0T9BPS4V",
+      "title": "Set Mütze + Halstuch \"Marienkäfer\" blau-rot",
+      "handle": "set-marienkaefer-blau-rot",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZS1Y5TFKDJTV2KXERNJV",
+      "title": "Turban-Mütze \"Bunte Wildblumen\"",
+      "handle": "turban-bunte-wildblumen",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZSG4DBE6M148W1TK681B",
+      "title": "Set Dreieckstuch + Halstuch \"Schmetterlinge & Pusteblumen\" hellblau",
+      "handle": "halstuch-schmetterlinge-pusteblumen",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZSWB1BA91FBFGKDY6QKV",
+      "title": "Pumphose \"Eukalyptus\" creme",
+      "handle": "pumphose-eukalyptus",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZT9CCH4RQHQ0F52CTMXG",
+      "title": "Pumphose \"Regenbogen-Schmetterlinge\" navy",
+      "handle": "pumphose-regenbogen-schmetterlinge-navy",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZTMRNYR9XPP2G8FKVM1S",
+      "title": "Pumphose \"Blätter-Aquarell\" creme",
+      "handle": "pumphose-blaetter-aquarell-creme",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ0VZZTJGYMY6DQTNCN7P4C3",
+      "title": "Pumphose \"Dinos\" türkis mit orangen Bündchen",
+      "handle": "pumphose-dinos-tuerkis",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01KZ6Q1S10H9S6SG11NRZAVG7M",
+      "title": "Bilulu-Body (Konfigurator)",
+      "handle": "body",
+      "status": "draft",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    },
+    {
+      "id": "prod_01M08JS5P44V67N48R2FCRQPAR",
+      "title": "Mütze \"Winter-Kinder Herzen\" marineblau",
+      "handle": "muetze-winter-kinder-herzen-navy",
+      "status": "published",
+      "profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "profile_name": "Default",
+      "option_count": 3
+    }
+  ],
+  "broken_product_ids": []
+}

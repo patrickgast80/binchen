@@ -60,11 +60,22 @@ async function getDefaultSalesChannelId(token) {
   return ch.id;
 }
 
+// BIL-2501: `type === "default"` matches BOTH prod profiles ("Default Shipping
+// Profile" and "Default"), and only one of them owns shipping options. Picking the
+// wrong one makes POST /store/carts/{id}/complete fail with "The cart items require
+// shipping profiles that are not satisfied by the current shipping methods" — and
+// only at the final checkout step, so the product looks fine everywhere else.
+// Resolve by data: the profile that owns shipping options.
 async function getShippingProfileId(token) {
-  const body = await jsonFetch(`${BACKEND}/admin/shipping-profiles?limit=10`, { headers: { authorization: `Bearer ${token}` } });
-  const profile = body.shipping_profiles?.find((p) => p.type === "default") ?? body.shipping_profiles?.[0];
-  if (!profile) die("No shipping profile found.");
-  return profile.id;
+  const headers = { authorization: `Bearer ${token}` };
+  const body = await jsonFetch(`${BACKEND}/admin/shipping-profiles?limit=100`, { headers });
+  const opts = await jsonFetch(`${BACKEND}/admin/shipping-options?limit=100&fields=id,shipping_profile_id`, { headers });
+  const counts = new Map();
+  for (const o of opts.shipping_options ?? []) counts.set(o.shipping_profile_id, (counts.get(o.shipping_profile_id) ?? 0) + 1);
+  const withOptions = (body.shipping_profiles ?? []).filter((p) => (counts.get(p.id) ?? 0) > 0);
+  if (withOptions.length === 1) return withOptions[0].id;
+  if (withOptions.length === 0) die("No shipping profile owns any shipping option — run seed-shipping first.");
+  die(`Ambiguous: ${withOptions.length} profiles own shipping options (${withOptions.map((p) => p.id).join(", ")}).`);
 }
 
 async function getStockLocationId(token) {

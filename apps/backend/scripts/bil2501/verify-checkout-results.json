@@ -1,0 +1,89 @@
+{
+  "generated_at": "2026-08-18T08:24:35.829Z",
+  "variant": "variant_01KZ0VZSX50NT8TGWTQ1Y2P48M",
+  "cart_id": "cart_01M09ZHRAJZETZPA8CWPCZ62ES",
+  "passed": true,
+  "order_id": "order_01M09ZHTA7RYYF2S0NZXPRA7JK",
+  "log": [
+    {
+      "name": "0. inventory BEFORE",
+      "detail": {
+        "variantId": "variant_01KZ0VZSX50NT8TGWTQ1Y2P48M",
+        "note": "no inventory item resolved"
+      }
+    },
+    {
+      "name": "1. cart + line-item",
+      "detail": {
+        "region": "DE",
+        "cartId": "cart_01M09ZHRAJZETZPA8CWPCZ62ES",
+        "status": 200,
+        "item": "Pumphose \"Eukalyptus\" creme",
+        "qty": 1
+      }
+    },
+    {
+      "name": "2. addresses set",
+      "detail": {
+        "status": 200,
+        "ok": true
+      }
+    },
+    {
+      "name": "3. shipping options offered",
+      "detail": {
+        "status": 200,
+        "offered": [
+          {
+            "id": "so_01KXV8T7TQDH4K92XKNJJGVCNT",
+            "name": "Standard DE"
+          }
+        ],
+        "chosen": {
+          "id": "so_01KXV8T7TQDH4K92XKNJJGVCNT",
+          "name": "Standard DE"
+        }
+      }
+    },
+    {
+      "name": "4. shipping method attached",
+      "detail": {
+        "status": 200,
+        "ok": true
+      }
+    },
+    {
+      "name": "5. payment session (Vorkasse)",
+      "detail": {
+        "pcStatus": 200,
+        "sessStatus": 200,
+        "provider": "pp_system_default"
+      }
+    },
+    {
+      "name": "6. POST /store/carts/{id}/complete  <-- was 400 before fix",
+      "detail": {
+        "status": 200,
+        "type": "order",
+        "message": null,
+        "order_id": "order_01M09ZHTA7RYYF2S0NZXPRA7JK",
+        "order_total": 32.9,
+        "shipping_total": 5
+      }
+    },
+    {
+      "name": "7. cleanup: order cancelled",
+      "detail": {
+        "order_id": "order_01M09ZHTA7RYYF2S0NZXPRA7JK",
+        "status": "canceled"
+      }
+    },
+    {
+      "name": "8. inventory AFTER cleanup",
+      "detail": {
+        "variantId": "variant_01KZ0VZSX50NT8TGWTQ1Y2P48M",
+        "note": "no inventory item resolved"
+      }
+    }
+  ]
+}

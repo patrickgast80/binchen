@@ -281,5 +281,76 @@ export default async function seedShipping({ container }: ExecArgs) {
     logger.warn(`Product<->shipping_profile backfill failed (non-fatal): ${err}`)
   }
 
+  // BIL-2501: the backfill above only rescues products with NO profile at all.
+  // Prod carries a SECOND type="default" profile ("Default Shipping Profile",
+  // created by Medusa's own seed) that owns ZERO shipping options. A product
+  // attached to it passes every earlier checkout step — /store/shipping-options
+  // does not filter by profile — and only dies on the final
+  //   POST /store/carts/{id}/complete
+  //   "The cart items require shipping profiles that are not satisfied by the
+  //    current shipping methods"
+  // BIL-2490's importer picked that profile and shipped 16 unsellable products.
+  // The Medusa admin UI defaults to it too, so a human can reintroduce the bug at
+  // any time. Re-home anything sitting on an option-less profile onto `defaultProfile`.
+  //
+  // Deliberately conservative: profiles that DO own options are never touched, so a
+  // future multi-profile setup (oversized goods, pickup-only) keeps working.
+  let rehomedCount = 0
+  try {
+    const allOptions = await fulfillmentModule.listShippingOptions({})
+    const optionCountByProfile = new Map<string, number>()
+    for (const o of allOptions) {
+      const pid = (o as { shipping_profile_id?: string }).shipping_profile_id
+      if (pid) optionCountByProfile.set(pid, (optionCountByProfile.get(pid) ?? 0) + 1)
+    }
+
+    if ((optionCountByProfile.get(defaultProfile.id) ?? 0) === 0) {
+      // Options live somewhere else entirely — re-homing onto an empty profile
+      // would break checkout instead of fixing it. Bail loudly.
+      logger.warn(
+        `Re-home skipped: profile ${defaultProfile.id} owns no shipping options ` +
+        `(options by profile: ${JSON.stringify([...optionCountByProfile])}).`
+      )
+    } else {
+      const productGraph2 = await query.graph({
+        entity: "product",
+        fields: ["id", "handle", "shipping_profile.id"],
+      })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rows2: any[] = productGraph2?.data ?? []
+      const misfiled = rows2.filter((p) => {
+        const sp = p?.shipping_profile
+        const current = Array.isArray(sp) ? sp[0]?.id : sp?.id
+        if (!current || current === defaultProfile.id) return false
+        return (optionCountByProfile.get(current) ?? 0) === 0
+      })
+
+      for (const p of misfiled) {
+        const sp = p.shipping_profile
+        const current = Array.isArray(sp) ? sp[0]?.id : sp?.id
+        try {
+          await remoteLink.dismiss({
+            [Modules.PRODUCT]: { product_id: p.id },
+            [Modules.FULFILLMENT]: { shipping_profile_id: current },
+          })
+          await remoteLink.create({
+            [Modules.PRODUCT]: { product_id: p.id },
+            [Modules.FULFILLMENT]: { shipping_profile_id: defaultProfile.id },
+          })
+          rehomedCount++
+          logger.info(`Re-homed ${p.handle ?? p.id}: ${current} (0 options) -> ${defaultProfile.id}.`)
+        } catch (err) {
+          logger.warn(`Re-home failed for ${p.handle ?? p.id} (non-fatal): ${err}`)
+        }
+      }
+      logger.info(
+        `Shipping-profile reconcile: ${misfiled.length} product(s) on an option-less ` +
+        `profile, ${rehomedCount} re-homed.`
+      )
+    }
+  } catch (err) {
+    logger.warn(`Shipping-profile reconcile failed (non-fatal): ${err}`)
+  }
+
   logger.info("Shipping seed complete.")
 }

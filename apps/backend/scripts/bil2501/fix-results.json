@@ -1,0 +1,153 @@
+{
+  "generated_at": "2026-08-18T08:23:33.487Z",
+  "target_profile": {
+    "id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+    "name": "Default"
+  },
+  "results": [
+    {
+      "id": "prod_01KZ0VZMJWFC9Z00XVNDFYZ6M2",
+      "title": "Set Mütze + Loop-Schal \"Boho-Regenbogen\" creme",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZN6J66D6AKW54HNX0TK8",
+      "title": "Mütze \"Winter-Kinder Schneeflocken\" marineblau",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZNNRMQY35F79W7XBAN39",
+      "title": "Mütze \"Boho-Regenbogen\" mint mit Schleife",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZP4NSTXGTYAT43J51ZTN",
+      "title": "Set Dreieckstuch + Halstuch \"Kleiner Zoo\" rosa",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZPGYHS67NC37E7MYME0Z",
+      "title": "Turban-Mütze \"Rosen\" lila mit Schleife",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZQ16YTDT81JT5WAFSSZ0",
+      "title": "Turban-Mütze \"Aquarell-Blüten\" bordeaux",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZQHSK3F3JZDC0GVARFV8",
+      "title": "Baby-Mütze \"Rosen\" navy mit pinker Schleife",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZRGEBK53BWPX0T9BPS4V",
+      "title": "Set Mütze + Halstuch \"Marienkäfer\" blau-rot",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZS1Y5TFKDJTV2KXERNJV",
+      "title": "Turban-Mütze \"Bunte Wildblumen\"",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZSG4DBE6M148W1TK681B",
+      "title": "Set Dreieckstuch + Halstuch \"Schmetterlinge & Pusteblumen\" hellblau",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZSWB1BA91FBFGKDY6QKV",
+      "title": "Pumphose \"Eukalyptus\" creme",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZT9CCH4RQHQ0F52CTMXG",
+      "title": "Pumphose \"Regenbogen-Schmetterlinge\" navy",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZTMRNYR9XPP2G8FKVM1S",
+      "title": "Pumphose \"Blätter-Aquarell\" creme",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ0VZZTJGYMY6DQTNCN7P4C3",
+      "title": "Pumphose \"Dinos\" türkis mit orangen Bündchen",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01KZ6Q1S10H9S6SG11NRZAVG7M",
+      "title": "Bilulu-Body (Konfigurator)",
+      "status": "draft",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    },
+    {
+      "id": "prod_01M08JS5P44V67N48R2FCRQPAR",
+      "title": "Mütze \"Winter-Kinder Herzen\" marineblau",
+      "status": "published",
+      "from_profile_id": "sp_01KVFA9F9H00CR770SBKXAEM61",
+      "from_profile_name": "Default Shipping Profile",
+      "to_profile_id": "sp_01KVFAA1580RJBGMV8QMWWZVRV",
+      "ok": true
+    }
+  ]
+}

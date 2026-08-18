@@ -20,7 +20,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { BACKEND, jsonFetch, login } from "./lib.mjs";
+import { BACKEND, jsonFetch, login, resolveShippingProfileId } from "./lib.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "../../../..");
@@ -142,7 +142,9 @@ async function main() {
   const headers = { authorization: `Bearer ${token}` };
   const ctx = {
     salesChannelId: (await jsonFetch(`${BACKEND}/admin/sales-channels?limit=1`, { headers })).sales_channels[0].id,
-    shippingProfileId: (await jsonFetch(`${BACKEND}/admin/shipping-profiles?limit=1`, { headers })).shipping_profiles[0].id,
+    // BIL-2501: was `shipping-profiles?limit=1` — that picked the option-less
+    // "Default Shipping Profile" and left all 15 new products uncheckoutable.
+    shippingProfileId: await resolveShippingProfileId(token),
     stockLocationId: (await jsonFetch(`${BACKEND}/admin/stock-locations?limit=1`, { headers })).stock_locations[0].id,
   };
 
