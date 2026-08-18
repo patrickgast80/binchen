@@ -279,7 +279,7 @@ export function chooseTileSize(img, { minFrac = 0.7, maxFrac = 0.92, step = 4 } 
  * column `w` (the pixel that physically follows it in the photo), so the repeat
  * continues the fabric instead of restarting it. Inside the band the cut
  * follows the path where the original and the continuation already agree, and a
- * `feather`-pixel ramp swallows the remaining quantisation step.
+ * ramp of `featherFrac * band` pixels swallows the remaining step.
  */
 export function seamlessWrapX(img, { band, featherFrac = 0.3 } = {}) {
   const { data, width, height } = img;

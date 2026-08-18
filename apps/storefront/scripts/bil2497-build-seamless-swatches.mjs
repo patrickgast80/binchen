@@ -134,8 +134,13 @@ async function main() {
       `  worst ${fmt(worstBefore)} → ${fmt(worst)}`,
   );
 
-  await writeFile(join(OUT, "seam-report.json"), JSON.stringify({ report }, null, 2) + "\n", "utf8");
-  console.log(`Report → ${join(OUT, "seam-report.json")}`);
+  // Never next to the tiles: with --apply that directory is `public/`, and the
+  // report would ship to every visitor as a stray asset.
+  const reportDir = join(STOREFRONT_ROOT, ".tmp", "bil2497");
+  await mkdir(reportDir, { recursive: true });
+  const reportOut = join(reportDir, "seam-report.json");
+  await writeFile(reportOut, JSON.stringify({ report }, null, 2) + "\n", "utf8");
+  console.log(`Report → ${reportOut}`);
   if (!APPLY) console.log("\nDry run — re-run with --apply to write public/stoffe.");
 }
 
