@@ -274,6 +274,23 @@ Secrets: `/home/deploy/.binchen-autodeploy.env` (600, COOLIFY_PAT + App-UUIDs).
 Log: `/home/deploy/binchen-autodeploy.log` (eine Zeile pro Deploy-POST;
 `retry`/`GIVING_UP` als 4. Feld markieren die Retry-Pfade).
 
+**GIVING_UP-Alarm (BIL-2518):** Die Telegram-Bridge
+(`tools/telegram-bridge/`, Daemon auf der Paperclip-Maschine) prüft alle
+10 min per SSH (`grep GIVING_UP` auf dem Host-Log) und alarmiert bei neuen
+Zeilen aktiv: Telegram an die Allowlist-User + Kommentar auf dem
+Default-Issue (BIL-1). Dedupe über `giveupSeen` in
+`infra/.vault/telegram-bridge.state.json`; eine Zeile gilt erst als
+gesehen, wenn ein Telegram-Send durchging. Bewusst so gebaut, dass der
+Bot-Token **nicht** auf den shared Hetzner-Host muss. SSH-Fehler sind nur
+ein WARN in `tools/telegram-bridge/bridge.log` (kein Alarm-Spam).
+Abschalten/Rollback: `GIVEUP_WATCH=0` in
+`infra/.vault/telegram-bridge.env` + Bridge-Neustart (Task
+`BinchenTelegramBridge`). Konfig: `GIVEUP_SSH_TARGET`, `GIVEUP_SSH_KEY`
+(Default: Vault-Key `coolify-host-ssh.key`), `GIVEUP_INTERVAL_MS`.
+Achtung Neustart: den Bridge-`node`-PID killen kann den
+Watchdog-`cmd` mitreißen — danach `schtasks /Run /TN
+BinchenTelegramBridge` und `bridge up`-Zeile im Log verifizieren.
+
 **Warum kein GitHub-Weg?** Coolifys GitHub-App-Webhook hat auf diesem Repo nie
 gefeuert (BIL-2397), und das Actions-Secret `COOLIFY_PAT` wurde nie gesetzt —
 `coolify-deploy.yml` hat deshalb monatelang grün geskippt, ohne zu deployen

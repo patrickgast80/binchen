@@ -91,13 +91,30 @@ Zugangsschutz ist damit die Telegram-**Allowlist** (`TELEGRAM_ALLOWED_USER_IDS`)
 plus der geheime Bot-Token. Wer die Paperclip-API je öffentlich exponiert, muss
 diesen Pfad neu bewerten (`allowLocalBoard: false` + Agent-Key erzwingen).
 
+## GIVING_UP-Watcher (BIL-2518)
+
+Die Bridge prüft zusätzlich alle 10 min per SSH das Auto-Deploy-Log auf dem
+Coolify-Host (`grep GIVING_UP /home/deploy/binchen-autodeploy.log`). Neue
+Zeilen (= zwei rote Builds auf demselben SHA, Poller hat aufgegeben) lösen
+aktiv aus: Telegram an alle `TELEGRAM_ALLOWED_USER_IDS` + Kommentar auf
+`DEFAULT_ISSUE_KEY`. Der Bot-Token bleibt dabei auf dieser Maschine — der
+shared Host bekommt kein Telegram-Secret (bewusste Entscheidung, BIL-2518).
+
+- Dedupe: `giveupSeen` im State-File; erst nach erfolgreichem Telegram-Send
+  gilt eine Zeile als gesehen (sonst Retry beim nächsten Tick).
+- SSH-Fehler ⇒ nur WARN im `bridge.log`, kein Alarm.
+- Env-Knöpfe (alle optional): `GIVEUP_WATCH=0` (aus), `GIVEUP_SSH_TARGET`
+  (Default `deploy@188.245.40.74`), `GIVEUP_SSH_KEY` (Default
+  `<vault>/coolify-host-ssh.key`), `GIVEUP_INTERVAL_MS` (Default 600000).
+
 ## Tests (ohne Token)
 
 ```
-node --test tools/telegram-bridge/test/test.mjs
+node --test tools/telegram-bridge/test/test.mjs tools/telegram-bridge/test/giveup.test.mjs
 ```
 
-24 Tests gegen Fixture-`getUpdates`-Payloads (`test/fixtures.json`) mit
+30 Tests gegen Fixture-`getUpdates`-Payloads (`test/fixtures.json`) mit
 Fake-Telegram/-Paperclip-Clients: Routing, Allowlist, Foto-Upload inkl.
 Fallback, Fehlerpfade, 401-Token-Hot-Reload, 403→local-board-Fallback,
-tokenloser Betrieb, 409-Handling.
+tokenloser Betrieb, 409-Handling, GIVING_UP-Watcher (Parse, Dedupe,
+SSH-/Telegram-Fehlerpfade).

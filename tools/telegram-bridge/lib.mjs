@@ -52,6 +52,14 @@ export function loadConfig(envFilePath) {
     mediaDir: get('MEDIA_DIR', path.join(path.dirname(envFilePath), 'telegram-media')),
     stateFile: get('STATE_FILE', path.join(path.dirname(envFilePath), 'telegram-bridge.state.json')),
     spoolFile: get('SPOOL_FILE', path.join(path.dirname(envFilePath), 'telegram-bridge.spool.jsonl')),
+    // BIL-2518: GIVING_UP-Watcher (Auto-Deploy-Poller-Alarm). SSH-Key liegt im
+    // selben Vault-Ordner wie diese Env-Datei; GIVEUP_WATCH=0 schaltet ab.
+    giveupWatch: {
+      enabled: get('GIVEUP_WATCH', '1') !== '0',
+      sshTarget: get('GIVEUP_SSH_TARGET', 'deploy@188.245.40.74'),
+      sshKey: get('GIVEUP_SSH_KEY', path.join(path.dirname(envFilePath), 'coolify-host-ssh.key')),
+      intervalMs: Number(get('GIVEUP_INTERVAL_MS', 10 * 60 * 1000)),
+    },
   };
 }
 

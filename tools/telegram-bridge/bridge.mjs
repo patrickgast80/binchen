@@ -8,6 +8,7 @@ import {
   loadConfig, makeTokenProvider, makePaperclipClient, makeTelegramClient,
   handleUpdate, loadState, saveState, loadSpool, flushSpool,
 } from './lib.mjs';
+import { makeSshRunner, checkGiveUp } from './giveup-watch.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ENV_FILE = path.resolve(here, '..', '..', 'infra', '.vault', 'telegram-bridge.env');
@@ -53,10 +54,14 @@ const saveMedia = async (filename, buffer) => {
 const state = loadState(cfg.stateFile);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-log(`bridge up — default issue ${cfg.defaultIssueKey}, allowlist [${cfg.allowedUserIds.join(', ')}], offset ${state.offset}, spool ${loadSpool(cfg.spoolFile).length}`);
+const gw = cfg.giveupWatch;
+const runRemote = gw.enabled ? makeSshRunner({ target: gw.sshTarget, keyFile: gw.sshKey }) : null;
+
+log(`bridge up — default issue ${cfg.defaultIssueKey}, allowlist [${cfg.allowedUserIds.join(', ')}], offset ${state.offset}, spool ${loadSpool(cfg.spoolFile).length}, giveup-watch ${gw.enabled ? `an (${gw.sshTarget}, alle ${Math.round(gw.intervalMs / 60000)} min)` : 'aus'}`);
 
 const FLUSH_INTERVAL_MS = 5 * 60 * 1000;
 let nextFlushAt = 0;
+let nextGiveupAt = 0;
 let backoffMs = 5000;
 for (;;) {
   try {
@@ -64,6 +69,11 @@ for (;;) {
       nextFlushAt = Date.now() + FLUSH_INTERVAL_MS;
       const delivered = await flushSpool({ spoolFile: cfg.spoolFile, pc, tg, log });
       if (delivered) log(`spool flush: ${delivered} Nachricht(en) nachgeliefert`);
+    }
+    if (runRemote && Date.now() >= nextGiveupAt) {
+      nextGiveupAt = Date.now() + gw.intervalMs;
+      const r = await checkGiveUp({ cfg, tg, pc, log, state, runRemote });
+      if (r.alerts) saveState(cfg.stateFile, state);
     }
     const updates = await tg.getUpdates(state.offset || undefined, 50);
     backoffMs = 5000;
