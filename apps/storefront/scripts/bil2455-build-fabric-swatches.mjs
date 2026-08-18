@@ -10,16 +10,21 @@
 //         fall back to a solid hex on slow networks.
 //
 // BIL-2493 — tile size: the preview tiles the swatch at TILE_PERCENT (42 %) of
-// the photo width. The widest we ever paint it is a 1440px desktop, where the
-// photo column is ~620px, so the tile is ~260 CSS px — 520 device px at DPR 2.
-// A 1024px master was therefore ~4x the pixels we can show, at ~444 kB each on
-// the critical path (the tile is part of the LCP element). 512 covers the
-// worst case exactly and is visually indistinguishable at paint size; see
-// scripts/bil2493-probe-render-size.mjs for the measurement.
+// the photo width. Measured on the shipped layout, the preview box is ~450 CSS
+// px at a 1440px desktop, so the tile paints at ~190 CSS px — ~380 device px at
+// DPR 2, ~500 at DPR 3. A 1024px master was therefore several times the pixels
+// we can show, at ~444 kB each, and on the critical path: the tile rasterises
+// in the same frame as the LCP element. 512 covers the worst case with headroom
+// and is indistinguishable at paint size; see bil2493-probe-render-size.mjs.
 //
 // The chip is a separate, much smaller file for the same reason: the palette
 // renders 35 fabric chips as 44–48px circles, and they must not each pull the
 // preview-sized tile.
+//
+// CAREFUL (BIL-2497): this script writes the plain centre-crop tile. If the
+// seamless tiles from bil2497-build-seamless-swatches.mjs are live, re-running
+// this overwrites them and the visible repeat grid comes back. Re-run that
+// script with --apply afterwards, or pass --out to a scratch directory.
 //
 // Usage:
 //   node apps/storefront/scripts/bil2455-build-fabric-swatches.mjs \
