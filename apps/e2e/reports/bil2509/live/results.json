@@ -1,0 +1,53 @@
+{
+  "results": [
+    {
+      "case": "hose-kurz-patrick",
+      "viewport": "mobile",
+      "hash": "9c0ea25803d1",
+      "size": 415522
+    },
+    {
+      "case": "hose-hell",
+      "viewport": "mobile",
+      "hash": "be4e22679f42",
+      "size": 638495
+    },
+    {
+      "case": "hose-dunkel",
+      "viewport": "mobile",
+      "hash": "db4eec4023b5",
+      "size": 588026
+    },
+    {
+      "case": "muetze",
+      "viewport": "mobile",
+      "hash": "7a440956229a",
+      "size": 884393
+    },
+    {
+      "case": "hose-kurz-patrick",
+      "viewport": "desktop",
+      "hash": "80fc4761936e",
+      "size": 598618
+    },
+    {
+      "case": "hose-hell",
+      "viewport": "desktop",
+      "hash": "0d6ce23d5272",
+      "size": 1087691
+    },
+    {
+      "case": "hose-dunkel",
+      "viewport": "desktop",
+      "hash": "0b23dc5a479f",
+      "size": 946849
+    },
+    {
+      "case": "muetze",
+      "viewport": "desktop",
+      "hash": "760aa07e10ea",
+      "size": 1346749
+    }
+  ],
+  "consoleErrors": []
+}
