@@ -5,9 +5,10 @@
  * Stoff auf beiden Viewports und zoomt auf die Faltenzonen, die das Ticket
  * nennt (Bundübergang, Schritt, Beinansatz).
  *
- * Wichtig aus BIL-2492: der Cookie-Banner und das fixe Mobile-Sheet liefern
- * still identische "Belege", deshalb wird der Banner weggeklickt und jeder
- * Screenshot per Byte-Hash gegen die anderen geprueft.
+ * Wichtig aus BIL-2492: Cookie-Banner und das fixe Mobile-Sheet liefern still
+ * identische "Belege". Deshalb wird der Consent VORGESETZT (nicht weggeklickt,
+ * siehe CONSENT unten), auf Mobile die Vorschau an den oberen Rand gescrollt,
+ * und jeder Screenshot per Byte-Hash gegen alle anderen geprueft.
  */
 import { chromium } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -49,6 +50,25 @@ const VIEWPORTS = [
   { id: "desktop", width: 1440, height: 900, isMobile: false },
 ];
 
+/**
+ * Consent wird VORGESETZT, nicht weggeklickt.
+ *
+ * Der erste Lauf hat auf „Alle akzeptieren" geklickt — das entfernt zwar den
+ * Banner, setzt dabei aber die optionalen Kategorien, und ein Test soll keine
+ * Cookies vergeben, die eine Besucherin nie erlaubt hat. Nur `strict: true`,
+ * alles andere false; identisch zu bil2492-control-shots.mjs.
+ */
+const CONSENT = () => {
+  window.localStorage.setItem(
+    "bilulu_cookie_consent_v1",
+    JSON.stringify({
+      version: "1",
+      decidedAt: "2026-08-18T00:00:00.000Z",
+      categories: { strict: true, functional: false, analytics: false, marketing: false },
+    }),
+  );
+};
+
 const browser = await chromium.launch();
 const hashes = new Map();
 const results = [];
@@ -61,6 +81,7 @@ for (const vp of VIEWPORTS) {
     isMobile: vp.isMobile,
     hasTouch: vp.isMobile,
   });
+  await ctx.addInitScript(CONSENT);
   const page = await ctx.newPage();
   page.on("console", (m) => {
     if (m.type() === "error") consoleErrors.push(`${vp.id}: ${m.text().slice(0, 200)}`);
@@ -69,16 +90,14 @@ for (const vp of VIEWPORTS) {
   for (const c of CASES) {
     await page.goto(c.url, { waitUntil: "networkidle", timeout: 60000 });
 
-    // Cookie-Banner weg, sonst deckt er auf Mobile die halbe Vorschau ab und
-    // zwei verschiedene Konfigurationen liefern denselben Screenshot.
-    for (const label of [/alle akzeptieren/i, /akzeptieren/i, /zustimmen/i]) {
-      const btn = page.getByRole("button", { name: label });
-      if (await btn.count()) {
-        await btn.first().click({ timeout: 3000 }).catch(() => {});
-        break;
-      }
+    // Der Banner ist durch CONSENT oben schon weg. Bleibt er stehen, ist der
+    // Beleg wertlos (er verdeckt auf Mobile die halbe Vorschau) — also laut
+    // scheitern statt still ein Swatch-Raster zu fotografieren.
+    const banner = page.getByRole("button", { name: /alle akzeptieren|zustimmen/i });
+    if (await banner.count()) {
+      throw new Error("Cookie-Banner trotz vorgesetztem Consent sichtbar — localStorage-Key geaendert?");
     }
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(500);
 
     const preview = page.locator('[role="img"]').first();
     await preview.waitFor({ state: "visible", timeout: 20000 });
