@@ -4,7 +4,13 @@ import { ROTATION_PARAM, type MusterRotation } from "./rotation";
 /** Uni palette + board-delivered fabric prints, in one flat lookup. */
 const ALL_SWATCHES = [...PALETTE, ...FABRICS];
 
-export type KonfiguratorId = "hose" | "turban" | "muetze" | "dreieckstuch" | "body";
+export type KonfiguratorId =
+  | "hose"
+  | "hose-kurz"
+  | "turban"
+  | "muetze"
+  | "dreieckstuch"
+  | "body";
 
 export interface KonfigMaskEntry {
   /** URL search-param key the konfigurator uses for this region. */
@@ -33,6 +39,15 @@ export interface KonfigRegistryEntry {
    * compositor; the client photo components reference it directly.
    */
   sheenPhoto?: string;
+  /**
+   * Optional layer painted LAST, in normal blend mode, over the whole
+   * multiply/screen stack — a part of the garment that must keep its original
+   * photo pixels in every configuration. Currently only the "made with love"
+   * tag on the short Pumphose (BIL-2499, board requirement). Every recolour
+   * mask already excludes that region; this layer is the second line of
+   * defence, and the reason the card and the thumbnail show the tag too.
+   */
+  labelPhoto?: string;
   /** Ordered list of tintable regions, matching the *-photo.tsx overlay order. */
   regions: readonly KonfigMaskEntry[];
 }
@@ -63,6 +78,44 @@ const HOSE: KonfigRegistryEntry = {
       src: "/konfigurator/hose-foto/mask-buendchen.webp",
       label: "Bündchen",
       defaultColor: "petrol",
+    },
+  ],
+};
+
+/**
+ * BIL-2499 — short Pumphose, built on Sabine's own cutout of the "Dinos"
+ * shorts. Same three-zone breakdown as the long Hose (so a visitor who knows
+ * one knows the other — Jakob's Law), plus the `labelPhoto` layer that keeps
+ * the "made with love" tag on the waistband untouched by any recolour.
+ * Defaults reproduce the real garment: turquoise body, warm band and cuffs.
+ */
+const HOSE_KURZ: KonfigRegistryEntry = {
+  id: "hose-kurz",
+  path: "/konfigurator/hose-kurz",
+  productLabel: "Kurze Hose",
+  basePhoto: "/konfigurator/hose-kurz-foto/base.webp",
+  sheenPhoto: "/konfigurator/hose-kurz-foto/highlight.webp",
+  labelPhoto: "/konfigurator/hose-kurz-foto/label.webp",
+  width: 900,
+  height: 750,
+  regions: [
+    {
+      param: "bund",
+      src: "/konfigurator/hose-kurz-foto/mask-bund.webp",
+      label: "Bund",
+      defaultColor: "terracotta",
+    },
+    {
+      param: "hose",
+      src: "/konfigurator/hose-kurz-foto/mask-hose.webp",
+      label: "Hose",
+      defaultColor: "petrol",
+    },
+    {
+      param: "buendchen",
+      src: "/konfigurator/hose-kurz-foto/mask-buendchen.webp",
+      label: "Bündchen",
+      defaultColor: "terracotta",
     },
   ],
 };
@@ -162,6 +215,7 @@ const BODY: KonfigRegistryEntry = {
 
 export const KONFIG_REGISTRY: Record<KonfiguratorId, KonfigRegistryEntry> = {
   hose: HOSE,
+  "hose-kurz": HOSE_KURZ,
   turban: TURBAN,
   muetze: MUETZE,
   dreieckstuch: DREIECKSTUCH,
@@ -169,13 +223,7 @@ export const KONFIG_REGISTRY: Record<KonfiguratorId, KonfigRegistryEntry> = {
 };
 
 export function isKonfiguratorId(v: string): v is KonfiguratorId {
-  return (
-    v === "hose" ||
-    v === "turban" ||
-    v === "muetze" ||
-    v === "dreieckstuch" ||
-    v === "body"
-  );
+  return Object.prototype.hasOwnProperty.call(KONFIG_REGISTRY, v);
 }
 
 /** Resolves a swatch id → hex, falling back to the region default and then cream. */

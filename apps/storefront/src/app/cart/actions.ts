@@ -6,6 +6,7 @@ import {
   addLineItem,
   getConfiguratorBodyVariant,
   getConfiguratorDreieckstuchVariant,
+  getConfiguratorHoseKurzVariant,
   getConfiguratorHoseVariant,
   getConfiguratorMuetzeVariant,
   getConfiguratorTurbanVariant,
@@ -102,6 +103,47 @@ export async function addConfiguredHoseToCartAction(formData: FormData): Promise
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
     redirect("/konfigurator/hose?error=add_failed");
+  }
+
+  revalidatePath("/cart");
+  redirect("/cart?added=konfigurator");
+}
+
+/**
+ * Add a configured SHORT Pumphose (from /konfigurator/hose-kurz) to the cart —
+ * BIL-2499.
+ *
+ * Same three selections as the long Hose, plus an explicit `laenge: "kurz"`.
+ * Both configurators currently resolve to the same made-to-order base product,
+ * so that field is what tells Sabine which one to sew — it is not decoration.
+ */
+export async function addConfiguredHoseKurzToCartAction(formData: FormData): Promise<void> {
+  const selection = {
+    kind: "konfigurator-hose-kurz" as const,
+    laenge: "kurz" as const,
+    bund: String(formData.get("bund") ?? "").trim() || null,
+    hose: String(formData.get("hose") ?? "").trim() || null,
+    buendchen: String(formData.get("buendchen") ?? "").trim() || null,
+    bundName: String(formData.get("bundName") ?? "").trim() || null,
+    hoseName: String(formData.get("hoseName") ?? "").trim() || null,
+    buendchenName: String(formData.get("buendchenName") ?? "").trim() || null,
+    musterRotation: parseMusterRotation(formData.get("musterRotation")),
+    configHref: String(formData.get("configHref") ?? "").trim() || null,
+  };
+
+  const target = await getConfiguratorHoseKurzVariant();
+  if (!target) {
+    redirect("/konfigurator/hose-kurz?error=variant_unavailable");
+  }
+
+  const cart = await ensureCart();
+  if (!cart) {
+    redirect("/konfigurator/hose-kurz?error=cart_unavailable");
+  }
+
+  const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
+  if (!added) {
+    redirect("/konfigurator/hose-kurz?error=add_failed");
   }
 
   revalidatePath("/cart");

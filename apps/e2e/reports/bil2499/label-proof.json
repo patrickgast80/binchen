@@ -1,0 +1,43 @@
+{
+  "bbox": {
+    "minX": 526,
+    "minY": 29,
+    "maxX": 598,
+    "maxY": 104
+  },
+  "erodePx": 9,
+  "samplesPerCase": 2411,
+  "results": [
+    {
+      "case": "default-terracotta-petrol",
+      "maxDelta": 0,
+      "meanDelta": 0,
+      "note": "reference",
+      "trace": "fs:5L:0F:1T:r0:149kb"
+    },
+    {
+      "case": "cream-cream-cream",
+      "maxDelta": 0,
+      "meanDelta": 0,
+      "trace": "fs:5L:0F:1T:r0:133kb"
+    },
+    {
+      "case": "navy-forest-rust",
+      "maxDelta": 0,
+      "meanDelta": 0,
+      "trace": "fs:5L:0F:1T:r0:123kb"
+    },
+    {
+      "case": "stoff-14-mustard",
+      "maxDelta": 0,
+      "meanDelta": 0,
+      "trace": "fs:5L:1F:1T:r0:369kb"
+    },
+    {
+      "case": "stoff-01-sage-rot90",
+      "maxDelta": 0,
+      "meanDelta": 0,
+      "trace": "fs:5L:1F:1T:r90:298kb"
+    }
+  ]
+}

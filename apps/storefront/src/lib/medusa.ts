@@ -129,6 +129,13 @@ function isMedusaErrorBody(body: unknown): body is { type?: string; message?: st
 }
 
 /**
+ * "kurz" as a standalone word — BIL-2499. Used to keep the long-Hose resolver
+ * and the short-Hose resolver from ever picking each other's product. Word
+ * boundaries matter: a future "Kurzarm-Body" must not read as a short Pumphose.
+ */
+const KURZ = /\bkurz(e|er|es)?\b/i;
+
+/**
  * Resolve the base variant used by the Hose-Konfigurator.
  *
  * Preferred: `NEXT_PUBLIC_CONFIGURATOR_HOSE_VARIANT_ID` set to a real variant id
@@ -156,10 +163,63 @@ export async function getConfiguratorHoseVariant(): Promise<
   const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
   if (!res.ok) return null;
   const { products } = (await res.json()) as { products: MedusaProduct[] };
+  // BIL-2499: prefer the product that says "Konfigurator" outright, and never
+  // match a "kurz" product. Before that this took the FIRST /pumphose/i hit,
+  // which only worked because "Bilulu-Pumphose (Konfigurator)" happens to sort
+  // first — a second konfigurator base would have silently stolen it.
   const hose =
-    products.find((p) => /pumphose/i.test(p.title)) ??
-    products.find((p) => /hose/i.test(p.title)) ??
+    products.find((p) => /pumphose/i.test(p.title) && /konfigurator/i.test(p.title) && !KURZ.test(p.title)) ??
+    products.find((p) => /pumphose/i.test(p.title) && !KURZ.test(p.title)) ??
+    products.find((p) => /hose/i.test(p.title) && !KURZ.test(p.title)) ??
     products[0];
+  if (!hose) return null;
+  const variant =
+    hose.variants.find((v) => (envVariant ? v.id === envVariant : v.inventory_quantity > 0)) ??
+    hose.variants[0];
+  if (!variant) return null;
+  const price = variantPriceOrNull(variant);
+  return {
+    variantId: envVariant || variant.id,
+    productId: hose.id,
+    priceAmount: price?.amount ?? 0,
+    currency: price?.currency ?? "EUR",
+  };
+}
+
+/**
+ * Resolve the base variant used by the Konfigurator for the SHORT Pumphose
+ * (BIL-2499).
+ *
+ * Resolution order, most specific first:
+ *   1. `NEXT_PUBLIC_CONFIGURATOR_HOSE_KURZ_VARIANT_ID`
+ *   2. a dedicated konfigurator base whose title says both "kurz" and
+ *      "Konfigurator" — this is the hook for Backend to add one later without
+ *      any storefront change
+ *   3. the shared long-Hose konfigurator base
+ *
+ * Step 3 is what ships today: there is exactly one konfigurator product in
+ * Medusa ("Bilulu-Pumphose (Konfigurator)"), the catalogue article
+ * `Pumphose "Dinos" türkis mit orangen Bündchen` is a one-off unique piece and
+ * must NOT be used as a made-to-order base. The chosen length travels with the
+ * line item as metadata, so Sabine's order still says which one to sew, and
+ * nothing existing had to be renamed (board rule).
+ */
+export async function getConfiguratorHoseKurzVariant(): Promise<
+  { variantId: string; productId: string; priceAmount: number; currency: string } | null
+> {
+  const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_HOSE_KURZ_VARIANT_ID?.trim();
+  if (!BACKEND_URL) return null;
+  const url = new URL(`${BACKEND_URL}/store/products`);
+  url.searchParams.set("limit", "50");
+  const regionId = await getDefaultRegionId();
+  if (regionId) url.searchParams.set("region_id", regionId);
+  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
+  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
+  if (!res.ok) return null;
+  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const hose =
+    products.find((p) => KURZ.test(p.title) && /konfigurator/i.test(p.title)) ??
+    products.find((p) => /pumphose/i.test(p.title) && /konfigurator/i.test(p.title));
   if (!hose) return null;
   const variant =
     hose.variants.find((v) => (envVariant ? v.id === envVariant : v.inventory_quantity > 0)) ??
@@ -557,19 +617,69 @@ export interface CompletedOrder {
   currency_code: string;
 }
 
+/**
+ * Stable, storefront-owned reasons a cart completion can fail — BIL-2502.
+ *
+ * Medusa's own `message` is English and version-dependent, so it must never
+ * reach a customer or a URL. We collapse it here into a small closed set that
+ * `checkout/payment/checkout-errors.ts` maps to German copy. Previously this
+ * returned `http_400` for every failure, which made an oversell
+ * indistinguishable from a broken shipping profile (BIL-2501).
+ */
+export type CompleteCartFailure =
+  | "out_of_stock"
+  | "shipping_unavailable"
+  | "backend_unavailable"
+  | "cart_not_completed"
+  | "complete_failed";
+
+function readMedusaError(body: unknown): { code: string; message: string } {
+  if (typeof body !== "object" || body === null) return { code: "", message: "" };
+  const b = body as { code?: unknown; message?: unknown };
+  return {
+    code: typeof b.code === "string" ? b.code : "",
+    message: typeof b.message === "string" ? b.message : "",
+  };
+}
+
+/**
+ * `code` is checked before `message` because it is the only part of the Medusa
+ * error contract that is stable. The message regexes are the fallback for
+ * errors Medusa raises without a code — verified against the live 400 bodies
+ * captured in apps/e2e/reports/bil2500/.
+ */
+function classifyCompleteFailure(status: number, body: unknown): CompleteCartFailure {
+  const { code, message } = readMedusaError(body);
+  if (code === "insufficient_inventory" || /inventory|stock/i.test(message)) return "out_of_stock";
+  if (/shipping (profile|method|option)/i.test(message)) return "shipping_unavailable";
+  if (status >= 500 || status === 0) return "backend_unavailable";
+  return "complete_failed";
+}
+
 export async function completeCart(
   cartId: string,
-): Promise<{ ok: true; order: CompletedOrder } | { ok: false; reason: string }> {
+): Promise<{ ok: true; order: CompletedOrder } | { ok: false; reason: CompleteCartFailure }> {
   if (!BACKEND_URL) return { ok: false, reason: "backend_unavailable" };
   const res = await fetch(`${BACKEND_URL}/store/carts/${cartId}/complete`, {
     method: "POST",
     headers: authHeaders(),
     cache: "no-store",
   });
-  if (!res.ok) return { ok: false, reason: `http_${res.status}` };
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const reason = classifyCompleteFailure(res.status, body);
+    // Server-side only. A silent checkout failure is exactly what let BIL-2501
+    // run unnoticed, so the raw backend answer stays in the container log even
+    // though it never reaches the customer.
+    console.warn(
+      `[checkout] complete failed cart=${cartId} status=${res.status} reason=${reason} medusa=${JSON.stringify(readMedusaError(body))}`,
+    );
+    return { ok: false, reason };
+  }
   const data = (await res.json()) as { type: string; order?: CompletedOrder; cart?: Cart };
   if (data.type === "order" && data.order) return { ok: true, order: data.order };
-  return { ok: false, reason: data.type ?? "unknown" };
+  console.warn(`[checkout] complete returned type=${data.type} without order cart=${cartId}`);
+  return { ok: false, reason: "cart_not_completed" };
 }
 
 export async function getOrder(orderId: string): Promise<CompletedOrder | null> {

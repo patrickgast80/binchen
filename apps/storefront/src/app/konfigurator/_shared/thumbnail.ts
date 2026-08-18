@@ -117,5 +117,18 @@ export async function renderKonfigThumbnail(
     ctx.globalCompositeOperation = "source-over";
   }
 
+  // BIL-2499: the un-recolourable detail goes on top, in normal blend mode, so
+  // a saved card shows the "made with love" tag the same way the preview does.
+  // A failed load must not lose the whole thumbnail — the masks already exclude
+  // the tag region, so the worst case is a small grey patch, not a tinted one.
+  if (konfig.labelPhoto) {
+    try {
+      const label = await loadImage(konfig.labelPhoto);
+      ctx.drawImage(label, 0, 0, w, h);
+    } catch {
+      // keep the composed garment
+    }
+  }
+
   return canvas.toDataURL("image/png");
 }

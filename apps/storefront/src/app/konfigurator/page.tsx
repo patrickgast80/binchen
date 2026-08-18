@@ -32,6 +32,14 @@ const TILES: readonly LiveTile[] = [
     image: { src: "/konfigurator/hose-foto/base.webp", width: 900, height: 1006 },
   },
   {
+    href: "/konfigurator/hose-kurz",
+    name: "Kurze Hose",
+    tagline:
+      "Die Sommer-Pumphose — gleiche drei Zonen, kurze Beine. Das eingenähte Schildchen bleibt in jeder Kombination.",
+    zones: "3 Zonen",
+    image: { src: "/konfigurator/hose-kurz-foto/base.webp", width: 900, height: 750 },
+  },
+  {
     href: "/konfigurator/muetze",
     name: "Mütze",
     tagline: "Hauptstoff aus echten Mustern, Futter uni frei kombinierbar.",

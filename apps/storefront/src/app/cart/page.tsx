@@ -37,6 +37,21 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
     return { title: "Konfigurator-Hose", entries, configHref: asStr(m.configHref) };
   }
 
+  // BIL-2499. Both Pumphosen-Konfiguratoren currently resolve to the same
+  // made-to-order base variant, so the length has to be on the line — it is the
+  // only thing telling Sabine which of the two to sew.
+  if (kind === "konfigurator-hose-kurz") {
+    const entries = [
+      { label: "Länge", value: "kurz" },
+      { label: "Bund", value: asStr(m.bundName) },
+      { label: "Hose", value: asStr(m.hoseName) },
+      { label: "Bündchen", value: asStr(m.buendchenName) },
+    ].filter((e): e is { label: string; value: string } => e.value !== null);
+    const turn = musterRotation(m);
+    if (turn) entries.push(turn);
+    return { title: "Konfigurator-Hose (kurz)", entries, configHref: asStr(m.configHref) };
+  }
+
   if (kind === "konfigurator-turban") {
     const entries = [
       { label: "Turban", value: asStr(m.turbanName) },

@@ -135,3 +135,38 @@ export function SheenOverlay({ src }: { src: string }) {
     />
   );
 }
+
+/**
+ * Un-recolourable detail painted over the finished blend stack — BIL-2499.
+ *
+ * The board's requirement for the short Pumphose is that the "made with love"
+ * tag on the waistband stays visible and unchanged in every combination. The
+ * zone masks already punch the tag out with a 3px margin, so nothing should
+ * ever reach it; this layer makes that guarantee independent of the masks by
+ * repainting the tag's original photo pixels last, in NORMAL blend mode. It
+ * must therefore sit after the sheen — `screen` would wash it out.
+ */
+export function LabelOverlay({ src, alt = "" }: { src: string; alt?: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      role={alt ? undefined : "presentation"}
+      aria-hidden={alt ? undefined : "true"}
+      loading="eager"
+      decoding="async"
+      draggable={false}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        objectFit: "contain",
+        mixBlendMode: "normal",
+        pointerEvents: "none",
+        userSelect: "none",
+      }}
+    />
+  );
+}

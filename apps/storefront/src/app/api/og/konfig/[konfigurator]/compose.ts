@@ -231,6 +231,22 @@ export async function composeKonfigPhoto(
       }
     }
 
+    // Last, and over everything: the un-recolourable detail (BIL-2499's "made
+    // with love" tag). `over` is the normal-blend equivalent, so the tag lands
+    // on the share card with its original photo colours, exactly like on the
+    // live preview.
+    let labelLayer = 0;
+    if (konfig.labelPhoto) {
+      const label = await loadAsset(origin, konfig.labelPhoto);
+      if (label) {
+        labelLayer = 1;
+        layers.push({
+          input: await sharp(label.buf).resize(srcW, srcH, { fit: "fill" }).png().toBuffer(),
+          blend: "over",
+        });
+      }
+    }
+
     const scale = COMPOSE_MAX_EDGE / Math.max(srcW, srcH);
     const outW = Math.max(1, Math.round(srcW * scale));
     const outH = Math.max(1, Math.round(srcH * scale));
@@ -256,7 +272,7 @@ export async function composeKonfigPhoto(
       dataUri: `data:image/png;base64,${png.toString("base64")}`,
       width: outW,
       height: outH,
-      trace: `${base.source}:${layers.length}L:${fabricZones}F:r${rotation}:${Math.round(
+      trace: `${base.source}:${layers.length}L:${fabricZones}F:${labelLayer}T:r${rotation}:${Math.round(
         png.byteLength / 1024,
       )}kb`,
     };
