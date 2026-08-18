@@ -61,6 +61,7 @@ import {
   normalizeShadingZoned,
   smoothBinary,
 } from "./lib/konfigurator-shading.mjs";
+import { applyRealFolds, foldsFromPhoto, spread } from "./lib/konfigurator-folds.mjs";
 import { checkerboardToUniformCanvas } from "./bil2490-checkerboard-normalize.mjs";
 
 const SRC =
@@ -355,15 +356,84 @@ const illum = estimateIllumination(deprinted, W, H, isBg, { mode: "plain", smoot
 // different materials. A global stretch would bake their intrinsic lightness
 // into the base, so picking Creme for band and body would still render two
 // different creams.
-const { gray, unit } = normalizeShadingZoned(
+// BIL-2509: the shadow floor was 172, i.e. the deepest crease could only darken
+// the chosen swatch to 67%. On Sabine's photo the fold valleys and the tuck under
+// the waistband go far deeper than that, which is the second reason the preview
+// reads as a flat fill. 156 widens the range without reaching the muddy end —
+// verified against the darkest swatch in the palette (stoff-30, #282838) rather
+// than against a cream one, since multiply hurts dark fabrics most.
+const SHADOW = 156;
+const LIT = 252;
+const ZONES = [isBund, isHose, isCuff];
+const { gray, unit, stats } = normalizeShadingZoned(
   illum, W, H, isBg,
-  [isBund, isHose, isCuff],
-  { shadow: 172, lit: 252 },
+  ZONES,
+  { shadow: SHADOW, lit: LIT },
 );
 
-applyEdgeShadow(gray, W, H, isBg, { radius: 16, strength: 0.16 });
+// Stronger silhouette roll-off, same reason: a flat-lay garment turns away from
+// the camera at its edge and the old 0.16 barely showed it.
+applyEdgeShadow(gray, W, H, isBg, { radius: 22, strength: 0.24 });
+
+// The measured spans here are 6 (band), 23 (body) and 34 (cuffs), i.e. every
+// zone is below `minSpan` — worth knowing before touching that default, because
+// it means the broad term carries very little contrast on this photo and the
+// realism has to come from the fold term below, not from a wider stretch.
+console.log("zone stretch (lo/hi/span):",
+  JSON.stringify(stats.map((s) => (s ? { lo: s.lo, hi: s.hi, span: s.span } : null))));
+
+
+// -- 3b. REAL folds from the photo (BIL-2509) ---------------------------------
+// Everything above this line only ever produced a smooth balloon: `smooth: 46`
+// is wide enough to erase the drape along with the dino print. Patrick's board
+// note ("so wie im Originalbild, falten Schatten") is about exactly that.
+//
+// The waistband and the two cuffs are PLAIN orange jersey, so their real stretch
+// creases can be measured straight off the photo — and they are the largest flat
+// areas in the render Patrick complained about. The printed body cannot: at ~60%
+// motif coverage every separation scale returns dinosaurs instead of folds
+// (measured in scripts/bil2509-band-probe.mjs), so `foldsFromPhoto` gates it out
+// on its own printiness measurement and the body keeps its synthetic drape.
+// Trusted: the waistband (0) and the two leg cuffs (2) — both plain orange
+// jersey, verified by dumping base.webp and looking at it. NOT the body (1):
+// the dino print covers ~64% of it and every separation scale returns motifs
+// (scripts/bil2509-band-probe.mjs), so it keeps the synthetic drape below.
+const { detail: folds, zoneOk, printiness } = foldsFromPhoto(data, W, H, isBg, ZONES, {
+  trustZones: [0, 2], zoneNames: ["bund", "hose", "buendchen"],
+  fine: 5, broad: 46, maxPrint: 0.22,
+});
+["bund", "hose", "buendchen"].forEach((name, i) => {
+  console.log(
+    `zone ${name.padEnd(10)} printiness ${(printiness[i] * 100).toFixed(1)}% ` +
+      `-> real folds ${zoneOk[i] ? "YES" : "no (synthetic drape kept)"}`,
+  );
+});
+console.log(
+  "recovered fold sigma — bund", spread(folds, isBund, isBg, N).toFixed(2),
+  "hose", spread(folds, isHose, isBg, N).toFixed(2),
+  "cuff", spread(folds, isCuff, isBg, N).toFixed(2),
+);
+if (!zoneOk[0]) {
+  throw new Error(
+    "the waistband measured as printed — it is plain orange jersey on this source, " +
+      "so the zone segmentation or the source photo changed. Refusing to ship a flat band.",
+  );
+}
+// `ceiling: 246` matches the seam-relief cap below, so a fold crest can never
+// reach the value that renders as pure swatch colour under multiply.
+const foldSheen = applyRealFolds(gray, folds, W, H, isBg, ZONES, stats, {
+  shadow: SHADOW, lit: LIT, gain: 1.0, depth: 1.4, limit: 30, ceiling: 246,
+});
 
 // Cloth drawing, accumulated separately so it can also feed the screen layer.
+//
+// BIL-2509 splits this by zone, following the gate above. The BODY keeps its
+// synthetic gathers at full strength (its real folds are unrecoverable under the
+// dense print) and in fact gets a longer reach, because the photo shows the
+// gather fan running much further down from the waistband than the old 74px.
+// The BAND and CUFFS now carry their measured creases, so their synthetic rib is
+// cut right back — stacking a periodic wale on top of real creases is what makes
+// a waistband read as corduroy printed on latex (the BIL-2473 complaint).
 const texture = new Float32Array(N);
 
 const bundSeam = boundaryBetween(isBund, isHose, W, H, isBg);
@@ -372,19 +442,19 @@ const cuffSeam = boundaryBetween(isCuff, isHose, W, H, isBg);
 // The body is gathered into BOTH the waistband above and the cuffs below, so it
 // gets a crease fan from each seam.
 applyGatherFolds(texture, W, H, isBg, isHose, bundSeam, {
-  reach: 74, amp: 7.5, period: 30, jitter: 0.55, decay: 1.4, seed: 2499,
+  reach: 130, amp: 9.0, period: 34, jitter: 0.55, decay: 1.15, seed: 2499,
 });
 applyGatherFolds(texture, W, H, isBg, isHose, cuffSeam, {
-  reach: 52, amp: 6.2, period: 26, jitter: 0.55, decay: 1.5, seed: 4991,
+  reach: 78, amp: 7.4, period: 28, jitter: 0.55, decay: 1.25, seed: 4991,
 });
 
 // Jersey rib. The waistband is a wide folded-over band stretched hard, so its
 // creases are tighter than the body's; two octaves each, jittered — an even
 // stripe reads as corduroy (BIL-2473).
-applyRib(texture, W, H, isBund, { period: 40, amp: 3.4, fade: 12, knit: 0.3, jitter: 0.55, vary: 0.7, seed: 2499 });
-applyRib(texture, W, H, isBund, { period: 15, amp: 1.6, fade: 12, knit: 0.45, jitter: 0.35, vary: 0.6, seed: 9942 });
-applyRib(texture, W, H, isCuff, { period: 26, amp: 3.0, fade: 8, knit: 0.3, jitter: 0.55, vary: 0.7, seed: 2499 });
-applyRib(texture, W, H, isHose, { period: 62, amp: 2.0, fade: 14, knit: 0.25, jitter: 0.6, vary: 0.7, seed: 1249 });
+applyRib(texture, W, H, isBund, { period: 40, amp: 1.5, fade: 12, knit: 0.3, jitter: 0.55, vary: 0.7, seed: 2499 });
+applyRib(texture, W, H, isBund, { period: 15, amp: 0.8, fade: 12, knit: 0.45, jitter: 0.35, vary: 0.6, seed: 9942 });
+applyRib(texture, W, H, isCuff, { period: 26, amp: 1.4, fade: 8, knit: 0.3, jitter: 0.55, vary: 0.7, seed: 2499 });
+applyRib(texture, W, H, isHose, { period: 62, amp: 0.9, fade: 14, knit: 0.25, jitter: 0.6, vary: 0.7, seed: 1249 });
 
 for (let p = 0; p < N; p++) if (!isBg[p]) gray[p] += texture[p];
 
@@ -418,6 +488,15 @@ const TEXTURE_SHEEN_GAIN = 2.4;
 for (let p = 0; p < N; p++) {
   if (isBg[p]) continue;
   if (texture[p] > 0) highlight[p] = Math.min(255, highlight[p] + texture[p] * TEXTURE_SHEEN_GAIN);
+}
+// BIL-2509: the crests the multiply base had to clip (see applyRealFolds) are
+// added here instead. This is where a fold highlight belongs anyway, and it is
+// the only place it survives a dark swatch — under multiply a navy print eats
+// fine bright structure, under screen it does not.
+const FOLD_SHEEN_GAIN = 1.6;
+for (let p = 0; p < N; p++) {
+  if (isBg[p] || foldSheen[p] <= 0) continue;
+  highlight[p] = Math.min(255, highlight[p] + foldSheen[p] * FOLD_SHEEN_GAIN);
 }
 const highlightRGBA = grayToRGBA(highlight, W, H, isBg);
 

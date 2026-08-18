@@ -79,6 +79,7 @@ import {
   smoothBinary,
   smoothContour,
 } from "./lib/konfigurator-shading.mjs";
+import { applyRealFolds, foldsFromPhoto } from "./lib/konfigurator-folds.mjs";
 
 const SRC = "public/products/pumphose/pumphose-05.jpg";
 const OUT_DIR = "public/konfigurator/hose-foto";
@@ -340,13 +341,51 @@ for (let p = 0; p < N; p++) {
 // different colours. lit=252 means a lit area shows the chosen swatch at ~99%
 // of its own colour, which is what "die Stoffe werden nicht beeinflusst" needs;
 // shadow=178 keeps the drape readable without greying a light cream out.
-const { gray, unit } = normalizeShadingZoned(
+// BIL-2509: shadow was 178 — the deepest crease could only take the swatch to
+// 70%, while the reference photo's fold valleys and the tuck under the waistband
+// go considerably deeper. 160 widens the range without reaching the muddy end.
+const SHADOW = 160;
+const LIT = 252;
+const ZONES = [isBund, isBuen, invertZones(isBund, isBuen)];
+const { gray, unit, stats } = normalizeShadingZoned(
   illum, W, H, isBg,
-  [isBund, isBuen, invertZones(isBund, isBuen)],
-  { shadow: 178, lit: 252 },
+  ZONES,
+  { shadow: SHADOW, lit: LIT },
 );
 
-applyEdgeShadow(gray, W, H, isBg, { radius: 16, strength: 0.16 });
+// BIL-2509: stronger silhouette roll-off. A flat-lay garment turns away from the
+// camera at its edge; 0.16 over 16px barely showed it and left a sticker edge.
+applyEdgeShadow(gray, W, H, isBg, { radius: 22, strength: 0.24 });
+
+// -- 4a2. REAL folds from the photo (BIL-2509) -------------------------------
+// The waistband is plain white jersey and the cuffs are plain dusty pink, so
+// their real stretch creases can be measured straight off pumphose-05.jpg. The
+// body is a dense floral print — `foldsFromPhoto` measures that per zone and
+// gates the body out on its own printiness rather than on a hardcoded list, so a
+// reshoot with a plainer fabric would start contributing automatically.
+// Trusted: the waistband (0) only — plain white jersey, and the one zone whose
+// recovered folds survived a look at base.webp.
+//
+// NOT the body (2), even though it measures a harmless-looking 17.7% printed:
+// pumphose-05's florals are pale grey-green on cream, so only their cores cross
+// the chroma threshold and the fill takes each core from its own dark halo. The
+// result is flowers EMBOSSED into the base, plainly visible once base.webp is
+// dumped as a PNG, and they would sit under every fabric a customer picks.
+// NOT the cuffs (1) either: at this source resolution their recovered detail is
+// dominated by the rib the synthetic `applyRib` pass already draws better.
+const { detail: folds, zoneOk, printiness } = foldsFromPhoto(data, W, H, isBg, ZONES, {
+  trustZones: [0], zoneNames: ["bund", "buendchen", "hose"],
+  fine: 5, broad: 40, maxPrint: 0.22,
+});
+["bund", "buendchen", "hose"].forEach((name, i) => {
+  console.log(
+    `zone ${name.padEnd(10)} printiness ${(printiness[i] * 100).toFixed(1)}% ` +
+      `-> real folds ${zoneOk[i] ? "YES" : "no (synthetic drape kept)"}`,
+  );
+});
+const foldSheen = applyRealFolds(gray, folds, W, H, isBg, ZONES, stats, {
+  shadow: SHADOW, lit: LIT, gain: 1.0, depth: 1.4, limit: 30, ceiling: 246,
+});
 
 // boundaryBetween thresholds at 127, so scale the binary zones to 0/255 first.
 const body255 = invertZones(isBund, isBuen);
@@ -438,8 +477,11 @@ applyRib(gray, W, H, isBuen, { period: 12, amp: 4.5, fade: 7, knit: 0.85, jitter
 // it is the irregular vertical STRETCH CREASES an elasticated band puts in
 // jersey. Two octaves — broad wandering creases plus a fine jersey structure —
 // with jitter/vary on both so neither reads as corduroy.
-applyRib(gray, W, H, isBund, { period: 52, amp: 5.0, fade: 10, knit: 0.25, jitter: 0.55, vary: 0.7, seed: 2473 });
-applyRib(gray, W, H, isBund, { period: 17, amp: 1.9, fade: 10, knit: 0.4, jitter: 0.35, vary: 0.6, seed: 8419 });
+// BIL-2509 cut these roughly in half: the band's REAL stretch creases are now in
+// `gray` (applyRealFolds above), and a periodic wale stacked on measured creases
+// is exactly the corduroy-on-latex look BIL-2473 was opened for.
+applyRib(gray, W, H, isBund, { period: 52, amp: 2.4, fade: 10, knit: 0.25, jitter: 0.55, vary: 0.7, seed: 2473 });
+applyRib(gray, W, H, isBund, { period: 17, amp: 1.0, fade: 10, knit: 0.4, jitter: 0.35, vary: 0.6, seed: 8419 });
 
 // Isolated before the grain is added — the sheen compensation below wants the
 // structured wale crests, not the per-pixel noise.
@@ -481,6 +523,14 @@ const KNIT_SHEEN_GAIN = 2.4;
 for (let p = 0; p < N; p++) {
   if (isBg[p] || !(isBund[p] || isBuen[p])) continue;
   highlight[p] = Math.min(255, highlight[p] + knitCrest[p] * KNIT_SHEEN_GAIN);
+}
+// BIL-2509 — same argument, applied to the real fold crests the multiply base
+// had to clip at `ceiling` (see applyRealFolds). Screen is where a fold
+// highlight belongs, and it is the only place it survives a dark swatch.
+const FOLD_SHEEN_GAIN = 1.6;
+for (let p = 0; p < N; p++) {
+  if (isBg[p] || foldSheen[p] <= 0) continue;
+  highlight[p] = Math.min(255, highlight[p] + foldSheen[p] * FOLD_SHEEN_GAIN);
 }
 const highlightRGBA = grayToRGBA(highlight, W, H, isBg);
 
