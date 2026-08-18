@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { formatPrice, getProduct, type MedusaProductVariant } from "@/lib/medusa";
+import { formatPrice, getProduct, type MedusaProduct, type MedusaProductVariant } from "@/lib/medusa";
 import { addToCartFromFormAction } from "@/app/cart/actions";
+import { ProductGallery, type GalleryImage } from "@/components/product/product-gallery";
 
 interface PageProps {
   params: { id: string };
@@ -42,6 +42,25 @@ function variantPrice(variant: MedusaProductVariant): { amount: number; currency
   return { amount, currency };
 }
 
+/**
+ * BIL-2494: the API order is authoritative — images[0] is the flat-lay title
+ * shot, the mannequin views follow (BIL-2485). The thumbnail is only used as a
+ * fallback / prepended when it is not part of `images` at all.
+ */
+function galleryImages(product: MedusaProduct): GalleryImage[] {
+  const images: GalleryImage[] = [];
+  const seen = new Set<string>();
+  for (const image of product.images ?? []) {
+    if (!image?.url || seen.has(image.url)) continue;
+    seen.add(image.url);
+    images.push({ id: image.id, url: image.url });
+  }
+  if (product.thumbnail && !seen.has(product.thumbnail)) {
+    images.unshift({ url: product.thumbnail });
+  }
+  return images;
+}
+
 export default async function ProductDetailPage({ params }: PageProps) {
   const product = await getProduct(params.id);
   if (!product) notFound();
@@ -50,7 +69,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const allSoldOut = availableVariants.length === 0;
   const defaultVariant = availableVariants[0] ?? product.variants[0] ?? null;
   const defaultPrice = defaultVariant ? variantPrice(defaultVariant) : null;
-  const heroImage = product.thumbnail ?? product.images?.[0]?.url ?? null;
+  const images = galleryImages(product);
 
   return (
     <article className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
@@ -75,35 +94,17 @@ export default async function ProductDetailPage({ params }: PageProps) {
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
-        {/* BIL-2483: Studio-Grey hero, photo edge to edge — the passepartout lives in the
-            1200x1200 canvas, extra CSS padding rendered a second frame around it. */}
-        <div
-          className={`relative aspect-square overflow-hidden rounded-2xl ${
-            heroImage
-              ? "bg-binchen-studio"
-              : "bg-gradient-to-br from-binchen-cream to-binchen-cream-dark"
-          }`}
-        >
-          {heroImage ? (
-            <Image
-              src={heroImage}
-              alt={product.title}
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-contain"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <span className="font-body text-sm text-binchen-ink-subtle">Kein Bild</span>
-            </div>
-          )}
-          {allSoldOut && (
-            <span className="absolute left-4 top-4 rounded-full bg-binchen-ink px-3 py-1 font-body text-xs font-semibold text-binchen-cream">
-              ausverkauft
-            </span>
-          )}
-        </div>
+        <ProductGallery
+          images={images}
+          title={product.title}
+          overlay={
+            allSoldOut ? (
+              <span className="absolute left-4 top-4 rounded-full bg-binchen-ink px-3 py-1 font-body text-xs font-semibold text-binchen-cream">
+                ausverkauft
+              </span>
+            ) : null
+          }
+        />
 
         <div>
           <h1 className="font-display text-3xl font-semibold text-binchen-ink sm:text-4xl">
