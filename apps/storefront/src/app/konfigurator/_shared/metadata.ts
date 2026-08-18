@@ -5,6 +5,7 @@ import {
   type KonfiguratorId,
   swatchNameOrDefault,
 } from "./registry";
+import { ROTATION_PARAM, parseRotation, rotationLabel } from "./rotation";
 
 /**
  * Builds request-time metadata for a konfigurator page. Sets an OG image URL
@@ -35,6 +36,14 @@ export function buildKonfigMetadata(
     }
   }
 
+  // BIL-2492: the fabric rotation is part of what the link shows, so it has to
+  // reach the share card too — otherwise the preview and the card disagree.
+  const rawRotation = searchParams[ROTATION_PARAM];
+  const rotation = parseRotation(
+    Array.isArray(rawRotation) ? rawRotation[0] : rawRotation,
+  );
+  if (rotation !== 0) query.set(ROTATION_PARAM, String(rotation));
+
   const qs = query.toString();
   const ogImage = `/api/og/konfig/${konfigurator}${qs ? `?${qs}` : ""}`;
 
@@ -44,6 +53,7 @@ export function buildKonfigMetadata(
       const value = Array.isArray(raw) ? raw[0] : raw;
       return swatchNameOrDefault(value, r.defaultColor);
     })
+    .concat(rotation === 0 ? [] : [`Muster ${rotationLabel(rotation)}`])
     .join(" · ");
 
   return {

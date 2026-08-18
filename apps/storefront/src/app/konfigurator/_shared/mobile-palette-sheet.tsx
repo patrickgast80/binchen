@@ -10,6 +10,8 @@ import {
   swatchesForRegion,
   type Swatch,
 } from "../hose/palette";
+import { MusterRotationControl } from "./muster-rotation-control";
+import type { MusterRotation } from "./rotation";
 
 export interface MobileRegion {
   /** Matches the URL search-param key (e.g. "bund", "turban", "tuch"). */
@@ -25,6 +27,9 @@ interface MobilePaletteSheetProps {
   regions: readonly MobileRegion[];
   selection: Record<string, string>;
   onSelect: (region: MobileRegion, swatch: Swatch) => void;
+  /** Current fabric rotation (BIL-2492); omit to hide the rotate control. */
+  rotation?: MusterRotation;
+  onRotate?: () => void;
 }
 
 /**
@@ -53,6 +58,8 @@ export function MobilePaletteSheet({
   regions,
   selection,
   onSelect,
+  rotation,
+  onRotate,
 }: MobilePaletteSheetProps) {
   const [activeIdx, setActiveIdx] = React.useState(0);
   const tabStripRef = React.useRef<HTMLDivElement | null>(null);
@@ -100,6 +107,13 @@ export function MobilePaletteSheet({
   if (!activeRegion) return null;
 
   const activeSwatchId = selection[activeRegion.param];
+  // The rotate control only means something while a *print* is on this zone —
+  // a uni colour looks identical at every angle, so showing it there would be
+  // a dead control in the most cramped part of the UI.
+  const showRotate =
+    onRotate !== undefined &&
+    rotation !== undefined &&
+    Boolean(resolveSwatch(activeSwatchId, activeRegion.defaultColor).textureSrc);
 
   return (
     <div
@@ -233,6 +247,18 @@ export function MobilePaletteSheet({
             })}
           </div>
         </div>
+
+        {/* Rotate sits below the swatches: closest to the thumb, and it only
+            appears once a print is actually selected. */}
+        {showRotate && (
+          <div className="mt-3 flex justify-center border-t border-binchen-border/60 pt-3">
+            <MusterRotationControl
+              rotation={rotation!}
+              onRotate={onRotate!}
+              zoneLabel={activeRegion.label}
+            />
+          </div>
+        )}
       </div>
 
       {/* SR-only status region so context is announced when the active tab changes */}

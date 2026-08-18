@@ -7,7 +7,13 @@ import {
   selectionFromSearch,
   swatchHexOrDefault,
   swatchNameOrDefault,
+  swatchTextureOrDefault,
 } from "@/app/konfigurator/_shared/registry";
+import {
+  ROTATION_PARAM,
+  parseRotation,
+  rotationLabel,
+} from "@/app/konfigurator/_shared/rotation";
 
 import { composeKonfigPhoto } from "./compose";
 
@@ -38,13 +44,16 @@ export async function GET(
   // Absolute origin so the compositor can pull the assets without guessing.
   const origin = request.nextUrl.origin;
   const selection = selectionFromSearch(konfig, search);
+  const rotation = parseRotation(search.get(ROTATION_PARAM));
   const colors: Record<string, string> = {};
+  const textures: Record<string, string | null> = {};
   for (const r of konfig.regions) {
     colors[r.param] = swatchHexOrDefault(selection[r.param], r.defaultColor);
+    textures[r.param] = swatchTextureOrDefault(selection[r.param], r.defaultColor);
   }
   // satori cannot decode WebP and has no mix-blend-mode, so the garment is
   // composited with sharp and embedded as a PNG data URI. See ./compose.ts.
-  const composed = await composeKonfigPhoto(origin, konfig, colors);
+  const composed = await composeKonfigPhoto(origin, konfig, colors, textures, rotation);
   const photo = composed.dataUri === null ? null : composed;
 
   return new ImageResponse(
@@ -161,6 +170,23 @@ export async function GET(
                 </div>
               </div>
             ))}
+            {rotation !== 0 && (
+              <div style={{ display: "flex", alignItems: "center", gap: 18, fontSize: 26 }}>
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 999,
+                    backgroundColor: "#F0EBE1",
+                    border: "2px solid #E5DDD4",
+                  }}
+                />
+                <div style={{ display: "flex", color: "#6B5E4E" }}>Muster:</div>
+                <div style={{ display: "flex", color: "#2C2417", fontWeight: 600 }}>
+                  {rotationLabel(rotation)} gedreht
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -68,9 +68,9 @@ export function PantsPhoto({ paints, title = "Hose-Vorschau", className }: Pants
           pointerEvents: "none",
         }}
       />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-bund.webp`} paint={paints.bund} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-hose.webp`} paint={paints.hose} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-buendchen.webp`} paint={paints.buendchen} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-bund.webp`} paint={paints.bund} ratio={ASSET_W / ASSET_H} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-hose.webp`} paint={paints.hose} ratio={ASSET_W / ASSET_H} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-buendchen.webp`} paint={paints.buendchen} ratio={ASSET_W / ASSET_H} />
       <SheenOverlay src={`${ASSET_BASE}/highlight.webp`} />
     </div>
   );

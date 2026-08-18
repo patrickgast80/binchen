@@ -66,8 +66,8 @@ export function MuetzePhoto({ paints, title = "Mütze-Vorschau", className }: Mu
           pointerEvents: "none",
         }}
       />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-muetze.webp`} paint={paints.muetze} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-futter.webp`} paint={paints.futter} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-muetze.webp`} paint={paints.muetze} ratio={ASSET_W / ASSET_H} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-futter.webp`} paint={paints.futter} ratio={ASSET_W / ASSET_H} />
       <SheenOverlay src={`${ASSET_BASE}/highlight.webp`} />
     </div>
   );

@@ -64,8 +64,8 @@ export function TurbanPhoto({ paints, title = "Turban-Vorschau", className }: Tu
         }}
       />
 
-      <ZoneOverlay src={`${ASSET_BASE}/mask-turban.webp`} paint={paints.turban} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-schleife.webp`} paint={paints.schleife} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-turban.webp`} paint={paints.turban} ratio={ASSET_W / ASSET_H} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-schleife.webp`} paint={paints.schleife} ratio={ASSET_W / ASSET_H} />
     </div>
   );
 }

@@ -106,6 +106,53 @@ async function tintLayer(
   return sharp(out, { raw: { width, height, channels: 4 } }).png().toBuffer();
 }
 
+/** Must match TILE_PERCENT in zone-overlay.tsx — the preview's tile scale. */
+const TILE_FRACTION = 0.42;
+
+/**
+ * Builds one tint layer painted with a tiled fabric print instead of a flat
+ * colour, rotated by the configured quarter turn (BIL-2492).
+ *
+ * The rotation is applied to the tile *before* it is repeated, exactly like
+ * the CSS side: rotating the finished composition would turn the garment.
+ * sharp fixes its own pipeline order (rotate and resize do not commute with
+ * composite), so each step gets its own pass.
+ */
+async function fabricLayer(
+  textureBuf: Buffer,
+  maskBuf: Buffer,
+  hex: string,
+  rotation: number,
+  width: number,
+  height: number,
+): Promise<Buffer> {
+  const tileEdge = Math.max(8, Math.round(width * TILE_FRACTION));
+  const rotated =
+    rotation === 0 ? textureBuf : await sharp(textureBuf).rotate(rotation).toBuffer();
+  const tile = await sharp(rotated).resize(tileEdge, tileEdge, { fit: "fill" }).png().toBuffer();
+
+  const { r, g, b } = hexToRgb(hex);
+  const tiled = await sharp({
+    // Average colour underneath so a tile with alpha never punches a hole.
+    create: { width, height, channels: 4, background: { r, g, b, alpha: 1 } },
+  })
+    .composite([{ input: tile, tile: true }])
+    .png()
+    .toBuffer();
+
+  // `dest-in` keeps the tiled pixels only where the zone mask has alpha —
+  // the sharp equivalent of `mask-image` + `mask-mode: alpha`.
+  return sharp(tiled)
+    .composite([
+      {
+        input: await sharp(maskBuf).resize(width, height, { fit: "fill" }).ensureAlpha().png().toBuffer(),
+        blend: "dest-in",
+      },
+    ])
+    .png()
+    .toBuffer();
+}
+
 export interface ComposedPhoto {
   dataUri: string;
   width: number;
@@ -128,6 +175,10 @@ export async function composeKonfigPhoto(
   konfig: KonfigRegistryEntry,
   /** region param → resolved hex */
   colors: Record<string, string>,
+  /** region param → tileable fabric photo, for zones carrying a print */
+  textures: Record<string, string | null> = {},
+  /** quarter turn applied to every fabric tile */
+  rotation: number = 0,
 ): Promise<ComposedPhoto | { dataUri: null; trace: string }> {
   const base = await loadAsset(origin, konfig.basePhoto);
   if (!base) return { dataUri: null, trace: "no-base" };
@@ -139,13 +190,31 @@ export async function composeKonfigPhoto(
     const srcH = meta.height ?? konfig.height;
 
     const layers: sharp.OverlayOptions[] = [];
+    let fabricZones = 0;
     for (const region of konfig.regions) {
       const mask = await loadAsset(origin, region.src);
       if (!mask) continue;
-      layers.push({
-        input: await tintLayer(mask.buf, colors[region.param], srcW, srcH),
-        blend: "multiply",
-      });
+      const textureSrc = textures[region.param];
+      const texture = textureSrc ? await loadAsset(origin, textureSrc) : null;
+      if (texture) {
+        fabricZones += 1;
+        layers.push({
+          input: await fabricLayer(
+            texture.buf,
+            mask.buf,
+            colors[region.param],
+            rotation,
+            srcW,
+            srcH,
+          ),
+          blend: "multiply",
+        });
+      } else {
+        layers.push({
+          input: await tintLayer(mask.buf, colors[region.param], srcW, srcH),
+          blend: "multiply",
+        });
+      }
     }
     if (layers.length === 0) return { dataUri: null, trace: "no-masks" };
 
@@ -187,7 +256,9 @@ export async function composeKonfigPhoto(
       dataUri: `data:image/png;base64,${png.toString("base64")}`,
       width: outW,
       height: outH,
-      trace: `${base.source}:${layers.length}L:${Math.round(png.byteLength / 1024)}kb`,
+      trace: `${base.source}:${layers.length}L:${fabricZones}F:r${rotation}:${Math.round(
+        png.byteLength / 1024,
+      )}kb`,
     };
   } catch (err) {
     return {

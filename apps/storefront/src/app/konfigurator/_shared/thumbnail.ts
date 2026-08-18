@@ -1,7 +1,8 @@
 "use client";
 
 import type { KonfigRegistryEntry } from "./registry";
-import { swatchHexOrDefault } from "./registry";
+import { swatchHexOrDefault, swatchTextureOrDefault } from "./registry";
+import type { MusterRotation } from "./rotation";
 
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
 
@@ -20,15 +21,52 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   return p;
 }
 
+/** Must match TILE_PERCENT in zone-overlay.tsx — the preview's tile scale. */
+const TILE_FRACTION = 0.42;
+
+/**
+ * Paints the fabric print into `tctx`, tiled and rotated exactly like the
+ * preview's CSS background. Returns false when the browser cannot transform a
+ * canvas pattern, so the caller can fall back to the flat average colour.
+ */
+function paintFabric(
+  tctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  w: number,
+  h: number,
+  rotation: MusterRotation,
+): boolean {
+  const pattern = tctx.createPattern(img, "repeat");
+  if (!pattern || typeof DOMMatrix === "undefined" || !pattern.setTransform) return false;
+  const scale = (TILE_FRACTION * w) / (img.naturalWidth || img.width || 1);
+  // Centre one tile on the canvas centre, then rotate about that point — the
+  // CSS side uses `background-position: center`, so the phase lines up.
+  pattern.setTransform(
+    new DOMMatrix()
+      .translateSelf(w / 2, h / 2)
+      .rotateSelf(rotation)
+      .scaleSelf(scale)
+      .translateSelf(-(img.naturalWidth || 1) / 2, -(img.naturalHeight || 1) / 2),
+  );
+  tctx.fillStyle = pattern;
+  tctx.fillRect(0, 0, w, h);
+  return true;
+}
+
 /**
  * Composite the konfigurator preview into a PNG data URL of the given max
  * dimension, mirroring the on-screen mix-blend-mode:multiply / mask-image
  * stack. Runs entirely in the browser.
+ *
+ * BIL-2492: fabric prints and their rotation are rendered too. Before that the
+ * thumbnail only ever painted the swatch's average colour, so a saved "Stoff
+ * 14" card was indistinguishable from a saved pastel-blue uni.
  */
 export async function renderKonfigThumbnail(
   konfig: KonfigRegistryEntry,
   selection: Record<string, string>,
   maxSize = 240,
+  rotation: MusterRotation = 0,
 ): Promise<string> {
   const scale = Math.min(1, maxSize / Math.max(konfig.width, konfig.height));
   const w = Math.round(konfig.width * scale);
@@ -49,6 +87,7 @@ export async function renderKonfigThumbnail(
 
   for (const region of konfig.regions) {
     const color = swatchHexOrDefault(selection[region.param], region.defaultColor);
+    const textureSrc = swatchTextureOrDefault(selection[region.param], region.defaultColor);
     const mask = await loadImage(region.src);
 
     const tint = document.createElement("canvas");
@@ -56,8 +95,20 @@ export async function renderKonfigThumbnail(
     tint.height = h;
     const tctx = tint.getContext("2d");
     if (!tctx) continue;
+
+    // Average colour first — it stays visible if the fabric fails to load and
+    // it is the whole fill for uni swatches.
     tctx.fillStyle = color;
     tctx.fillRect(0, 0, w, h);
+    if (textureSrc) {
+      try {
+        const fabric = await loadImage(textureSrc);
+        paintFabric(tctx, fabric, w, h, rotation);
+      } catch {
+        // keep the flat fill
+      }
+    }
+
     tctx.globalCompositeOperation = "destination-in";
     tctx.drawImage(mask, 0, 0, w, h);
 

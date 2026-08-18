@@ -1,4 +1,5 @@
 import { FABRICS, PALETTE } from "../hose/palette";
+import { ROTATION_PARAM, type MusterRotation } from "./rotation";
 
 /** Uni palette + board-delivered fabric prints, in one flat lookup. */
 const ALL_SWATCHES = [...PALETTE, ...FABRICS];
@@ -184,6 +185,20 @@ export function swatchHexOrDefault(id: string | null | undefined, fallback: stri
   return byId[id ?? ""] ?? byId[fallback] ?? "#FAF7F2";
 }
 
+/**
+ * Resolves a swatch id → tileable fabric photo, or `null` for uni colours.
+ * Used by the share card and the saved-config thumbnail so both render the
+ * same print the live preview does (BIL-2492).
+ */
+export function swatchTextureOrDefault(
+  id: string | null | undefined,
+  fallback: string,
+): string | null {
+  const byId: Record<string, string | undefined> = {};
+  for (const s of ALL_SWATCHES) byId[s.id] = s.textureSrc;
+  return byId[id ?? ""] ?? byId[fallback] ?? null;
+}
+
 /** Resolves a swatch id → human name, falling back to the region default. */
 export function swatchNameOrDefault(id: string | null | undefined, fallback: string): string {
   const byId: Record<string, string> = {};
@@ -212,11 +227,13 @@ export function selectionFromSearch(
 export function canonicalQuery(
   konfig: KonfigRegistryEntry,
   selection: Record<string, string>,
+  rotation: MusterRotation = 0,
 ): string {
   const params = new URLSearchParams();
   for (const r of konfig.regions) {
     const val = selection[r.param];
     if (val && val !== r.defaultColor) params.set(r.param, val);
   }
+  if (rotation !== 0) params.set(ROTATION_PARAM, String(rotation));
   return params.toString();
 }

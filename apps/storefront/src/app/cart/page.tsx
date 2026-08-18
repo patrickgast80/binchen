@@ -32,6 +32,8 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
       { label: "Hose", value: hoseName },
       { label: "Bündchen", value: asStr(m.buendchenName) },
     ].filter((e): e is { label: string; value: string } => e.value !== null);
+    const turn = musterRotation(m);
+    if (turn) entries.push(turn);
     return { title: "Konfigurator-Hose", entries, configHref: asStr(m.configHref) };
   }
 
@@ -40,6 +42,8 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
       { label: "Turban", value: asStr(m.turbanName) },
       { label: "Schleife", value: asStr(m.schleifeName) },
     ].filter((e): e is { label: string; value: string } => e.value !== null);
+    const turn = musterRotation(m);
+    if (turn) entries.push(turn);
     return { title: "Konfigurator-Turban", entries, configHref: asStr(m.configHref) };
   }
 
@@ -48,6 +52,8 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
       { label: "Mütze", value: asStr(m.muetzeName) },
       { label: "Futter", value: asStr(m.futterName) },
     ].filter((e): e is { label: string; value: string } => e.value !== null);
+    const turn = musterRotation(m);
+    if (turn) entries.push(turn);
     return { title: "Konfigurator-Mütze", entries, configHref: asStr(m.configHref) };
   }
 
@@ -55,6 +61,8 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
     const entries = [
       { label: "Tuch", value: asStr(m.tuchName) },
     ].filter((e): e is { label: string; value: string } => e.value !== null);
+    const turn = musterRotation(m);
+    if (turn) entries.push(turn);
     return { title: "Konfigurator-Dreieckstuch", entries, configHref: asStr(m.configHref) };
   }
 
@@ -64,10 +72,22 @@ function konfiguratorSelection(item: CartLineItem): KonfiguratorSelection | null
       { label: "Halsbündchen", value: asStr(m.halsbundName) },
       { label: "Ärmelbündchen", value: asStr(m.aermelbundName) },
     ].filter((e): e is { label: string; value: string } => e.value !== null);
+    const turn = musterRotation(m);
+    if (turn) entries.push(turn);
     return { title: "Konfigurator-Body", entries, configHref: asStr(m.configHref) };
   }
 
   return null;
+}
+
+/**
+ * Fabric orientation (BIL-2492) as a cart-line entry. Only rendered when the
+ * shopper actually turned the print — an unrotated order gains no noise line.
+ */
+function musterRotation(m: Record<string, unknown>): { label: string; value: string } | null {
+  const deg = Number(m.musterRotation);
+  if (deg !== 90 && deg !== 180 && deg !== 270) return null;
+  return { label: "Muster", value: `${deg}° gedreht` };
 }
 
 export const metadata: Metadata = {

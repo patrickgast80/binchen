@@ -14,25 +14,36 @@ import {
 } from "./registry";
 import { renderKonfigThumbnail } from "./thumbnail";
 import { useSavedConfigs, type SavedConfig } from "./saved-configs-store";
+import { type MusterRotation, rotationLabel } from "./rotation";
 
 interface SavedConfigsSectionProps {
   konfigurator: KonfiguratorId;
   selection: Record<string, string>;
   href: string;
+  /** Fabric rotation baked into the thumbnail and the generated name (BIL-2492). */
+  rotation?: MusterRotation;
 }
 
-function defaultName(konfigurator: KonfiguratorId, selection: Record<string, string>): string {
+function defaultName(
+  konfigurator: KonfiguratorId,
+  selection: Record<string, string>,
+  rotation: MusterRotation,
+): string {
   const konfig = KONFIG_REGISTRY[konfigurator];
   const parts = konfig.regions
     .map((r) => swatchNameOrDefault(selection[r.param], r.defaultColor))
     .join(" · ");
-  return `${konfig.productLabel} — ${parts}`;
+  // Only mention the angle when it is not the default — otherwise every saved
+  // name would carry a noisy "· Muster 0°".
+  const turn = rotation === 0 ? "" : ` · Muster ${rotationLabel(rotation)}`;
+  return `${konfig.productLabel} — ${parts}${turn}`;
 }
 
 export function SavedConfigsSection({
   konfigurator,
   selection,
   href,
+  rotation = 0,
 }: SavedConfigsSectionProps) {
   const { entries, save, rename, remove, isHydrated } = useSavedConfigs(konfigurator);
   const [busy, setBusy] = React.useState<"idle" | "saving">("idle");
@@ -48,8 +59,9 @@ export function SavedConfigsSection({
         KONFIG_REGISTRY[konfigurator],
         selection,
         240,
+        rotation,
       );
-      const name = defaultName(konfigurator, selection);
+      const name = defaultName(konfigurator, selection, rotation);
       save({ name, href, thumbnail });
       setFlash("Konfiguration gemerkt");
       window.setTimeout(() => setFlash(null), 2200);
@@ -60,7 +72,7 @@ export function SavedConfigsSection({
     } finally {
       setBusy("idle");
     }
-  }, [busy, href, konfigurator, save, selection]);
+  }, [busy, href, konfigurator, rotation, save, selection]);
 
   const startRename = (entry: SavedConfig) => {
     setEditingId(entry.id);

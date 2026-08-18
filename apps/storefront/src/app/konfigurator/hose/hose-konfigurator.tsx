@@ -22,6 +22,13 @@ import {
 import { PantsPhoto, type PantsPhotoPaints } from "./pants-photo";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
+import { MusterRotationControl } from "../_shared/muster-rotation-control";
+import {
+  ROTATION_PARAM,
+  nextRotation,
+  parseRotation,
+  rotationLabel,
+} from "../_shared/rotation";
 
 type Selection = Record<RegionDef["param"], string>;
 
@@ -47,6 +54,9 @@ export function HoseKonfigurator() {
   const searchParams = useSearchParams();
 
   const selection = React.useMemo(() => buildSelection(searchParams), [searchParams]);
+  // BIL-2492 — quarter turn for the fabric print. Lives in the query string so
+  // shared links and saved configurations carry it like every colour choice.
+  const rotation = parseRotation(searchParams?.get(ROTATION_PARAM));
   const [lastChanged, setLastChanged] = React.useState<{
     region: string;
     swatch: string;
@@ -56,14 +66,17 @@ export function HoseKonfigurator() {
   const paints: PantsPhotoPaints = React.useMemo(() => {
     const toPaint = (id: string, fallback: string) => {
       const s = resolveSwatch(id, fallback);
-      return { hex: s.hex, textureSrc: s.textureSrc };
+      return { hex: s.hex, textureSrc: s.textureSrc, rotation };
     };
     return {
       bund: toPaint(selection.bund, "petrol"),
       hose: toPaint(selection.hose, "cream"),
       buendchen: toPaint(selection.buendchen, "petrol"),
     };
-  }, [selection]);
+  }, [rotation, selection]);
+
+  /** True while the main zone actually carries a print worth rotating. */
+  const hasFabric = Boolean(resolveSwatch(selection.hose, "cream").textureSrc);
 
   const updateRegion = React.useCallback(
     (region: RegionDef, swatch: Swatch) => {
@@ -86,6 +99,17 @@ export function HoseKonfigurator() {
     },
     [pathname, router, searchParams],
   );
+
+  const handleRotate = React.useCallback(() => {
+    const next = new URLSearchParams(searchParams?.toString() ?? "");
+    const value = nextRotation(rotation);
+    if (value === 0) next.delete(ROTATION_PARAM);
+    else next.set(ROTATION_PARAM, String(value));
+    const query = next.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    setLastChanged({ region: "Muster", swatch: `${rotationLabel(value)} gedreht` });
+    setShareStatus("idle");
+  }, [pathname, rotation, router, searchParams]);
 
   const handleReset = React.useCallback(() => {
     router.replace(pathname, { scroll: false });
@@ -113,7 +137,7 @@ export function HoseKonfigurator() {
     }
   }, []);
 
-  const showReset = !isDefaultSelection(selection);
+  const showReset = !isDefaultSelection(selection) || rotation !== 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-[calc(var(--binchen-palette-sheet-h,280px)+2rem)] pt-8 sm:px-6 sm:pt-12 md:pb-20 lg:px-8">
@@ -199,6 +223,13 @@ export function HoseKonfigurator() {
             </dl>
 
             <div className="flex flex-wrap gap-2">
+              {hasFabric && (
+                <MusterRotationControl
+                  rotation={rotation}
+                  onRotate={handleRotate}
+                  zoneLabel="Hose"
+                />
+              )}
               <Button
                 type="button"
                 variant="outline"
@@ -230,6 +261,7 @@ export function HoseKonfigurator() {
           <SavedConfigsSection
             konfigurator="hose"
             selection={selection}
+            rotation={rotation}
             href={(() => {
               const q = searchParams?.toString() ?? "";
               return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/hose";
@@ -324,6 +356,9 @@ export function HoseKonfigurator() {
                 </React.Fragment>
               );
             })}
+            {/* Orientation travels with the order so the cart line — and Sabine's
+                sewing note — say which way the print runs. */}
+            <input type="hidden" name="musterRotation" value={String(rotation)} />
             <input
               type="hidden"
               name="configHref"
@@ -371,6 +406,8 @@ export function HoseKonfigurator() {
       <MobilePaletteSheet
         regions={REGIONS}
         selection={selection}
+        rotation={rotation}
+        onRotate={handleRotate}
         onSelect={(region, swatch) =>
           updateRegion(region as RegionDef, swatch)
         }

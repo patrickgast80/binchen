@@ -59,9 +59,9 @@ export function BodyPhoto({ paints, title = "Body-Vorschau", className }: BodyPh
           pointerEvents: "none",
         }}
       />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-hauptteil.webp`} paint={paints.hauptteil} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-halsbund.webp`} paint={paints.halsbund} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-aermelbund.webp`} paint={paints.aermelbund} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-hauptteil.webp`} paint={paints.hauptteil} ratio={ASSET_W / ASSET_H} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-halsbund.webp`} paint={paints.halsbund} ratio={ASSET_W / ASSET_H} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-aermelbund.webp`} paint={paints.aermelbund} ratio={ASSET_W / ASSET_H} />
     </div>
   );
 }

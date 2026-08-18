@@ -52,6 +52,17 @@ export async function removeFromCartAction(lineId: string): Promise<void> {
  * Legacy 4-region params (links/rechts) still round-trip via shared URLs, but
  * the client normalises them to `hose` before submit — no legacy branch here.
  */
+/**
+ * Fabric orientation chosen in the konfigurator (BIL-2492), as a plain number
+ * of degrees. Stored on the line item so the cart line and the order Sabine
+ * receives say which way the print runs. Anything unexpected collapses to 0 —
+ * a hand-crafted POST must not put "90deg please" into an order.
+ */
+function parseMusterRotation(raw: FormDataEntryValue | null): 0 | 90 | 180 | 270 {
+  const n = Number(String(raw ?? "").trim());
+  return n === 90 || n === 180 || n === 270 ? n : 0;
+}
+
 export async function addConfiguredHoseToCartAction(formData: FormData): Promise<void> {
   // Prefer the current `hose` field; fall back to legacy `links` (then
   // `rechts`) if a stale form submits the pre-BIL-2417 field names.
@@ -74,6 +85,7 @@ export async function addConfiguredHoseToCartAction(formData: FormData): Promise
     bundName: String(formData.get("bundName") ?? "").trim() || null,
     hoseName,
     buendchenName: String(formData.get("buendchenName") ?? "").trim() || null,
+    musterRotation: parseMusterRotation(formData.get("musterRotation")),
     configHref: String(formData.get("configHref") ?? "").trim() || null,
   };
 
@@ -109,6 +121,7 @@ export async function addConfiguredTurbanToCartAction(formData: FormData): Promi
     schleife: String(formData.get("schleife") ?? "").trim() || null,
     turbanName: String(formData.get("turbanName") ?? "").trim() || null,
     schleifeName: String(formData.get("schleifeName") ?? "").trim() || null,
+    musterRotation: parseMusterRotation(formData.get("musterRotation")),
     configHref: String(formData.get("configHref") ?? "").trim() || null,
   };
 
@@ -144,6 +157,7 @@ export async function addConfiguredMuetzeToCartAction(formData: FormData): Promi
     futter: String(formData.get("futter") ?? "").trim() || null,
     muetzeName: String(formData.get("muetzeName") ?? "").trim() || null,
     futterName: String(formData.get("futterName") ?? "").trim() || null,
+    musterRotation: parseMusterRotation(formData.get("musterRotation")),
     configHref: String(formData.get("configHref") ?? "").trim() || null,
   };
 
@@ -182,6 +196,7 @@ export async function addConfiguredBodyToCartAction(formData: FormData): Promise
     hauptteilName: String(formData.get("hauptteilName") ?? "").trim() || null,
     halsbundName: String(formData.get("halsbundName") ?? "").trim() || null,
     aermelbundName: String(formData.get("aermelbundName") ?? "").trim() || null,
+    musterRotation: parseMusterRotation(formData.get("musterRotation")),
     configHref: String(formData.get("configHref") ?? "").trim() || null,
   };
 
@@ -215,6 +230,7 @@ export async function addConfiguredDreieckstuchToCartAction(formData: FormData):
     kind: "konfigurator-dreieckstuch" as const,
     tuch: String(formData.get("tuch") ?? "").trim() || null,
     tuchName: String(formData.get("tuchName") ?? "").trim() || null,
+    musterRotation: parseMusterRotation(formData.get("musterRotation")),
     configHref: String(formData.get("configHref") ?? "").trim() || null,
   };
 

@@ -21,6 +21,13 @@ import {
 import { TurbanPhoto, type TurbanPhotoPaints } from "./turban-photo";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
+import { MusterRotationControl } from "../_shared/muster-rotation-control";
+import {
+  ROTATION_PARAM,
+  nextRotation,
+  parseRotation,
+  rotationLabel,
+} from "../_shared/rotation";
 
 type Selection = Record<TurbanRegionDef["param"], string>;
 
@@ -41,6 +48,9 @@ export function TurbanKonfigurator() {
   const searchParams = useSearchParams();
 
   const selection = React.useMemo(() => buildSelection(searchParams), [searchParams]);
+  // BIL-2492 — quarter turn for the fabric print. Lives in the query string so
+  // shared links and saved configurations carry it like every colour choice.
+  const rotation = parseRotation(searchParams?.get(ROTATION_PARAM));
   const [lastChanged, setLastChanged] = React.useState<{
     region: string;
     swatch: string;
@@ -50,13 +60,16 @@ export function TurbanKonfigurator() {
   const paints: TurbanPhotoPaints = React.useMemo(() => {
     const toPaint = (id: string, fallback: string) => {
       const s = resolveSwatch(id, fallback);
-      return { hex: s.hex, textureSrc: s.textureSrc };
+      return { hex: s.hex, textureSrc: s.textureSrc, rotation };
     };
     return {
       turban: toPaint(selection.turban, "cream"),
       schleife: toPaint(selection.schleife, "terracotta"),
     };
-  }, [selection]);
+  }, [rotation, selection]);
+
+  /** True while the main zone actually carries a print worth rotating. */
+  const hasFabric = Boolean(resolveSwatch(selection.turban, "cream").textureSrc);
 
   const updateRegion = React.useCallback(
     (region: TurbanRegionDef, swatch: Swatch) => {
@@ -73,6 +86,17 @@ export function TurbanKonfigurator() {
     },
     [pathname, router, searchParams],
   );
+
+  const handleRotate = React.useCallback(() => {
+    const next = new URLSearchParams(searchParams?.toString() ?? "");
+    const value = nextRotation(rotation);
+    if (value === 0) next.delete(ROTATION_PARAM);
+    else next.set(ROTATION_PARAM, String(value));
+    const query = next.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    setLastChanged({ region: "Muster", swatch: `${rotationLabel(value)} gedreht` });
+    setShareStatus("idle");
+  }, [pathname, rotation, router, searchParams]);
 
   const handleReset = React.useCallback(() => {
     router.replace(pathname, { scroll: false });
@@ -100,7 +124,7 @@ export function TurbanKonfigurator() {
     }
   }, []);
 
-  const showReset = !isDefaultSelection(selection);
+  const showReset = !isDefaultSelection(selection) || rotation !== 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-[calc(var(--binchen-palette-sheet-h,280px)+2rem)] pt-8 sm:px-6 sm:pt-12 md:pb-20 lg:px-8">
@@ -200,6 +224,13 @@ export function TurbanKonfigurator() {
             </dl>
 
             <div className="flex flex-wrap gap-2">
+              {hasFabric && (
+                <MusterRotationControl
+                  rotation={rotation}
+                  onRotate={handleRotate}
+                  zoneLabel="Turban"
+                />
+              )}
               <Button
                 type="button"
                 variant="outline"
@@ -231,6 +262,7 @@ export function TurbanKonfigurator() {
           <SavedConfigsSection
             konfigurator="turban"
             selection={selection}
+            rotation={rotation}
             href={(() => {
               const q = searchParams?.toString() ?? "";
               return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/turban";
@@ -325,6 +357,9 @@ export function TurbanKonfigurator() {
                 </React.Fragment>
               );
             })}
+            {/* Orientation travels with the order so the cart line — and Sabine's
+                sewing note — say which way the print runs. */}
+            <input type="hidden" name="musterRotation" value={String(rotation)} />
             <input
               type="hidden"
               name="configHref"
@@ -386,6 +421,8 @@ export function TurbanKonfigurator() {
       <MobilePaletteSheet
         regions={TURBAN_REGIONS}
         selection={selection}
+        rotation={rotation}
+        onRotate={handleRotate}
         onSelect={(region, swatch) =>
           updateRegion(region as TurbanRegionDef, swatch)
         }

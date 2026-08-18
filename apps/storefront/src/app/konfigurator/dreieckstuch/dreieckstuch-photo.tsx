@@ -61,7 +61,7 @@ export function DreieckstuchPhoto({
           pointerEvents: "none",
         }}
       />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-tuch.webp`} paint={paints.tuch} />
+      <ZoneOverlay src={`${ASSET_BASE}/mask-tuch.webp`} paint={paints.tuch} ratio={ASSET_W / ASSET_H} />
     </div>
   );
 }
