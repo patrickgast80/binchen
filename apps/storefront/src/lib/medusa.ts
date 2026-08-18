@@ -128,6 +128,174 @@ function isMedusaErrorBody(body: unknown): body is { type?: string; message?: st
   return typeof body === "object" && body !== null;
 }
 
+// ---------------------------------------------------------------------------
+// BIL-2507: retryable Store-API reads
+// ---------------------------------------------------------------------------
+//
+// QA measured a ~7% silent `?error=variant_unavailable` bounce on the
+// Konfigurator "In den Warenkorb" button (2/29), self-healing on immediate
+// retry. The Medusa endpoint itself is healthy — 124/124 × 200, p99 431ms
+// when probed directly — so the failures are transient blips on the
+// storefront → proxy → Medusa hop, not a missing product.
+//
+// The old code did `if (!res.ok) return null` with zero retries, so ONE
+// dropped connection was indistinguishable from "this product does not
+// exist" and cost a whole order. Two things follow from that:
+//
+//  1. Backpressure & retries: retry the *retryable* classes (transport
+//     errors, 408/425/429, 5xx) with exponential backoff + jitter. Never
+//     retry a 4xx like 401/404 — that is a real answer, and hammering it
+//     just adds latency to a failure the customer still has to see.
+//  2. Structured logging: every attempt emits one JSON line sharing a
+//     `requestId`, so a customer-reported bounce can be pulled out of the
+//     container log as a whole retry chain instead of a bare 500.
+//
+// Deliberately NOT done: exporting the failure reason so the UI can say
+// "backend down" vs "sold out". The obvious implementation is a module-level
+// `lastFailure` variable, and module scope is shared across concurrent
+// requests on the same server — two shoppers clicking at once would read each
+// other's error. After three retries the honest customer-facing message is
+// the same either way ("bitte gleich nochmal versuchen"), so the distinction
+// does not earn a request-scoped plumbing change.
+//
+// The budget is deliberately small (3 attempts, ~120ms + ~360ms of backoff,
+// 5s per-attempt timeout): this runs inside a click the customer is waiting
+// on. Worst case adds ~1.5s before we give up — a hung socket must not turn
+// into a spinner that never resolves.
+const STORE_RETRY_ATTEMPTS = 3;
+const STORE_RETRY_BASE_DELAY_MS = 120;
+const STORE_ATTEMPT_TIMEOUT_MS = 5_000;
+
+/** Shape of the structured log line emitted for a failed store read. */
+type StoreFetchFailure = {
+  code: "backend_unreachable" | "backend_error" | "backend_rejected";
+  /** True when an immediate retry is likely to succeed. */
+  transient: boolean;
+  status: number;
+  message: string;
+  requestId: string;
+  attempts: number;
+};
+
+function isRetryableStatus(status: number): boolean {
+  return status === 408 || status === 425 || status === 429 || status >= 500;
+}
+
+/** Exponential backoff with full jitter, so parallel tabs don't retry in lockstep. */
+function backoffDelayMs(attempt: number): number {
+  const ceiling = STORE_RETRY_BASE_DELAY_MS * 3 ** attempt;
+  return Math.round(Math.random() * ceiling);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * GET a Store-API endpoint as JSON, retrying transient failures.
+ *
+ * Returns `null` once the retry budget is spent. Every attempt is logged as
+ * one structured line carrying the same `requestId`, so QA can pull a whole
+ * retry chain out of the container log for a single reported bounce.
+ */
+async function fetchStoreJson<T>(
+  url: string,
+  label: string,
+  revalidateSeconds: number,
+): Promise<T | null> {
+  // globalThis.crypto, not `node:crypto` — this module is pulled into the
+  // Next bundle graph and must not force a node-only import.
+  const requestId = `sf_${globalThis.crypto.randomUUID()}`;
+  let last: StoreFetchFailure = {
+    code: "backend_unreachable",
+    transient: true,
+    status: 0,
+    message: "no attempt made",
+    requestId,
+    attempts: 0,
+  };
+
+  for (let attempt = 0; attempt < STORE_RETRY_ATTEMPTS; attempt++) {
+    const startedAt = Date.now();
+    try {
+      const res = await fetch(url, {
+        headers: authHeaders(),
+        next: { revalidate: revalidateSeconds },
+        signal: AbortSignal.timeout(STORE_ATTEMPT_TIMEOUT_MS),
+      });
+      if (res.ok) {
+        if (attempt > 0) {
+          // Loud on purpose: a recovered retry is the signal that the hop is
+          // degrading, and it is invisible to the customer by design.
+          console.warn(
+            JSON.stringify({
+              code: "store_fetch_recovered",
+              label,
+              requestId,
+              attempts: attempt + 1,
+              ms: Date.now() - startedAt,
+            }),
+          );
+        }
+        return (await res.json()) as T;
+      }
+
+      const retryable = isRetryableStatus(res.status);
+      last = {
+        code: retryable ? "backend_error" : "backend_rejected",
+        transient: retryable,
+        status: res.status,
+        message: `${label} responded ${res.status}`,
+        requestId,
+        attempts: attempt + 1,
+      };
+      console.warn(JSON.stringify({ ...last, event: "store_fetch_failed", ms: Date.now() - startedAt }));
+      // A 401/404 is a real answer — retrying only delays the error the
+      // customer has to be shown anyway.
+      if (!retryable) break;
+    } catch (err) {
+      const isTimeout = err instanceof Error && err.name === "TimeoutError";
+      last = {
+        code: "backend_unreachable",
+        transient: true,
+        status: 0,
+        message: `${label} ${isTimeout ? "timed out" : "transport error"}: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+        requestId,
+        attempts: attempt + 1,
+      };
+      console.warn(JSON.stringify({ ...last, event: "store_fetch_failed", ms: Date.now() - startedAt }));
+    }
+
+    if (attempt < STORE_RETRY_ATTEMPTS - 1) await sleep(backoffDelayMs(attempt));
+  }
+
+  console.error(JSON.stringify({ ...last, event: "store_fetch_gave_up", label }));
+  return null;
+}
+
+/**
+ * Shared product read behind every Konfigurator variant resolver (BIL-2507).
+ *
+ * All six configurators used to inline the same four lines; they now share
+ * one retrying read so a fix here reaches hose, hose-kurz, turban, muetze,
+ * body and dreieckstuch at once instead of five of six.
+ */
+async function fetchConfiguratorProducts(
+  limit: number,
+  label: string,
+): Promise<MedusaProduct[] | null> {
+  if (!BACKEND_URL) return null;
+  const url = new URL(`${BACKEND_URL}/store/products`);
+  url.searchParams.set("limit", String(limit));
+  const regionId = await getDefaultRegionId();
+  if (regionId) url.searchParams.set("region_id", regionId);
+  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
+  const body = await fetchStoreJson<{ products: MedusaProduct[] }>(url.toString(), label, 60);
+  return body?.products ?? null;
+}
+
 /**
  * "kurz" as a standalone word — BIL-2499. Used to keep the long-Hose resolver
  * and the short-Hose resolver from ever picking each other's product. Word
@@ -152,17 +320,10 @@ export async function getConfiguratorHoseVariant(): Promise<
   if (envVariant && BACKEND_URL) {
     // We still need price/currency for display; fall through to product lookup below.
   }
-  if (!BACKEND_URL) return null;
-  const url = new URL(`${BACKEND_URL}/store/products`);
-  url.searchParams.set("limit", "20");
   // BIL-2438: pull calculated_price via pricing context so the konfigurator
   // teaser price is a real number, not the legacy zero-fallback.
-  const regionId = await getDefaultRegionId();
-  if (regionId) url.searchParams.set("region_id", regionId);
-  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
-  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
-  if (!res.ok) return null;
-  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const products = await fetchConfiguratorProducts(20, "konfigurator-hose");
+  if (!products) return null;
   // BIL-2499: prefer the product that says "Konfigurator" outright, and never
   // match a "kurz" product. Before that this took the FIRST /pumphose/i hit,
   // which only worked because "Bilulu-Pumphose (Konfigurator)" happens to sort
@@ -208,15 +369,8 @@ export async function getConfiguratorHoseKurzVariant(): Promise<
   { variantId: string; productId: string; priceAmount: number; currency: string } | null
 > {
   const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_HOSE_KURZ_VARIANT_ID?.trim();
-  if (!BACKEND_URL) return null;
-  const url = new URL(`${BACKEND_URL}/store/products`);
-  url.searchParams.set("limit", "50");
-  const regionId = await getDefaultRegionId();
-  if (regionId) url.searchParams.set("region_id", regionId);
-  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
-  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
-  if (!res.ok) return null;
-  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const products = await fetchConfiguratorProducts(50, "konfigurator-hose-kurz");
+  if (!products) return null;
   const hose =
     products.find((p) => KURZ.test(p.title) && /konfigurator/i.test(p.title)) ??
     products.find((p) => /pumphose/i.test(p.title) && /konfigurator/i.test(p.title));
@@ -244,15 +398,8 @@ export async function getConfiguratorTurbanVariant(): Promise<
   { variantId: string; productId: string; priceAmount: number; currency: string } | null
 > {
   const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_TURBAN_VARIANT_ID?.trim();
-  if (!BACKEND_URL) return null;
-  const url = new URL(`${BACKEND_URL}/store/products`);
-  url.searchParams.set("limit", "50");
-  const regionId = await getDefaultRegionId();
-  if (regionId) url.searchParams.set("region_id", regionId);
-  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
-  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
-  if (!res.ok) return null;
-  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const products = await fetchConfiguratorProducts(50, "konfigurator-turban");
+  if (!products) return null;
   const turban = products.find((p) => /turban/i.test(p.title));
   if (!turban) return null;
   const variant =
@@ -278,15 +425,8 @@ export async function getConfiguratorMuetzeVariant(): Promise<
   { variantId: string; productId: string; priceAmount: number; currency: string } | null
 > {
   const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_MUETZE_VARIANT_ID?.trim();
-  if (!BACKEND_URL) return null;
-  const url = new URL(`${BACKEND_URL}/store/products`);
-  url.searchParams.set("limit", "50");
-  const regionId = await getDefaultRegionId();
-  if (regionId) url.searchParams.set("region_id", regionId);
-  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
-  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
-  if (!res.ok) return null;
-  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const products = await fetchConfiguratorProducts(50, "konfigurator-muetze");
+  if (!products) return null;
   const muetze = products.find(
     (p) => /m(ü|ue)tze/i.test(p.title) && !/turban/i.test(p.title),
   );
@@ -313,15 +453,8 @@ export async function getConfiguratorDreieckstuchVariant(): Promise<
   { variantId: string; productId: string; priceAmount: number; currency: string } | null
 > {
   const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_DREIECKSTUCH_VARIANT_ID?.trim();
-  if (!BACKEND_URL) return null;
-  const url = new URL(`${BACKEND_URL}/store/products`);
-  url.searchParams.set("limit", "50");
-  const regionId = await getDefaultRegionId();
-  if (regionId) url.searchParams.set("region_id", regionId);
-  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
-  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
-  if (!res.ok) return null;
-  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const products = await fetchConfiguratorProducts(50, "konfigurator-dreieckstuch");
+  if (!products) return null;
   const tuch = products.find((p) => /dreieckstuch/i.test(p.title));
   if (!tuch) return null;
   const variant =
@@ -349,15 +482,8 @@ export async function getConfiguratorBodyVariant(): Promise<
   { variantId: string; productId: string; priceAmount: number; currency: string } | null
 > {
   const envVariant = process.env.NEXT_PUBLIC_CONFIGURATOR_BODY_VARIANT_ID?.trim();
-  if (!BACKEND_URL) return null;
-  const url = new URL(`${BACKEND_URL}/store/products`);
-  url.searchParams.set("limit", "50");
-  const regionId = await getDefaultRegionId();
-  if (regionId) url.searchParams.set("region_id", regionId);
-  url.searchParams.set("fields", PRODUCT_PRICE_FIELDS);
-  const res = await fetch(url.toString(), { headers: authHeaders(), next: { revalidate: 60 } });
-  if (!res.ok) return null;
-  const { products } = (await res.json()) as { products: MedusaProduct[] };
+  const products = await fetchConfiguratorProducts(50, "konfigurator-body");
+  if (!products) return null;
   const body = products.find((p) => /\bbody\b/i.test(p.title));
   if (!body) return null;
   const variant =
@@ -488,12 +614,16 @@ let cachedRegionId: string | null = null;
 export async function getDefaultRegionId(): Promise<string | null> {
   if (cachedRegionId) return cachedRegionId;
   if (!BACKEND_URL) return null;
-  const res = await fetch(`${BACKEND_URL}/store/regions`, {
-    headers: authHeaders(),
-    next: { revalidate: 300 },
-  });
-  if (!res.ok) return null;
-  const { regions } = (await res.json()) as { regions: Region[] };
+  // BIL-2507: retried too. A dropped region read does not bounce the cart, it
+  // silently drops `region_id` from the product query — which costs the
+  // calculated_price and renders 0,00 € (BIL-2438). Quieter failure, worse.
+  const body = await fetchStoreJson<{ regions: Region[] }>(
+    `${BACKEND_URL}/store/regions`,
+    "store-regions",
+    300,
+  );
+  if (!body) return null;
+  const { regions } = body;
   const de = regions.find((r) => r.countries?.some((c) => c.iso_2.toLowerCase() === "de"));
   cachedRegionId = de?.id ?? regions[0]?.id ?? null;
   return cachedRegionId;
