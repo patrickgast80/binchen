@@ -340,6 +340,59 @@ täglich (`server_settings.docker_cleanup_frequency='0 * * * *'`, server_id=0).
 Rollback: Wert zurück auf `'0 0 * * *'` setzen. Die 38-GB-Platte verkraftet
 sonst keinen Tag mit 5+ Storefront-Builds (je ~2-4 GB Image + Build-Cache).
 
+## Health-gated Deploy-Cutover (BIL-2511)
+
+**Warum:** Ohne Container-Healthcheck erklärt Coolify (4.1.2) den frisch
+gestarteten Container **sofort** für gesund (`health_check()` returnt bei
+`isHealthcheckDisabled() && !custom_healthcheck_found` direkt mit
+`newVersionIsHealthy = true`) und stoppt den alten — beim Medusa-Backend
+bedeutete das ~45 s 502 pro Deploy (Migrationen + Seeds laufen vor
+`medusa start`). Gemessen in BIL-2507/2511: 44 s Ausfall, 28/28
+Warenkorb-Klicks im Fenster gescheitert.
+
+**Mechanik:** Beide Dockerfiles (`apps/storefront/Dockerfile`,
+`apps/backend/Dockerfile`) tragen ein `HEALTHCHECK` auf Basis von
+`node -e "require('http').get(…)"` (kein curl/wget im Image nötig).
+Coolify parst die `--interval/--timeout/--start-period/--retries`-Flags bei
+**jedem Deploy** aus dem Dockerfile in seine eigene Wait-Loop
+(`parseHealthcheckFromDockerfile`, sichtbar als `custom_healthcheck_found`
+am `GET /applications/{uuid}`). Ablauf pro Deploy: neuen Container starten →
+auf Docker-`healthy` warten → alten Container graceful stoppen (erst dann
+fliegt er aus Traefik). Wird der neue Container nie gesund: Deploy failt,
+**der alte Container serviert weiter** (eingebautes Rollback).
+
+Backend-Werte: `--interval=5s --timeout=5s --start-period=30s --retries=30`
+→ Boot-Toleranz ≈ 30 s + 30×5 s = 180 s. Medusa-Boot liegt bei ~45–60 s
+(db:migrate + 5 Seed-Skripte + Start). `/health` antwortet erst, wenn der
+HTTP-Server lauscht, also erst nach allen Boot-Schritten — 200 ⇒ wirklich bereit.
+
+**Nicht in Coolify-UI nachziehen:** `health_check_enabled` bleibt `false` —
+das Dockerfile ist die Single Source of Truth. Coolifys eigener
+(curl-basierter) Healthcheck würde in `node:alpine` fehlschlagen.
+
+**Check nach Dockerfile-Änderungen am HEALTHCHECK:**
+```
+curl -s -H "Authorization: Bearer $COOLIFY_PAT" \
+  "$COOLIFY_API_BASE/applications/$COOLIFY_BACKEND_UUID" \
+  | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d);console.log('custom_healthcheck_found:',j.custom_healthcheck_found,'retries:',j.health_check_retries)})"
+ssh deploy@188.245.40.74 'sudo docker ps --format "{{.Names}}\t{{.Status}}" | grep -E "f12ixtdb|k3apwpfe"'
+# beide Container müssen "(healthy)" zeigen
+```
+Cutover live vermessen (1,5-s-Proben gegen bilulu.de + api.bilulu.de):
+`node apps/backend/scripts/bil2507/watch-cutover.mjs --minutes 14`.
+
+**Bekannter Rest (by design):** Während des Rolling Updates servieren alter
+und neuer Container ~10–15 s parallel (Storefront-ETag wechselt hin und her).
+Für die API harmlos; im Storefront kann ein Asset-Request mit Build-ID des
+einen Containers beim anderen landen (404 auf `/_next/static/<buildid>/…`),
+heilt sich nach dem Fenster selbst. Erst angehen (Sticky-Sessions via
+Traefik-Label), falls QA es je als echtes Problem sieht.
+
+**Rollback:** `git revert 091246b` (Backend-HEALTHCHECK raus) → nächstes
+Deploy fällt auf Sofort-Cutover zurück; Coolify setzt
+`custom_healthcheck_found` beim nächsten Deploy selbst zurück, wenn kein
+`HEALTHCHECK` mehr im Dockerfile steht.
+
 ## Telegram-Bridge (BIL-2481)
 
 Lokaler Long-Polling-Daemon auf der **Windows-Maschine** (nicht Hetzner!),
