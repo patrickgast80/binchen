@@ -1,0 +1,110 @@
+[
+  {
+    "surface": "hose",
+    "viewport": "mobile",
+    "bannerOnControl": 0,
+    "bannerOnError": 1,
+    "role": "alert",
+    "bannerText": "Das hat gerade nicht geklappt Deine Auswahl ist noch da — wir konnten sie nur gerade nicht in den Warenkorb legen. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+    "summary": "Bund: Salbei Hose: Stoff 05 Bündchen: Terrakotta",
+    "axeViolations": []
+  },
+  {
+    "surface": "hose-kurz",
+    "viewport": "mobile",
+    "bannerOnControl": 0,
+    "bannerOnError": 1,
+    "role": "alert",
+    "bannerText": "Das hat gerade nicht geklappt Deine Auswahl ist noch da — wir konnten sie nur gerade nicht in den Warenkorb legen. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+    "summary": "Bund: Himmelblau Hose: Stoff 05 Bündchen: Puderrosa",
+    "axeViolations": []
+  },
+  {
+    "surface": "turban",
+    "viewport": "mobile",
+    "bannerOnControl": 0,
+    "bannerOnError": 1,
+    "role": "alert",
+    "bannerText": "Das hat gerade nicht geklappt Deine Auswahl ist noch da — wir konnten sie nur gerade nicht in den Warenkorb legen. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+    "summary": "Turban: Stoff 05 Schleife: Terrakotta",
+    "axeViolations": []
+  },
+  {
+    "surface": "muetze",
+    "viewport": "mobile",
+    "bannerOnControl": 0,
+    "bannerOnError": 1,
+    "role": "alert",
+    "bannerText": "Das hat gerade nicht geklappt Deine Auswahl ist noch da — wir konnten sie nur gerade nicht in den Warenkorb legen. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+    "summary": "Mütze: Stoff 05 Futter: Salbei",
+    "axeViolations": []
+  },
+  {
+    "surface": "dreieckstuch",
+    "viewport": "mobile",
+    "bannerOnControl": 0,
+    "bannerOnError": 1,
+    "role": "alert",
+    "bannerText": "Das hat gerade nicht geklappt Deine Auswahl ist noch da — wir konnten sie nur gerade nicht in den Warenkorb legen. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+    "summary": "Tuch: Stoff 05",
+    "axeViolations": []
+  },
+  {
+    "viewport": "mobile",
+    "consoleErrors": []
+  },
+  {
+    "surface": "hose",
+    "viewport": "desktop",
+    "bannerOnControl": 0,
+    "bannerOnError": 1,
+    "role": "alert",
+    "bannerText": "Das hat gerade nicht geklappt Deine Auswahl ist noch da — wir konnten sie nur gerade nicht in den Warenkorb legen. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+    "summary": "Bund: Salbei Hose: Stoff 05 Bündchen: Terrakotta",
+    "axeViolations": []
+  },
+  {
+    "surface": "hose-kurz",
+    "viewport": "desktop",
+    "bannerOnControl": 0,
+    "bannerOnError": 1,
+    "role": "alert",
+    "bannerText": "Das hat gerade nicht geklappt Deine Auswahl ist noch da — wir konnten sie nur gerade nicht in den Warenkorb legen. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+    "summary": "Bund: Himmelblau Hose: Stoff 05 Bündchen: Puderrosa",
+    "axeViolations": []
+  },
+  {
+    "surface": "turban",
+    "viewport": "desktop",
+    "bannerOnControl": 0,
+    "bannerOnError": 1,
+    "role": "alert",
+    "bannerText": "Das hat gerade nicht geklappt Deine Auswahl ist noch da — wir konnten sie nur gerade nicht in den Warenkorb legen. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+    "summary": "Turban: Stoff 05 Schleife: Terrakotta",
+    "axeViolations": []
+  },
+  {
+    "surface": "muetze",
+    "viewport": "desktop",
+    "bannerOnControl": 0,
+    "bannerOnError": 1,
+    "role": "alert",
+    "bannerText": "Das hat gerade nicht geklappt Deine Auswahl ist noch da — wir konnten sie nur gerade nicht in den Warenkorb legen. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+    "summary": "Mütze: Stoff 05 Futter: Salbei",
+    "axeViolations": []
+  },
+  {
+    "surface": "dreieckstuch",
+    "viewport": "desktop",
+    "bannerOnControl": 0,
+    "bannerOnError": 1,
+    "role": "alert",
+    "bannerText": "Das hat gerade nicht geklappt Deine Auswahl ist noch da — wir konnten sie nur gerade nicht in den Warenkorb legen. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+    "summary": "Tuch: Stoff 05",
+    "axeViolations": []
+  },
+  {
+    "viewport": "desktop",
+    "consoleErrors": []
+  }
+]

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { KonfiguratorErrorBanner } from "../_shared/konfigurator-error";
 import { buildKonfigMetadata } from "../_shared/metadata";
 import { DreieckstuchKonfigurator } from "./dreieckstuch-konfigurator";
 
@@ -20,6 +21,15 @@ export function generateMetadata({
   });
 }
 
-export default function DreieckstuchKonfiguratorPage() {
-  return <DreieckstuchKonfigurator />;
+export default function DreieckstuchKonfiguratorPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  return (
+    <>
+      <KonfiguratorErrorBanner error={searchParams.error} />
+      <DreieckstuchKonfigurator />
+    </>
+  );
 }

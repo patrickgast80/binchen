@@ -64,6 +64,31 @@ function parseMusterRotation(raw: FormDataEntryValue | null): 0 | 90 | 180 | 270
   return n === 90 || n === 180 || n === 270 ? n : 0;
 }
 
+/**
+ * Bounce back to the konfigurator with a *visible* failure — BIL-2510.
+ *
+ * Two things have to be true for the retry to make sense:
+ *
+ *  - `?error=` survives, because that is what the page turns into a banner
+ *    (see app/konfigurator/_shared/konfigurator-error.tsx).
+ *  - the customer's colours survive. `configHref` is the URL she was actually
+ *    looking at, submitted as a hidden field. Redirecting to the bare path — as
+ *    this did until now — silently reset a three-zone selection to the default
+ *    colours, so "bitte nochmal" would have meant "such dir alles nochmal aus".
+ *
+ * `configHref` comes from the client, so it is only trusted when it is exactly
+ * this konfigurator's own path, optionally with a query. Anything else (an
+ * absolute URL, a protocol-relative `//evil.tld`, a different route) falls back
+ * to the plain path — an open redirect is not worth a preserved colour.
+ */
+function redirectToKonfigurator(path: string, configHref: string | null, code: string): never {
+  const trusted = configHref === path || configHref?.startsWith(`${path}?`) ? configHref! : path;
+  const [base, query] = trusted.split("?");
+  const params = new URLSearchParams(query ?? "");
+  params.set("error", code);
+  redirect(`${base}?${params.toString()}`);
+}
+
 export async function addConfiguredHoseToCartAction(formData: FormData): Promise<void> {
   // Prefer the current `hose` field; fall back to legacy `links` (then
   // `rechts`) if a stale form submits the pre-BIL-2417 field names.
@@ -92,17 +117,17 @@ export async function addConfiguredHoseToCartAction(formData: FormData): Promise
 
   const target = await getConfiguratorHoseVariant();
   if (!target) {
-    redirect("/konfigurator/hose?error=variant_unavailable");
+    redirectToKonfigurator("/konfigurator/hose", selection.configHref, "variant_unavailable");
   }
 
   const cart = await ensureCart();
   if (!cart) {
-    redirect("/konfigurator/hose?error=cart_unavailable");
+    redirectToKonfigurator("/konfigurator/hose", selection.configHref, "cart_unavailable");
   }
 
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
-    redirect("/konfigurator/hose?error=add_failed");
+    redirectToKonfigurator("/konfigurator/hose", selection.configHref, "add_failed");
   }
 
   revalidatePath("/cart");
@@ -133,17 +158,17 @@ export async function addConfiguredHoseKurzToCartAction(formData: FormData): Pro
 
   const target = await getConfiguratorHoseKurzVariant();
   if (!target) {
-    redirect("/konfigurator/hose-kurz?error=variant_unavailable");
+    redirectToKonfigurator("/konfigurator/hose-kurz", selection.configHref, "variant_unavailable");
   }
 
   const cart = await ensureCart();
   if (!cart) {
-    redirect("/konfigurator/hose-kurz?error=cart_unavailable");
+    redirectToKonfigurator("/konfigurator/hose-kurz", selection.configHref, "cart_unavailable");
   }
 
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
-    redirect("/konfigurator/hose-kurz?error=add_failed");
+    redirectToKonfigurator("/konfigurator/hose-kurz", selection.configHref, "add_failed");
   }
 
   revalidatePath("/cart");
@@ -169,17 +194,17 @@ export async function addConfiguredTurbanToCartAction(formData: FormData): Promi
 
   const target = await getConfiguratorTurbanVariant();
   if (!target) {
-    redirect("/konfigurator/turban?error=variant_unavailable");
+    redirectToKonfigurator("/konfigurator/turban", selection.configHref, "variant_unavailable");
   }
 
   const cart = await ensureCart();
   if (!cart) {
-    redirect("/konfigurator/turban?error=cart_unavailable");
+    redirectToKonfigurator("/konfigurator/turban", selection.configHref, "cart_unavailable");
   }
 
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
-    redirect("/konfigurator/turban?error=add_failed");
+    redirectToKonfigurator("/konfigurator/turban", selection.configHref, "add_failed");
   }
 
   revalidatePath("/cart");
@@ -205,17 +230,17 @@ export async function addConfiguredMuetzeToCartAction(formData: FormData): Promi
 
   const target = await getConfiguratorMuetzeVariant();
   if (!target) {
-    redirect("/konfigurator/muetze?error=variant_unavailable");
+    redirectToKonfigurator("/konfigurator/muetze", selection.configHref, "variant_unavailable");
   }
 
   const cart = await ensureCart();
   if (!cart) {
-    redirect("/konfigurator/muetze?error=cart_unavailable");
+    redirectToKonfigurator("/konfigurator/muetze", selection.configHref, "cart_unavailable");
   }
 
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
-    redirect("/konfigurator/muetze?error=add_failed");
+    redirectToKonfigurator("/konfigurator/muetze", selection.configHref, "add_failed");
   }
 
   revalidatePath("/cart");
@@ -244,17 +269,17 @@ export async function addConfiguredBodyToCartAction(formData: FormData): Promise
 
   const target = await getConfiguratorBodyVariant();
   if (!target) {
-    redirect("/konfigurator/body?error=variant_unavailable");
+    redirectToKonfigurator("/konfigurator/body", selection.configHref, "variant_unavailable");
   }
 
   const cart = await ensureCart();
   if (!cart) {
-    redirect("/konfigurator/body?error=cart_unavailable");
+    redirectToKonfigurator("/konfigurator/body", selection.configHref, "cart_unavailable");
   }
 
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
-    redirect("/konfigurator/body?error=add_failed");
+    redirectToKonfigurator("/konfigurator/body", selection.configHref, "add_failed");
   }
 
   revalidatePath("/cart");
@@ -278,17 +303,17 @@ export async function addConfiguredDreieckstuchToCartAction(formData: FormData):
 
   const target = await getConfiguratorDreieckstuchVariant();
   if (!target) {
-    redirect("/konfigurator/dreieckstuch?error=variant_unavailable");
+    redirectToKonfigurator("/konfigurator/dreieckstuch", selection.configHref, "variant_unavailable");
   }
 
   const cart = await ensureCart();
   if (!cart) {
-    redirect("/konfigurator/dreieckstuch?error=cart_unavailable");
+    redirectToKonfigurator("/konfigurator/dreieckstuch", selection.configHref, "cart_unavailable");
   }
 
   const added = await addLineItem(cart!.id, target!.variantId, 1, selection);
   if (!added) {
-    redirect("/konfigurator/dreieckstuch?error=add_failed");
+    redirectToKonfigurator("/konfigurator/dreieckstuch", selection.configHref, "add_failed");
   }
 
   revalidatePath("/cart");

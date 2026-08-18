@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { KonfiguratorErrorBanner } from "../_shared/konfigurator-error";
 import { buildKonfigMetadata } from "../_shared/metadata";
 import { BodyKonfigurator } from "./body-konfigurator";
 
@@ -47,7 +48,18 @@ export function generateMetadata({
   return buildKonfigMetadata("body", searchParams, { title: TITLE, description: DESCRIPTION });
 }
 
-export default function BodyKonfiguratorPage() {
+export default function BodyKonfiguratorPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
   if (!BODY_KONFIGURATOR_ENABLED) notFound();
-  return <BodyKonfigurator />;
+  // Wired up with the other five (BIL-2510) so re-enabling the route is still
+  // the two documented steps and not "and don't forget the error banner".
+  return (
+    <>
+      <KonfiguratorErrorBanner error={searchParams.error} />
+      <BodyKonfigurator />
+    </>
+  );
 }

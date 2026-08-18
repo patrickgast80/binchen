@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ErrorBanner } from "@/components/ui/error-banner";
 import { loadCart, readCartId } from "@/lib/cart-cookie";
 import {
   formatPrice,
@@ -81,23 +82,20 @@ export default async function PaymentPage({
       <h1 className="font-display text-3xl font-semibold text-binchen-ink sm:text-4xl">Bezahlung</h1>
 
       {errorCopy ? (
-        <div
-          role="alert"
-          data-testid="checkout-error"
-          className="mt-6 rounded-lg border border-binchen-terracotta/40 bg-binchen-terracotta/10 p-4 sm:p-6"
+        // Markup now lives in <ErrorBanner> so the konfigurators say it the
+        // same way (BIL-2510) — identical DOM, `checkout-error` testid kept.
+        <ErrorBanner
+          testId="checkout-error"
+          className="mt-6"
+          title={errorCopy.title}
+          body={`${errorCopy.body} ${paymentReassurance(searchParams.via)}`}
         >
-          <p className="font-body text-base font-semibold text-binchen-terracotta-text">
-            {errorCopy.title}
-          </p>
-          <p className="mt-2 font-body text-sm leading-relaxed text-binchen-ink">
-            {errorCopy.body} {paymentReassurance(searchParams.via)}
-          </p>
           {errorCopy.retryable ? null : (
             <Button asChild variant="ghost" className="mt-3 -ml-3">
               <Link href="/cart">Warenkorb prüfen</Link>
             </Button>
           )}
-        </div>
+        </ErrorBanner>
       ) : null}
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_320px]">

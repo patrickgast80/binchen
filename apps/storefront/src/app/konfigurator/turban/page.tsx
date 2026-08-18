@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { KonfiguratorErrorBanner } from "../_shared/konfigurator-error";
 import { buildKonfigMetadata } from "../_shared/metadata";
 import { TurbanKonfigurator } from "./turban-konfigurator";
 
@@ -19,6 +20,15 @@ export function generateMetadata({
   return buildKonfigMetadata("turban", searchParams, { title: TITLE, description: DESCRIPTION });
 }
 
-export default function TurbanKonfiguratorPage() {
-  return <TurbanKonfigurator />;
+export default function TurbanKonfiguratorPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  return (
+    <>
+      <KonfiguratorErrorBanner error={searchParams.error} />
+      <TurbanKonfigurator />
+    </>
+  );
 }

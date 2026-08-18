@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { KonfiguratorErrorBanner } from "../_shared/konfigurator-error";
 import { buildKonfigMetadata } from "../_shared/metadata";
 import { HoseKonfigurator } from "./hose-konfigurator";
 
@@ -20,6 +21,15 @@ export function generateMetadata({
   return buildKonfigMetadata("hose", searchParams, { title: TITLE, description: DESCRIPTION });
 }
 
-export default function HoseKonfiguratorPage() {
-  return <HoseKonfigurator />;
+export default function HoseKonfiguratorPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  return (
+    <>
+      <KonfiguratorErrorBanner error={searchParams.error} />
+      <HoseKonfigurator />
+    </>
+  );
 }

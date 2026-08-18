@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { KonfiguratorErrorBanner } from "../_shared/konfigurator-error";
 import { buildKonfigMetadata } from "../_shared/metadata";
 import { MuetzeKonfigurator } from "./muetze-konfigurator";
 
@@ -17,6 +18,15 @@ export function generateMetadata({
   return buildKonfigMetadata("muetze", searchParams, { title: TITLE, description: DESCRIPTION });
 }
 
-export default function MuetzeKonfiguratorPage() {
-  return <MuetzeKonfigurator />;
+export default function MuetzeKonfiguratorPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  return (
+    <>
+      <KonfiguratorErrorBanner error={searchParams.error} />
+      <MuetzeKonfigurator />
+    </>
+  );
 }
