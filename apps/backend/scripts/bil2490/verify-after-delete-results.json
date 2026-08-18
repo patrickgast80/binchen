@@ -1,5 +1,5 @@
 {
-  "at": "2026-08-18T07:53:17.690Z",
+  "at": "2026-08-18T08:09:48.527Z",
   "checks": [
     {
       "name": "store listing has 16 published (15 relaunch + Pumphose konfigurator)",
@@ -35,6 +35,11 @@
       "name": "konfigurator regex /\\bbody\\b/i resolves to exactly 1 product (admin)",
       "ok": true,
       "detail": "Bilulu-Body (Konfigurator)"
+    },
+    {
+      "name": "all one-off articles at stocked_quantity 1",
+      "ok": true,
+      "detail": "15/15 at 1"
     },
     {
       "name": "PDP Bilulu-Pumphose (Konfigurator)",
