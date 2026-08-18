@@ -12,7 +12,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const BASE = process.argv[2] ?? "http://localhost:3007";
-const OUT = path.join(process.cwd(), "reports", "bil2494");
+const OUT = path.join(process.cwd(), "reports", process.argv[3] ?? "bil2494");
 
 const MULTI = [
   ["set-muetze-loop-boho", "prod_01KZ0VZMJWFC9Z00XVNDFYZ6M2", 3],
@@ -70,14 +70,32 @@ async function run() {
       await dismissConsent(page);
       const thumbs = page.getByRole("button", { name: /^Bild \d+ von \d+ anzeigen$/ });
       const count = await thumbs.count();
-      const visible = page.locator("main img, article img").first();
-      await visible.waitFor();
+      // wait until the hero photo is actually decoded, not just present
+      const decoded = await page
+        .waitForFunction(
+          () => {
+            const img = document.querySelector("article img");
+            return !!img && img.complete && img.naturalWidth > 0;
+          },
+          { timeout: 30000 },
+        )
+        .then(() => true)
+        .catch(() => false);
+      if (!decoded) console.log(`  ! hero photo not decoded: ${slug} (${vpName})`);
       if (count) await thumbs.last().scrollIntoViewIfNeeded();
       await page.waitForTimeout(300);
       await shoot(page, `${slug}-${vpName}-1`);
 
-      // click the last thumbnail — the mannequin shot the ticket is about
-      await thumbs.nth(count - 1).click();
+      // click the last thumbnail — the mannequin shot the ticket is about.
+      // The consent banner is a bottom sheet and can re-mount late, so it may
+      // intercept the click on mobile; dismiss again and retry once.
+      try {
+        await thumbs.nth(count - 1).click({ timeout: 10000 });
+      } catch {
+        await dismissConsent(page);
+        await thumbs.last().scrollIntoViewIfNeeded();
+        await thumbs.nth(count - 1).click({ timeout: 10000 });
+      }
       await page.waitForTimeout(400);
       await shoot(page, `${slug}-${vpName}-${count}`);
 
