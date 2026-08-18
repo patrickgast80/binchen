@@ -293,6 +293,53 @@ Fallback bestehen und wird aktiv, sobald ein CEO das Secret doch setzt.
 **Rollback des Pollers:**
 `ssh deploy@188.245.40.74 'crontab -l | grep -v binchen-autodeploy-poll | crontab -'`
 
+### Playbook: Deploy-Queue blockiert (Zombie-Deployment auf in_progress) — BIL-2503
+
+**Symptom:** Deploys stauen sich in `queued`, ein Deployment steht dauerhaft auf
+`in_progress`, obwohl sein Build-Container weg ist ("Gracefully shutting down
+build container" in den Logs, danach nichts mehr).
+
+**Häufigste Ursache: Platte voll.** Der Build-Container stirbt (z.B.
+`No space left on device`), aber Coolify markiert den Queue-Datensatz nie als
+beendet — er blockiert die Concurrency und damit alle folgenden Deploys.
+
+1. Queue-Zustand ansehen (PAT aus `infra/.vault/coolify-pat.env`):
+   ```
+   curl -s -H "Authorization: Bearer $COOLIFY_PAT" "$COOLIFY_API_BASE/deployments"
+   ```
+   Beim vermeintlich laufenden Deployment die letzten Log-Timestamps prüfen —
+   Minuten alt + "shutting down build container" ⇒ Zombie.
+2. SSH auf den Host. Kein lokaler Key nötig: `GET $COOLIFY_API_BASE/security/keys`
+   liefert den Private Key (`deploy@188.245.40.74`); nach
+   `infra/.vault/coolify-host-ssh.key` schreiben, `chmod 600`.
+3. Platte prüfen und freiräumen (Prod-Container bleiben unberührt):
+   ```
+   df -h /; sudo docker system df
+   sudo docker builder prune -af
+   sudo docker image prune -af    # entfernt auch alte Rollback-Images → Rollback = Rebuild aus Git
+   ```
+4. Zombie-Datensätze beenden und Duplikate stornieren (Coolify-DB):
+   ```
+   sudo docker exec coolify-db psql -U coolify -d coolify -c \
+     "UPDATE application_deployment_queues SET status='failed', finished_at=now() \
+      WHERE deployment_uuid IN ('<uuid>') AND status='in_progress';"
+   sudo docker exec coolify-db psql -U coolify -d coolify -c \
+     "UPDATE application_deployment_queues SET status='cancelled-by-user', finished_at=now() \
+      WHERE status='queued';"
+   ```
+   (Alle `queued` stornieren ist ok — der nächste Schritt postet frische Deploys;
+   der Poller triggert bei neuen Pushes ohnehin nach.)
+5. Horizon prüfen: `sudo docker exec coolify php artisan horizon:status` →
+   "Horizon is running." Wenn nicht: `sudo docker restart coolify` (Coolify räumt
+   beim Boot hängende Deployments selbst auf).
+6. Je App **einen** frischen Deploy posten (RUNBOOK §Auto-Deploy Schritt 4).
+   Der frische POST dispatcht sofort; die stornierten Duplikate braucht niemand.
+
+**Prävention (seit 2026-08-18):** Coolifys Docker-Cleanup läuft stündlich statt
+täglich (`server_settings.docker_cleanup_frequency='0 * * * *'`, server_id=0).
+Rollback: Wert zurück auf `'0 0 * * *'` setzen. Die 38-GB-Platte verkraftet
+sonst keinen Tag mit 5+ Storefront-Builds (je ~2-4 GB Image + Build-Cache).
+
 ## Telegram-Bridge (BIL-2481)
 
 Lokaler Long-Polling-Daemon auf der **Windows-Maschine** (nicht Hetzner!),
