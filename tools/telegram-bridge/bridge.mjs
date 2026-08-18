@@ -72,8 +72,9 @@ for (;;) {
     }
     if (runRemote && Date.now() >= nextGiveupAt) {
       nextGiveupAt = Date.now() + gw.intervalMs;
-      const r = await checkGiveUp({ cfg, tg, pc, log, state, runRemote });
-      if (r.alerts) saveState(cfg.stateFile, state);
+      // Dedupe-Persistenz passiert in checkGiveUp selbst (giveup-seen.json,
+      // BIL-2519); state.giveupSeen ist nur noch Alt-Migration beim Lesen.
+      await checkGiveUp({ cfg, tg, pc, log, state, runRemote });
     }
     const updates = await tg.getUpdates(state.offset || undefined, 50);
     backoffMs = 5000;

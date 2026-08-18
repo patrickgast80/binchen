@@ -59,6 +59,8 @@ export function loadConfig(envFilePath) {
       sshTarget: get('GIVEUP_SSH_TARGET', 'deploy@188.245.40.74'),
       sshKey: get('GIVEUP_SSH_KEY', path.join(path.dirname(envFilePath), 'coolify-host-ssh.key')),
       intervalMs: Number(get('GIVEUP_INTERVAL_MS', 10 * 60 * 1000)),
+      // BIL-2519: geteilter Dedupe-Store für alle Einstiegspunkte (Daemon + e2e).
+      seenFile: get('GIVEUP_SEEN_FILE', path.join(path.dirname(envFilePath), 'giveup-seen.json')),
     },
   };
 }

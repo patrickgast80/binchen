@@ -9,7 +9,16 @@
 // Bewusste Architektur-Entscheidung: der Bot-Token bleibt auf DIESER Maschine.
 // Der shared Hetzner-Host bekommt keinerlei Telegram-Secret (Ticket-Option
 // "Marker/lokaler Watcher" statt Token-Propagation).
+//
+// Dedupe (BIL-2519): "schon alarmiert" lebt NICHT mehr im Prozessspeicher des
+// Aufrufers, sondern in einer eigenen Datei (cfg.giveupWatch.seenFile), die
+// JEDER Einstiegspunkt teilt — Bridge-Daemon UND giveup-e2e.mjs. Pro Rohzeile
+// werden Telegram- und Paperclip-Zustellung getrennt geführt: ein Kanal, der
+// schon durch ist, feuert bei einem Retry des anderen Kanals nicht erneut.
 import { execFile } from 'node:child_process';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Anzeige-Zucker: bekannte Coolify-App-UUIDs -> sprechende Namen.
 const APP_NAMES = {
@@ -54,11 +63,40 @@ export function makeSshRunner({ target, keyFile, timeoutMs = 30000 }) {
     });
 }
 
-// Ein Watcher-Tick. Dedupe über state.giveupSeen (persistiert vom Aufrufer);
-// eine Zeile gilt erst als gesehen, wenn mindestens EIN Telegram-Send
-// durchging — sonst wird beim nächsten Tick erneut versucht. SSH-Fehler sind
-// nur ein Log-WARN: kein Alarm-Spam, der Poller-Host ist ohnehin gerade das
-// Sorgenkind, wenn er nicht erreichbar ist.
+export function lineKey(line) {
+  return crypto.createHash('sha256').update(String(line)).digest('hex');
+}
+
+// Persistenter Dedupe-Store. legacyLines (das alte state.giveupSeen-Array aus
+// der Bridge-State-Datei) werden als voll zugestellt importiert — diese Zeilen
+// haben unter BIL-2518 nachweislich alarmiert.
+export function loadSeen(seenFile, legacyLines = []) {
+  let seen = {};
+  try {
+    const parsed = JSON.parse(fs.readFileSync(seenFile, 'utf8'));
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) seen = parsed;
+  } catch { /* noch keine Datei */ }
+  for (const l of legacyLines) {
+    const k = lineKey(l);
+    if (!seen[k]) seen[k] = { tg: true, pc: true, ts: null, line: String(l).slice(0, 200) };
+  }
+  return seen;
+}
+
+export function saveSeen(seenFile, seen) {
+  fs.mkdirSync(path.dirname(seenFile), { recursive: true });
+  const tmp = `${seenFile}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(seen, null, 1));
+  fs.renameSync(tmp, seenFile);
+}
+
+// Ein Watcher-Tick. Dedupe über die geteilte seen-Datei (cfg.giveupWatch.seenFile),
+// pro Zeile und pro Kanal: ein Kanal gilt als erledigt, sobald er einmal
+// durchging; nur noch fehlende Kanäle werden beim nächsten Tick nachgeholt.
+// Die Datei wird sofort nach jeder Zustellung geschrieben, nicht erst am
+// Tick-Ende — ein Crash dazwischen kostet also keinen Dedupe-Eintrag mehr.
+// SSH-Fehler sind nur ein Log-WARN: kein Alarm-Spam, der Poller-Host ist
+// ohnehin gerade das Sorgenkind, wenn er nicht erreichbar ist.
 export async function checkGiveUp({ cfg, tg, pc, log, state, runRemote }) {
   let out;
   try {
@@ -67,32 +105,47 @@ export async function checkGiveUp({ cfg, tg, pc, log, state, runRemote }) {
     log(`giveup-watch WARN: ssh fehlgeschlagen: ${e.message}`);
     return { checked: false, alerts: 0 };
   }
-  const seen = new Set(state.giveupSeen || []);
-  const fresh = parseGiveUpLines(out).filter((l) => !seen.has(l));
+  const seenFile = cfg.giveupWatch.seenFile;
+  const seen = loadSeen(seenFile, state?.giveupSeen || []);
   let alerts = 0;
-  for (const line of fresh) {
+  for (const line of parseGiveUpLines(out)) {
+    const k = lineKey(line);
+    const rec = seen[k] || (seen[k] = { tg: false, pc: false, ts: null, line: line.slice(0, 200) });
+    if (rec.tg && rec.pc) continue;
     const text = formatGiveUpAlert(line);
-    let delivered = false;
-    for (const uid of cfg.allowedUserIds) {
-      try {
-        await tg.sendMessage(uid, text);
-        delivered = true;
-      } catch (e) {
-        log(`giveup-watch WARN: Telegram an ${uid} fehlgeschlagen: ${e.message}`);
+    if (!rec.tg) {
+      for (const uid of cfg.allowedUserIds) {
+        try {
+          await tg.sendMessage(uid, text);
+          rec.tg = true;
+        } catch (e) {
+          log(`giveup-watch WARN: Telegram an ${uid} fehlgeschlagen: ${e.message}`);
+        }
       }
     }
-    try {
-      const target = await pc.resolveIssue(cfg.defaultIssueKey);
-      if (target) await pc.postComment(target.id, `🚨 **Auto-Deploy GIVING_UP** (Alarm aus BIL-2518)\n\n\`\`\`\n${text}\n\`\`\``);
-    } catch (e) {
-      log(`giveup-watch WARN: Paperclip-Kommentar fehlgeschlagen: ${e.message}`);
+    if (!rec.pc) {
+      try {
+        const target = await pc.resolveIssue(cfg.defaultIssueKey);
+        if (target) {
+          await pc.postComment(target.id, `🚨 **Auto-Deploy GIVING_UP** (Alarm aus BIL-2518)\n\n\`\`\`\n${text}\n\`\`\``);
+          rec.pc = true;
+        }
+      } catch (e) {
+        log(`giveup-watch WARN: Paperclip-Kommentar fehlgeschlagen: ${e.message}`);
+      }
     }
-    if (delivered) {
-      seen.add(line);
-      alerts++;
-      log(`giveup-watch: Alarm gesendet für: ${line}`);
+    if (rec.tg || rec.pc) {
+      if (!rec.ts) {
+        rec.ts = new Date().toISOString();
+        alerts++;
+        log(`giveup-watch: Alarm gesendet für: ${line}`);
+      }
+      try {
+        saveSeen(seenFile, seen);
+      } catch (e) {
+        log(`giveup-watch WARN: seen-Datei ${seenFile} nicht schreibbar: ${e.message}`);
+      }
     }
   }
-  state.giveupSeen = [...seen].slice(-50);
   return { checked: true, alerts };
 }

@@ -100,12 +100,17 @@ aktiv aus: Telegram an alle `TELEGRAM_ALLOWED_USER_IDS` + Kommentar auf
 `DEFAULT_ISSUE_KEY`. Der Bot-Token bleibt dabei auf dieser Maschine — der
 shared Host bekommt kein Telegram-Secret (bewusste Entscheidung, BIL-2518).
 
-- Dedupe: `giveupSeen` im State-File; erst nach erfolgreichem Telegram-Send
-  gilt eine Zeile als gesehen (sonst Retry beim nächsten Tick).
+- Dedupe (BIL-2519): persistenter Store `<vault>/giveup-seen.json`
+  (`sha256(Rohzeile)` → `{tg, pc, ts}`), geteilt von Daemon UND
+  `giveup-e2e.mjs` — auch über Neustarts und Selbsttest-Läufe hinweg feuert
+  jede Rohzeile pro Kanal (Telegram / Paperclip-Kommentar) genau einmal.
+  Fällt ein Kanal aus, wird beim nächsten Tick NUR der fehlende nachgeholt.
+  Alt-Einträge aus `giveupSeen` im State-File werden beim Lesen migriert.
 - SSH-Fehler ⇒ nur WARN im `bridge.log`, kein Alarm.
 - Env-Knöpfe (alle optional): `GIVEUP_WATCH=0` (aus), `GIVEUP_SSH_TARGET`
   (Default `deploy@188.245.40.74`), `GIVEUP_SSH_KEY` (Default
-  `<vault>/coolify-host-ssh.key`), `GIVEUP_INTERVAL_MS` (Default 600000).
+  `<vault>/coolify-host-ssh.key`), `GIVEUP_INTERVAL_MS` (Default 600000),
+  `GIVEUP_SEEN_FILE` (Default `<vault>/giveup-seen.json`).
 
 ## Tests (ohne Token)
 
@@ -113,8 +118,8 @@ shared Host bekommt kein Telegram-Secret (bewusste Entscheidung, BIL-2518).
 node --test tools/telegram-bridge/test/test.mjs tools/telegram-bridge/test/giveup.test.mjs
 ```
 
-30 Tests gegen Fixture-`getUpdates`-Payloads (`test/fixtures.json`) mit
+34 Tests gegen Fixture-`getUpdates`-Payloads (`test/fixtures.json`) mit
 Fake-Telegram/-Paperclip-Clients: Routing, Allowlist, Foto-Upload inkl.
 Fallback, Fehlerpfade, 401-Token-Hot-Reload, 403→local-board-Fallback,
-tokenloser Betrieb, 409-Handling, GIVING_UP-Watcher (Parse, Dedupe,
-SSH-/Telegram-Fehlerpfade).
+tokenloser Betrieb, 409-Handling, GIVING_UP-Watcher (Parse, restart-fester
+Dedupe pro Kanal, Legacy-Migration, SSH-/Telegram-/Paperclip-Fehlerpfade).
