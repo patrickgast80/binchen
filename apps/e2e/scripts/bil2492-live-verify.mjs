@@ -63,6 +63,11 @@ async function main() {
         await page.goto(`${BASE}/konfigurator/${c.id}?${qs}`, { waitUntil: "networkidle" });
         const preview = page.getByRole("img", { name: /Vorschau/ }).first();
         await preview.waitFor({ state: "visible" });
+        // Playwright's auto-scroll leaves a short, wide preview (Dreieckstuch is
+        // 900x482) sitting under the fixed mobile palette sheet — both angles
+        // then capture the same swatch grid and look "identical". Park it at the
+        // top of the viewport instead, well clear of the sheet.
+        await preview.evaluate((el) => el.scrollIntoView({ block: "start" }));
         await page.waitForTimeout(600);
         const buf = await preview.screenshot();
         shots[rot] = buf;
@@ -78,6 +83,22 @@ async function main() {
     await page.goto(`${BASE}/konfigurator/hose?hose=stoff-14&rot=90`, {
       waitUntil: "networkidle",
     });
+    if (vp.isMobile) {
+      // The sheet grew by one control row — BIL-2474 capped it because a tall
+      // sheet swallowed the preview, so report the number instead of hoping.
+      await page.getByRole("tab", { name: "Hose" }).click();
+      await page.waitForTimeout(500);
+      const h = await page.evaluate(() =>
+        Math.round(
+          document
+            .querySelector("[aria-label='Farbauswahl-Panel']")
+            ?.getBoundingClientRect().height ?? 0,
+        ),
+      );
+      console.log(`mobile sheet height with rotate control: ${h}px of ${vp.height}px viewport`);
+      if (h > vp.height * 0.6) failures.push(`mobile sheet too tall: ${h}px`);
+    }
+
     const ctrl = page.getByRole("button", { name: /Stoffmuster für Hose drehen/ }).first();
     if (!(await ctrl.count())) failures.push(`${vp.name}: rotate control missing on live`);
     else {
