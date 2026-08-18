@@ -15,7 +15,9 @@ const [bodyFile, ...shots] = process.argv.slice(2);
 for (const shot of shots) {
   const fd = new FormData();
   fd.set("file", new Blob([fs.readFileSync(shot)], { type: "image/png" }), path.basename(shot));
-  const res = await fetch(`${API}/api/issues/${ISSUE}/attachments`, {
+  // attachments are only mounted under the company-scoped path; the un-scoped
+  // /api/issues/{id}/attachments 404s (see BIL-2492)
+  const res = await fetch(`${API}/api/companies/${process.env.PAPERCLIP_COMPANY_ID}/issues/${ISSUE}/attachments`, {
     method: "POST",
     headers: auth,
     body: fd,
