@@ -47,6 +47,17 @@ COPY --from=builder /app/apps/backend/.medusa/server/src apps/backend/src
 WORKDIR /app/apps/backend
 ENV NODE_ENV=production
 EXPOSE 9000
+# BIL-2511: HEALTHCHECK makes Coolify's deploy cutover health-gated. Without it,
+# Coolify marks the new container healthy instantly and stops the old one while
+# Medusa is still migrating/seeding (~45s of 502 on every deploy). With it,
+# Coolify waits for "healthy" before removing the old container, and rolls back
+# (old container keeps serving) if the new one never gets healthy.
+# Coolify parses these --flags into its own wait loop on every deploy, so this
+# line is the single source of truth for cutover timing:
+#   boot tolerance ≈ start-period + retries*interval = 30s + 30*5s = 180s.
+# /health only responds once `medusa start` listens, i.e. after all boot steps.
+HEALTHCHECK --interval=5s --timeout=5s --start-period=30s --retries=30 \
+  CMD node -e "require('http').get('http://127.0.0.1:9000/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 # Startup sequence (all steps idempotent — safe on every boot):
 # 1. db:migrate          — apply pending migrations
 # 2. medusa user         — create first admin if MEDUSA_ADMIN_EMAIL is set and no users exist yet
