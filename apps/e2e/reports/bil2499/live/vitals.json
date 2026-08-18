@@ -1,0 +1,25 @@
+{
+  "base": "https://bilulu.de",
+  "profile": {
+    "cpuThrottle": 4,
+    "network": "~1.6Mbit/150ms"
+  },
+  "results": [
+    {
+      "route": "hose-kurz (new)",
+      "url": "https://bilulu.de/konfigurator/hose-kurz",
+      "lcpMs": 1696,
+      "cls": 0,
+      "fcpMs": 1640,
+      "ttfbMs": 335
+    },
+    {
+      "route": "hose (control, unchanged)",
+      "url": "https://bilulu.de/konfigurator/hose",
+      "lcpMs": 1368,
+      "cls": 0,
+      "fcpMs": 1244,
+      "ttfbMs": 329
+    }
+  ]
+}
