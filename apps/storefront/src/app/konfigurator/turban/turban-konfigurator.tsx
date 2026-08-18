@@ -19,6 +19,7 @@ import {
   type Swatch,
 } from "./palette";
 import { TurbanPhoto, type TurbanPhotoPaints } from "./turban-photo";
+import { buildConfigHref, configParams, shareableUrl } from "../_shared/config-url";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
 import { MusterRotationControl } from "../_shared/muster-rotation-control";
@@ -73,7 +74,7 @@ export function TurbanKonfigurator() {
 
   const updateRegion = React.useCallback(
     (region: TurbanRegionDef, swatch: Swatch) => {
-      const next = new URLSearchParams(searchParams?.toString() ?? "");
+      const next = configParams(searchParams);
       if (swatch.id === region.defaultColor) {
         next.delete(region.param);
       } else {
@@ -88,7 +89,7 @@ export function TurbanKonfigurator() {
   );
 
   const handleRotate = React.useCallback(() => {
-    const next = new URLSearchParams(searchParams?.toString() ?? "");
+    const next = configParams(searchParams);
     const value = nextRotation(rotation);
     if (value === 0) next.delete(ROTATION_PARAM);
     else next.set(ROTATION_PARAM, String(value));
@@ -106,7 +107,8 @@ export function TurbanKonfigurator() {
 
   const handleShare = React.useCallback(async () => {
     if (typeof window === "undefined") return;
-    const url = window.location.href;
+    // ?error= is a bounce param, not part of the configuration (BIL-2510).
+    const url = shareableUrl(window.location.href);
     try {
       if (navigator.share) {
         await navigator.share({ title: "Meine Bilulu-Turban-Mütze", url });
@@ -263,10 +265,7 @@ export function TurbanKonfigurator() {
             konfigurator="turban"
             selection={selection}
             rotation={rotation}
-            href={(() => {
-              const q = searchParams?.toString() ?? "";
-              return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/turban";
-            })()}
+            href={buildConfigHref(pathname, searchParams, "/konfigurator/turban")}
           />
         </section>
 
@@ -363,10 +362,7 @@ export function TurbanKonfigurator() {
             <input
               type="hidden"
               name="configHref"
-              value={(() => {
-                const q = searchParams?.toString() ?? "";
-                return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/turban";
-              })()}
+              value={buildConfigHref(pathname, searchParams, "/konfigurator/turban")}
             />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>

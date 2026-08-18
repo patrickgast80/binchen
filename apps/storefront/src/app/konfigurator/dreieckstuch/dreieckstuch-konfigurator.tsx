@@ -19,6 +19,7 @@ import {
   type Swatch,
 } from "./palette";
 import { DreieckstuchPhoto, type DreieckstuchPhotoPaints } from "./dreieckstuch-photo";
+import { buildConfigHref, configParams, shareableUrl } from "../_shared/config-url";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
 import { MusterRotationControl } from "../_shared/muster-rotation-control";
@@ -66,7 +67,7 @@ export function DreieckstuchKonfigurator() {
 
   const updateRegion = React.useCallback(
     (region: DreieckstuchRegionDef, swatch: Swatch) => {
-      const next = new URLSearchParams(searchParams?.toString() ?? "");
+      const next = configParams(searchParams);
       if (swatch.id === region.defaultColor) {
         next.delete(region.param);
       } else {
@@ -81,7 +82,7 @@ export function DreieckstuchKonfigurator() {
   );
 
   const handleRotate = React.useCallback(() => {
-    const next = new URLSearchParams(searchParams?.toString() ?? "");
+    const next = configParams(searchParams);
     const value = nextRotation(rotation);
     if (value === 0) next.delete(ROTATION_PARAM);
     else next.set(ROTATION_PARAM, String(value));
@@ -99,7 +100,8 @@ export function DreieckstuchKonfigurator() {
 
   const handleShare = React.useCallback(async () => {
     if (typeof window === "undefined") return;
-    const url = window.location.href;
+    // ?error= is a bounce param, not part of the configuration (BIL-2510).
+    const url = shareableUrl(window.location.href);
     try {
       if (navigator.share) {
         await navigator.share({ title: "Mein Bilulu-Dreieckstuch", url });
@@ -220,10 +222,7 @@ export function DreieckstuchKonfigurator() {
             konfigurator="dreieckstuch"
             selection={selection}
             rotation={rotation}
-            href={(() => {
-              const q = searchParams?.toString() ?? "";
-              return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/dreieckstuch";
-            })()}
+            href={buildConfigHref(pathname, searchParams, "/konfigurator/dreieckstuch")}
           />
         </section>
 
@@ -313,10 +312,7 @@ export function DreieckstuchKonfigurator() {
             <input
               type="hidden"
               name="configHref"
-              value={(() => {
-                const q = searchParams?.toString() ?? "";
-                return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/dreieckstuch";
-              })()}
+              value={buildConfigHref(pathname, searchParams, "/konfigurator/dreieckstuch")}
             />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>

@@ -1,0 +1,42 @@
+[
+  {
+    "surface": "hose",
+    "bannerBefore": 1,
+    "configHrefHasError": true,
+    "savedHrefHasError": "no-save",
+    "urlAfterChangeHasError": true,
+    "bannerAfterChange": 1
+  },
+  {
+    "surface": "hose-kurz",
+    "bannerBefore": 1,
+    "configHrefHasError": true,
+    "savedHrefHasError": true,
+    "urlAfterChangeHasError": true,
+    "bannerAfterChange": 1
+  },
+  {
+    "surface": "turban",
+    "bannerBefore": 1,
+    "configHrefHasError": true,
+    "savedHrefHasError": true,
+    "urlAfterChangeHasError": true,
+    "bannerAfterChange": 1
+  },
+  {
+    "surface": "muetze",
+    "bannerBefore": 1,
+    "configHrefHasError": true,
+    "savedHrefHasError": true,
+    "urlAfterChangeHasError": true,
+    "bannerAfterChange": 1
+  },
+  {
+    "surface": "dreieckstuch",
+    "bannerBefore": 1,
+    "configHrefHasError": true,
+    "savedHrefHasError": true,
+    "urlAfterChangeHasError": true,
+    "bannerAfterChange": 1
+  }
+]

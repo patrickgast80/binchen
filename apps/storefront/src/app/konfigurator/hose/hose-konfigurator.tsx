@@ -20,6 +20,7 @@ import {
   type Swatch,
 } from "./palette";
 import { PantsPhoto, type PantsPhotoPaints } from "./pants-photo";
+import { buildConfigHref, configParams, shareableUrl } from "../_shared/config-url";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
 import { MusterRotationControl } from "../_shared/muster-rotation-control";
@@ -80,7 +81,7 @@ export function HoseKonfigurator() {
 
   const updateRegion = React.useCallback(
     (region: RegionDef, swatch: Swatch) => {
-      const next = new URLSearchParams(searchParams?.toString() ?? "");
+      const next = configParams(searchParams);
       // Whenever the user picks a new colour, drop any legacy 4-region
       // params so the URL stays canonical (a shared link then uses `hose=…`).
       if (region.param === "hose") {
@@ -101,7 +102,7 @@ export function HoseKonfigurator() {
   );
 
   const handleRotate = React.useCallback(() => {
-    const next = new URLSearchParams(searchParams?.toString() ?? "");
+    const next = configParams(searchParams);
     const value = nextRotation(rotation);
     if (value === 0) next.delete(ROTATION_PARAM);
     else next.set(ROTATION_PARAM, String(value));
@@ -119,7 +120,8 @@ export function HoseKonfigurator() {
 
   const handleShare = React.useCallback(async () => {
     if (typeof window === "undefined") return;
-    const url = window.location.href;
+    // ?error= is a bounce param, not part of the configuration (BIL-2510).
+    const url = shareableUrl(window.location.href);
     try {
       if (navigator.share) {
         await navigator.share({ title: "Meine Bilulu-Hose", url });
@@ -262,10 +264,7 @@ export function HoseKonfigurator() {
             konfigurator="hose"
             selection={selection}
             rotation={rotation}
-            href={(() => {
-              const q = searchParams?.toString() ?? "";
-              return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/hose";
-            })()}
+            href={buildConfigHref(pathname, searchParams, "/konfigurator/hose")}
           />
         </section>
 
@@ -362,10 +361,7 @@ export function HoseKonfigurator() {
             <input
               type="hidden"
               name="configHref"
-              value={(() => {
-                const q = searchParams?.toString() ?? "";
-                return q ? `${pathname}?${q}` : pathname ?? "/konfigurator/hose";
-              })()}
+              value={buildConfigHref(pathname, searchParams, "/konfigurator/hose")}
             />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>

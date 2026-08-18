@@ -19,6 +19,7 @@ import {
   type Swatch,
 } from "./palette";
 import { ShortsPhoto, type ShortsPhotoPaints } from "./shorts-photo";
+import { buildConfigHref, configParams, shareableUrl } from "../_shared/config-url";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
 import { MusterRotationControl } from "../_shared/muster-rotation-control";
@@ -80,13 +81,12 @@ export function HoseKurzKonfigurator() {
   const hasFabric = Boolean(resolveSwatch(selection.hose, "petrol").textureSrc);
 
   const href = React.useMemo(() => {
-    const q = searchParams?.toString() ?? "";
-    return q ? `${pathname ?? PATH}?${q}` : pathname ?? PATH;
+    return buildConfigHref(pathname, searchParams, PATH);
   }, [pathname, searchParams]);
 
   const updateRegion = React.useCallback(
     (region: RegionDef, swatch: Swatch) => {
-      const next = new URLSearchParams(searchParams?.toString() ?? "");
+      const next = configParams(searchParams);
       if (swatch.id === region.defaultColor) next.delete(region.param);
       else next.set(region.param, swatch.id);
       const query = next.toString();
@@ -98,7 +98,7 @@ export function HoseKurzKonfigurator() {
   );
 
   const handleRotate = React.useCallback(() => {
-    const next = new URLSearchParams(searchParams?.toString() ?? "");
+    const next = configParams(searchParams);
     const value = nextRotation(rotation);
     if (value === 0) next.delete(ROTATION_PARAM);
     else next.set(ROTATION_PARAM, String(value));
@@ -116,7 +116,8 @@ export function HoseKurzKonfigurator() {
 
   const handleShare = React.useCallback(async () => {
     if (typeof window === "undefined") return;
-    const url = window.location.href;
+    // ?error= is a bounce param, not part of the configuration (BIL-2510).
+    const url = shareableUrl(window.location.href);
     try {
       if (navigator.share) {
         await navigator.share({ title: "Meine kurze Bilulu-Hose", url });
