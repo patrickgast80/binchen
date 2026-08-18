@@ -1,0 +1,94 @@
+{
+  "at": "2026-08-18T09:06:22.738Z",
+  "cartId": "cart_01M0A1X5R81R21R6ZWKFF5HPX4",
+  "results": [
+    {
+      "viewport": "mobile",
+      "case": "out_of_stock",
+      "url": "https://bilulu.de/checkout/payment?error=out_of_stock",
+      "bannerPresent": true,
+      "text": "Dieses Einzelstück wurde leider gerade verkauft Jedes Teil ist ein handgenähtes Unikat und nur einmal verfügbar — jemand war ein paar Sekunden schneller. Schau gern im Shop nach einem anderen Stück oder schreib uns an info@bilulu.de, wenn wir dir etwas Ähnliches nähen sollen. Es wurde nichts abgebucht. Warenkorb prüfen",
+      "hasRawCode": false,
+      "hasEmail": true,
+      "hasRefundNote": true,
+      "hasCartLink": true
+    },
+    {
+      "viewport": "mobile",
+      "case": "unknown_code",
+      "url": "https://bilulu.de/checkout/payment?error=some_future_medusa_code",
+      "bannerPresent": true,
+      "text": "Die Bestellung konnte nicht abgeschlossen werden Da ist bei uns etwas schiefgelaufen. Dein Warenkorb ist noch da. Bitte versuche es in ein paar Minuten noch einmal — oder schreib uns kurz an info@bilulu.de, dann kümmern wir uns persönlich darum. Es wurde nichts abgebucht.",
+      "hasRawCode": false,
+      "hasEmail": true,
+      "hasRefundNote": true,
+      "hasCartLink": false
+    },
+    {
+      "viewport": "mobile",
+      "case": "out_of_stock_paypal",
+      "url": "https://bilulu.de/checkout/payment?error=out_of_stock&via=paypal",
+      "bannerPresent": true,
+      "text": "Dieses Einzelstück wurde leider gerade verkauft Jedes Teil ist ein handgenähtes Unikat und nur einmal verfügbar — jemand war ein paar Sekunden schneller. Schau gern im Shop nach einem anderen Stück oder schreib uns an info@bilulu.de, wenn wir dir etwas Ähnliches nähen sollen. Falls PayPal den Betrag bereits reserviert hat, wird er wieder freigegeben — es entsteht dir keine Zahlung ohne Bestellung. Warenkorb prüfen",
+      "hasRawCode": false,
+      "hasEmail": true,
+      "hasRefundNote": false,
+      "hasCartLink": true
+    },
+    {
+      "viewport": "mobile",
+      "case": "control",
+      "url": "https://bilulu.de/checkout/payment",
+      "bannerPresent": false,
+      "text": null,
+      "hasRawCode": false,
+      "hasEmail": false,
+      "hasRefundNote": false,
+      "hasCartLink": false
+    },
+    {
+      "viewport": "desktop",
+      "case": "out_of_stock",
+      "url": "https://bilulu.de/checkout/payment?error=out_of_stock",
+      "bannerPresent": true,
+      "text": "Dieses Einzelstück wurde leider gerade verkauft Jedes Teil ist ein handgenähtes Unikat und nur einmal verfügbar — jemand war ein paar Sekunden schneller. Schau gern im Shop nach einem anderen Stück oder schreib uns an info@bilulu.de, wenn wir dir etwas Ähnliches nähen sollen. Es wurde nichts abgebucht. Warenkorb prüfen",
+      "hasRawCode": false,
+      "hasEmail": true,
+      "hasRefundNote": true,
+      "hasCartLink": true
+    },
+    {
+      "viewport": "desktop",
+      "case": "unknown_code",
+      "url": "https://bilulu.de/checkout/payment?error=some_future_medusa_code",
+      "bannerPresent": true,
+      "text": "Die Bestellung konnte nicht abgeschlossen werden Da ist bei uns etwas schiefgelaufen. Dein Warenkorb ist noch da. Bitte versuche es in ein paar Minuten noch einmal — oder schreib uns kurz an info@bilulu.de, dann kümmern wir uns persönlich darum. Es wurde nichts abgebucht.",
+      "hasRawCode": false,
+      "hasEmail": true,
+      "hasRefundNote": true,
+      "hasCartLink": false
+    },
+    {
+      "viewport": "desktop",
+      "case": "out_of_stock_paypal",
+      "url": "https://bilulu.de/checkout/payment?error=out_of_stock&via=paypal",
+      "bannerPresent": true,
+      "text": "Dieses Einzelstück wurde leider gerade verkauft Jedes Teil ist ein handgenähtes Unikat und nur einmal verfügbar — jemand war ein paar Sekunden schneller. Schau gern im Shop nach einem anderen Stück oder schreib uns an info@bilulu.de, wenn wir dir etwas Ähnliches nähen sollen. Falls PayPal den Betrag bereits reserviert hat, wird er wieder freigegeben — es entsteht dir keine Zahlung ohne Bestellung. Warenkorb prüfen",
+      "hasRawCode": false,
+      "hasEmail": true,
+      "hasRefundNote": false,
+      "hasCartLink": true
+    },
+    {
+      "viewport": "desktop",
+      "case": "control",
+      "url": "https://bilulu.de/checkout/payment",
+      "bannerPresent": false,
+      "text": null,
+      "hasRawCode": false,
+      "hasEmail": false,
+      "hasRefundNote": false,
+      "hasCartLink": false
+    }
+  ]
+}
