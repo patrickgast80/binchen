@@ -47,3 +47,9 @@ coverage/
 infra/.vault/
 
 .vercel
+
+# Scratch-Ausgaben der Bild-Pipelines (BIL-2497 u. a.). Nicht ignoriert zu
+# sein hat schon einmal dazu gefuehrt, dass ein paralleles "git add -A" fremde
+# Zwischenstaende mitcommittet hat.
+.tmp/
+apps/*/.tmp/
