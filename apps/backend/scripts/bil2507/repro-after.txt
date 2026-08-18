@@ -1,0 +1,73 @@
+repro https://bilulu.de/konfigurator/hose-kurz?bund=sky&hose=stoff-05&buendchen=powder-pink&rot=90  n=60
+    0 ok (771ms)
+    1 ok (536ms)
+    2 ok (481ms)
+    3 ok (691ms)
+    4 ok (603ms)
+    5 ok (456ms)
+    6 ok (467ms)
+    7 ok (603ms)
+    8 ok (484ms)
+    9 ok (524ms)
+   10 ok (471ms)
+   11 ok (629ms)
+   12 ok (480ms)
+   13 ok (485ms)
+   14 ok (455ms)
+   15 ok (546ms)
+   16 ok (526ms)
+   17 ok (451ms)
+   18 ok (501ms)
+   19 ok (524ms)
+   20 ok (608ms)
+   21 ok (548ms)
+   22 ok (461ms)
+   23 ok (530ms)
+   24 ok (513ms)
+   25 ok (386ms)
+   26 ok (541ms)
+   27 ok (503ms)
+   28 ok (593ms)
+   29 ok (470ms)
+   30 ok (434ms)
+   31 ok (467ms)
+   32 ok (606ms)
+   33 ok (456ms)
+   34 ok (447ms)
+   35 ok (444ms)
+   36 ok (447ms)
+   37 ok (563ms)
+   38 ok (414ms)
+   39 ok (494ms)
+   40 ok (422ms)
+   41 ok (624ms)
+   42 ok (423ms)
+   43 ok (392ms)
+   44 ok (467ms)
+   45 ok (549ms)
+   46 ok (558ms)
+   47 ok (540ms)
+   48 ok (507ms)
+   49 ok (630ms)
+   50 ok (439ms)
+   51 ok (452ms)
+   52 ok (454ms)
+   53 ok (565ms)
+   54 ok (697ms)
+   55 ok (463ms)
+   56 ok (417ms)
+   57 ok (443ms)
+   58 ok (633ms)
+   59 ok (475ms)
+
+{
+  "base": "https://bilulu.de",
+  "path": "/konfigurator/hose-kurz",
+  "attempts": 60,
+  "failures": 0,
+  "failureRate": "0.0%",
+  "byError": {
+    "ok": 60
+  },
+  "failDetail": []
+}
