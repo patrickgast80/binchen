@@ -21,16 +21,22 @@ import sharp from "sharp";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 
-const SRC = "public/products/turban/turban-rosen-01.jpeg";
+import { deprintByChroma } from "./lib/konfigurator-folds.mjs";
+
+// Pinned copy, NOT public/products/ — the catalog photo was re-matted onto a
+// uniform canvas after this konfigurator shipped and the background rule below
+// no longer matches it. See scripts/sources/README.md.
+const SRC = "scripts/sources/turban-rosen-01.jpeg";
 const OUT_DIR = "public/konfigurator/turban-foto";
 const DEBUG = process.argv.includes("--debug");
 await mkdir(OUT_DIR, { recursive: true });
 
+/** Steps 1+2 — background and bow segmentation. */
+async function segmentTurban() {
 const { data, info } = await sharp(SRC).raw().toBuffer({ resolveWithObject: true });
 const W = info.width;
 const H = info.height;
 const N = W * H;
-const idx = (x, y) => (y * W + x) * 3;
 
 const lumOf = (i) => 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
 const satOf = (i) => {
@@ -154,6 +160,67 @@ for (let p = 0; p < N; p++) {
 }
 console.log("bow hole-fill:", filled, "px");
 
+  return { data, W, H, N, isBg, isBow, lumOf, satOf };
+}
+
+const { data, W, H, N, isBg, isBow, lumOf } = await segmentTurban();
+
+// -- 2b. De-print the base (BIL-2512) ---------------------------------------
+// This konfigurator does NOT go through konfigurator-shading.mjs: its base is
+// the raw photo luminance, so the folds are real — and so are the roses. Every
+// fabric a customer picks was being multiplied by a grey rose field.
+//
+// `deprintByChroma` treats the motifs as missing data and refills them from the
+// surrounding cream, which leaves fold luminance untouched (a blur would not —
+// see the "NIE blur" rule in lib/konfigurator-folds.mjs).
+//
+// Trust list, decided by eye on the dumped base.webp and not by a threshold:
+//   0 body — lavender roses on cream, chromatically far from the ground -> yes
+//   1 bow  — solid dark purple, nothing to remove -> left alone
+// See scripts/bil2512-deprint-probe.mjs for the measurement behind this.
+const zoneBody = new Uint8Array(N);
+const zoneBow = new Uint8Array(N);
+for (let p = 0; p < N; p++) {
+  if (isBg[p]) continue;
+  if (isBow[p]) zoneBow[p] = 1; else zoneBody[p] = 1;
+}
+// Overlock thread and the seam line are construction, not print: they are
+// near-neutral against the warm cream so they read as chroma outliers, and
+// inpainting them would erase the garment's own stitching.
+//
+// The luminance floor is load-bearing. Without it this rule also protects the
+// near-BLACK rose centres — they carry almost no chroma either — and they stay
+// behind as dark blocks in the middle of every removed rose. The thread is
+// light, the motif cores are dark, so brightness separates them cleanly.
+const protectSeams = new Uint8Array(N);
+for (let p = 0; p < N; p++) {
+  if (isBg[p] || isBow[p]) continue;
+  const i = p * 3;
+  const r = data[i], g = data[i + 1], b = data[i + 2];
+  if (Math.max(r, g, b) - Math.min(r, g, b) <= 14 && lumOf(i) >= 120) protectSeams[p] = 1;
+}
+const deprint = deprintByChroma(data, W, H, isBg, [zoneBody, zoneBow], {
+  trustZones: [0],
+  zoneNames: ["turban", "schleife"],
+  protect: protectSeams,
+  // 33% motif coverage is high, but the roses are lavender on cream — far apart
+  // in chromaticity — so the mask is clean and there is plenty of unprinted
+  // ground to inpaint from. This is the opposite of the dino corpus, where the
+  // gate stayed shut. The limit is set just above the measured value so a
+  // reshoot with a denser print still fails the build.
+  maxPrint: 0.4,
+  close: 4,
+  dilate: 3,
+  iterations: 420,
+});
+console.log(
+  "printiness — body:", (deprint.printiness[0] * 100).toFixed(1) + "%",
+  "bow:", (deprint.printiness[1] * 100).toFixed(1) + "%",
+);
+// Outside the trusted zone `filled` is only the raw luminance copy, so this is
+// a no-op there rather than a silent change to the bow.
+const lumFor = (p) => (deprint.usable[p] ? deprint.filled[p] : lumOf(p * 3));
+
 // -- 3. Compose raw buffers -------------------------------------------------
 const baseRGBA = Buffer.alloc(N * 4);
 const maskTurban = Buffer.alloc(N);
@@ -161,8 +228,7 @@ const maskSchleife = Buffer.alloc(N);
 
 for (let p = 0; p < N; p++) {
   if (isBg[p]) continue; // transparent
-  const i = p * 3;
-  const lum = lumOf(i);
+  const lum = lumFor(p);
   // Same range compression as the hose base: keeps shadow detail for the
   // multiply blend without crushing to black or washing to white.
   const gray = Math.round(60 + (lum / 255) * 175);
@@ -182,7 +248,7 @@ for (let p = 0; p < N; p++) {
 let bowSum = 0, bowN = 0, bodySum = 0, bodyN = 0;
 for (let p = 0; p < N; p++) {
   if (isBg[p]) continue;
-  const l = lumOf(p * 3);
+  const l = lumFor(p);
   if (isBow[p]) { bowSum += l; bowN++; } else { bodySum += l; bodyN++; }
 }
 const bowMean = bowSum / Math.max(1, bowN);
@@ -194,7 +260,7 @@ const gain = Math.min(3.2, bodyMean / Math.max(20, bowMean));
 for (let p = 0; p < N; p++) {
   if (!isBow[p] || isBg[p]) continue;
   const o = p * 4;
-  const lifted = Math.min(235, Math.round(60 + ((lumOf(p * 3) * gain) / 255) * 175));
+  const lifted = Math.min(235, Math.round(60 + ((lumFor(p) * gain) / 255) * 175));
   baseRGBA[o] = lifted;
   baseRGBA[o + 1] = lifted;
   baseRGBA[o + 2] = lifted;
@@ -279,7 +345,23 @@ if (DEBUG) {
     .resize({ width: 800 })
     .png()
     .toFile(path.join(OUT_DIR, "debug-zones.png"));
-  console.log("debug zone map written");
+
+  // What the de-print actually removed — green = inpainted as print. The call
+  // on whether this konfigurator can be de-printed at all is made by looking at
+  // this and at base.webp, not by a number (BIL-2509 lesson).
+  const pm = Buffer.alloc(N * 3);
+  for (let p = 0; p < N; p++) {
+    const i = p * 3;
+    const v = Math.round(lumFor(p));
+    pm[i] = v; pm[i + 1] = v; pm[i + 2] = v;
+    if (deprint.printed[p] && deprint.usable[p]) { pm[i] = 40; pm[i + 1] = 190; pm[i + 2] = 90; }
+  }
+  await sharp(pm, { raw: { width: W, height: H, channels: 3 } })
+    .extract(extract)
+    .resize({ width: 800 })
+    .png()
+    .toFile(path.join(OUT_DIR, "debug-print-mask.png"));
+  console.log("debug zone + print map written");
 }
 
 // Print output size for the component's aspect-ratio lock.

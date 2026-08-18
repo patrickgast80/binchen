@@ -57,7 +57,43 @@
 import { boxBlurMasked, extendInto } from "./konfigurator-shading.mjs";
 
 /**
- * Real fold detail per zone, with a measured trust gate.
+ * One step of 4-neighbour dilation (`grow`) or erosion of a binary mask.
+ * Background counts as "outside" for both, so a mask never leaks past the
+ * silhouette and a motif touching the edge is not eroded away from it.
+ * `protect` pixels can never be added by a dilation.
+ */
+function morph(mask, W, H, isBg, grow, protect = null) {
+  const out = Uint8Array.from(mask);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const p = y * W + x;
+      if (isBg[p]) continue;
+      const l = x > 0 ? p - 1 : p, r = x < W - 1 ? p + 1 : p;
+      const u = y > 0 ? p - W : p, d = y < H - 1 ? p + W : p;
+      if (grow) {
+        if (mask[p] || (protect && protect[p])) continue;
+        if (mask[l] || mask[r] || mask[u] || mask[d]) out[p] = 1;
+      } else {
+        if (!mask[p]) continue;
+        // A neighbour that is background is not evidence of "not print", or the
+        // erosion would eat every motif that runs off the garment's edge.
+        const off = (q) => !mask[q] && !isBg[q];
+        if (off(l) || off(r) || off(u) || off(d)) out[p] = 0;
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Remove the print from the photo's luminance WITHOUT touching fold scale.
+ *
+ * This is the first stage of `foldsFromPhoto`, split out because BIL-2512 needs
+ * it on its own: turban and dreieckstuch do not build their base from a shading
+ * estimate at all, they use the raw photo luminance (`gray = 60 + lum/255*175`),
+ * so their folds are already real — but the original print is baked in and
+ * multiplies under every fabric the customer picks. For those two the de-printed
+ * luminance IS the base, and no band-pass is wanted.
  *
  * For each zone independently:
  *   1. take its MEDIAN chromaticity as the fabric's own colour (robust even if
@@ -75,22 +111,27 @@ import { boxBlurMasked, extendInto } from "./konfigurator-shading.mjs";
  * (r,g)/(r+g+b) units is roughly "visibly a different colour", and it is
  * comfortably above the drift a fold's own shading causes.
  *
+ * `protect` marks pixels that are NOT print even though they read as chroma
+ * outliers — overlock thread, buttons, a wooden logo tag. Without it they get
+ * inpainted away with the motifs and the garment loses its real construction
+ * detail, which is a different kind of lie than the one we are fixing.
+ *
  * @param {Buffer|Uint8Array} data   RGB, 3 bytes per pixel
  * @param {Array<Uint8Array>} zones  per-zone binary maps
- * @returns {{detail: Float32Array, zoneOk: boolean[], printiness: number[]}}
+ * @returns {{lum, filled, printed, usable, zoneOk: boolean[], printiness: number[]}}
  */
-export function foldsFromPhoto(data, W, H, isBg, zones, {
+export function deprintByChroma(data, W, H, isBg, zones, {
   trustZones,
   zoneNames = [],
   absFloor = 0.05,
   maxPrint = 0.22,
-  fine = 5,
-  broad = 46,
   iterations = 200,
   dilate = 2,
+  close = 0,
+  protect = null,
 } = {}) {
   if (!Array.isArray(trustZones)) {
-    throw new Error("foldsFromPhoto: pass trustZones — which zones are plain enough to recover");
+    throw new Error("deprintByChroma: pass trustZones — which zones are plain enough to recover");
   }
   const N = W * H;
   const lum = new Float32Array(N);
@@ -129,7 +170,7 @@ export function foldsFromPhoto(data, W, H, isBg, zones, {
     for (const p of members) {
       const d = Math.abs(cr[p] - r0) + Math.abs(cg[p] - g0);
       chromaDist[p] = d;
-      if (d > absFloor) { printed[p] = 1; off++; }
+      if (d > absFloor && !(protect && protect[p])) { printed[p] = 1; off++; }
     }
     printiness[idx] = off / members.length;
 
@@ -167,24 +208,27 @@ export function foldsFromPhoto(data, W, H, isBg, zones, {
     for (let p = 0; p < N; p++) if (zone[p] && !isBg[p]) usable[p] = 1;
   });
 
+  // Motif INTERIORS can fail the chroma test even though the fabric around them
+  // is plainly print. A near-black rose centre carries almost no chroma, and
+  // JPEG 4:2:0 subsampling smears what little it has across an 8px block, so the
+  // core lands back near the fabric's own chromaticity and survives as a dark
+  // rectangle in the middle of a removed motif. A hole inside a motif is part of
+  // the motif, so close the mask before growing it: dilate `close`, erode
+  // `close`. That fills interiors without moving the outer boundary.
+  let closed = printed;
+  for (let it = 0; it < close; it++) closed = morph(closed, W, H, isBg, true);
+  for (let it = 0; it < close; it++) closed = morph(closed, W, H, isBg, false);
+  // Protected pixels are construction, not print, wherever they sit — a closing
+  // must not swallow the seam where the print happens to run either side of it.
+  if (protect) for (let p = 0; p < N; p++) if (protect[p]) closed[p] = 0;
+
   // Motif EDGES are anti-aliased, so the rim around a motif is a blend of motif
   // and fabric: it passes the chroma test while still being far too dark. Grow
   // the print mask a little so those rims are inpainted too, otherwise every
   // motif leaves a faint outline behind in the fold map.
-  let grown = printed;
+  let grown = closed;
   for (let it = 0; it < dilate; it++) {
-    const next = Uint8Array.from(grown);
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        const p = y * W + x;
-        if (grown[p] || isBg[p]) continue;
-        if (
-          (x > 0 && grown[p - 1]) || (x < W - 1 && grown[p + 1]) ||
-          (y > 0 && grown[p - W]) || (y < H - 1 && grown[p + W])
-        ) next[p] = 1;
-      }
-    }
-    grown = next;
+    grown = morph(grown, W, H, isBg, true, protect);
   }
 
   // Treat "background OR motif" as missing and fill from the valid fabric.
@@ -198,6 +242,28 @@ export function foldsFromPhoto(data, W, H, isBg, zones, {
   // not a de-print blur, the motifs are already gone at this point.
   const smoothed = boxBlurMasked(filled, W, H, isBg, 3, 1);
   for (let p = 0; p < N; p++) if (grown[p] && !isBg[p]) filled[p] = smoothed[p];
+
+  void chromaDist;
+  void zoneMembers;
+  return { lum, filled, printed: grown, usable, zoneOk, printiness };
+}
+
+/**
+ * Real fold detail per zone, with a measured trust gate.
+ *
+ * De-print (above) + band-pass: the broad lighting term is dropped because the
+ * caller's pipeline already models it, leaving only the folds. Used by the three
+ * konfiguratoren whose base comes from `konfigurator-shading.mjs`.
+ *
+ * @returns {{detail: Float32Array, zoneOk: boolean[], printiness: number[]}}
+ */
+export function foldsFromPhoto(data, W, H, isBg, zones, {
+  fine = 5,
+  broad = 46,
+  ...opts
+} = {}) {
+  const N = W * H;
+  const { filled, usable, zoneOk, printiness } = deprintByChroma(data, W, H, isBg, zones, opts);
 
   const detail = bandPass(filled, W, H, isBg, { fine, broad });
 
@@ -217,8 +283,6 @@ export function foldsFromPhoto(data, W, H, isBg, zones, {
   // This is a check that can FAIL, which is the point; a gate that only ever
   // passes proves nothing.
   for (let p = 0; p < N; p++) if (!usable[p]) detail[p] = 0;
-  void chromaDist;
-  void zoneMembers;
 
   return { detail, zoneOk, printiness };
 }

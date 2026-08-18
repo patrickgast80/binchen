@@ -20,7 +20,12 @@ import sharp from "sharp";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 
-const SRC = "public/products/dreieckstuch/dreieckstuch-zoo-01.jpeg";
+import { deprintByChroma } from "./lib/konfigurator-folds.mjs";
+
+// Pinned copy, NOT public/products/ — the catalog photo was re-matted onto a
+// uniform canvas after this konfigurator shipped and the background rule below
+// no longer matches it. See scripts/sources/README.md.
+const SRC = "scripts/sources/dreieckstuch-zoo-01.jpeg";
 const OUT_DIR = "public/konfigurator/dreieckstuch-foto";
 const DEBUG = process.argv.includes("--debug");
 await mkdir(OUT_DIR, { recursive: true });
@@ -69,14 +74,45 @@ while (qh < qt) {
   if (y < H - 1) push(p + W);
 }
 
+// -- 1b. De-print the base (BIL-2512) ---------------------------------------
+// Like the turban and unlike hose/muetze, this base is the raw photo luminance:
+// the drape is real, but so is the zoo print, and it was multiplying under every
+// fabric the customer picked. `deprintByChroma` treats the motifs as missing
+// data and refills them from the surrounding pink — fold luminance is untouched,
+// which a blur could never promise (see lib/konfigurator-folds.mjs).
+//
+// One zone, and it is on the trust list: the motifs are aqua/coral/charcoal on
+// a plain pink ground, i.e. far apart in chromaticity. Verified by dumping
+// base.webp as a PNG and looking at it, per the BIL-2509 rule.
+const zoneTuch = new Uint8Array(N);
+for (let p = 0; p < N; p++) if (!isBg[p]) zoneTuch[p] = 1;
+const deprint = deprintByChroma(data, W, H, isBg, [zoneTuch], {
+  trustZones: [0],
+  zoneNames: ["tuch"],
+  // The default 0.05 is tuned for a saturated ground. This one is PALE pink, so
+  // it sits close to neutral in chromaticity and the charcoal line art — the
+  // leaf sprigs, stripes and dots — lands just inside 0.05 and survives the
+  // de-print. Measured distribution over the garment: the ground is under 0.02,
+  // motifs start around 0.037, so 0.03 is inside the gap between them.
+  absFloor: 0.03,
+  // Coverage is high — this is a busy print — but the ground is plainly visible
+  // between the motifs, so there is real fabric to inpaint from. Set just above
+  // the measured value so a denser reshoot fails the build instead of shipping
+  // ghosts.
+  maxPrint: 0.55,
+  close: 4,
+  dilate: 3,
+  iterations: 420,
+});
+console.log("printiness — tuch:", (deprint.printiness[0] * 100).toFixed(1) + "%");
+
 // -- 2. Compose base + single mask ------------------------------------------
 const baseRGBA = Buffer.alloc(N * 4);
 const maskTuch = Buffer.alloc(N);
 
 for (let p = 0; p < N; p++) {
   if (isBg[p]) continue;
-  const i = p * 3;
-  const lum = lumOf(i);
+  const lum = deprint.usable[p] ? deprint.filled[p] : lumOf(p * 3);
   const gray = Math.round(60 + (lum / 255) * 175);
   const o = p * 4;
   baseRGBA[o] = gray;
