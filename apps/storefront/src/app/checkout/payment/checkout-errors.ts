@@ -12,6 +12,8 @@
  * recognise falls back to `GENERIC`, which names a way out (info@bilulu.de).
  */
 
+import { OUT_OF_STOCK_COPY } from "@/lib/shop-error-copy";
+
 export interface CheckoutErrorCopy {
   /** Short headline — what went wrong, in the customer's words. */
   title: string;
@@ -47,14 +49,10 @@ const CHECKOUT_ERRORS: Record<string, CheckoutErrorCopy> = {
   payment_session_failed: PAYMENT_SETUP,
 
   // completeCart() — stable storefront codes.
-  out_of_stock: {
-    title: "Dieses Einzelstück wurde leider gerade verkauft",
-    body:
-      "Jedes Teil ist ein handgenähtes Unikat und nur einmal verfügbar — jemand war ein paar Sekunden " +
-      "schneller. Schau gern im Shop nach einem anderen Stück oder schreib uns an info@bilulu.de, wenn " +
-      "wir dir etwas Ähnliches nähen sollen.",
-    retryable: false,
-  },
+  // Shared with the product page (BIL-2516): the same oversell can be caught at
+  // "In den Warenkorb" or only at "Bestellung abschließen", and the customer
+  // must not get two different explanations for one event.
+  out_of_stock: { ...OUT_OF_STOCK_COPY, retryable: false },
   shipping_unavailable: {
     title: "Für diese Bestellung fehlt gerade eine Versandart",
     body:

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   addLineItem,
+  addLineItemResult,
   getConfiguratorBodyVariant,
   getConfiguratorDreieckstuchVariant,
   getConfiguratorHoseKurzVariant,
@@ -14,31 +15,62 @@ import {
 } from "@/lib/medusa";
 import { ensureCart, loadCart } from "@/lib/cart-cookie";
 
-export async function addToCartAction(variantId: string, quantity = 1): Promise<void> {
-  const cart = await ensureCart();
-  if (!cart) return;
-  await addLineItem(cart.id, variantId, quantity);
-  revalidatePath("/cart");
-  redirect("/cart");
+/**
+ * Bounce back to the product page with a *visible* failure — BIL-2516.
+ *
+ * `productId` is a hidden form field, so it arrives from the client and is
+ * percent-encoded into the path rather than concatenated raw: `../../evil` or
+ * `//evil.tld` stay a (nonexistent) product id and can never become a different
+ * route or an off-site redirect. A submit without an id — only a hand-made POST
+ * can produce one — gets the same message on /cart instead of silence.
+ *
+ * There is no `configHref` equivalent to preserve here: the product page's only
+ * state is the chosen variant and quantity, and after `out_of_stock` restoring
+ * that selection would mean re-offering a piece that is gone.
+ */
+function redirectToProduct(productId: string | null, code: string): never {
+  if (!productId) redirect(`/cart?error=${code}`);
+  redirect(`/product/${encodeURIComponent(productId)}?error=${code}`);
 }
 
+/**
+ * "In den Warenkorb" on every normal catalog product — BIL-2516.
+ *
+ * Every exit used to be invisible. No cart meant returning without navigating
+ * at all, so the click did literally nothing; a failed `addLineItem` was not
+ * even looked at and still redirected to `/cart`, which is the worse half —
+ * the customer lands in a cart *without* the piece she believes she just
+ * secured, and for a one-off that is how it goes to somebody else.
+ */
 export async function addToCartFromFormAction(formData: FormData): Promise<void> {
+  const productId = String(formData.get("productId") ?? "").trim() || null;
   const variantId = String(formData.get("variantId") ?? "").trim();
-  if (!variantId) return;
+  if (!variantId) redirectToProduct(productId, "no_variant");
   const rawQty = Number(formData.get("quantity") ?? 1);
   const quantity = Number.isFinite(rawQty) && rawQty >= 1 ? Math.min(99, Math.floor(rawQty)) : 1;
+
   const cart = await ensureCart();
-  if (!cart) return;
-  await addLineItem(cart.id, variantId, quantity);
+  if (!cart) redirectToProduct(productId, "cart_unavailable");
+
+  const added = await addLineItemResult(cart.id, variantId, quantity);
+  if (!added.ok) redirectToProduct(productId, added.reason);
+
   revalidatePath("/cart");
   redirect("/cart");
 }
 
 export async function removeFromCartAction(lineId: string): Promise<void> {
   const cart = await loadCart();
-  if (!cart) return;
-  await removeLineItem(cart.id, lineId);
+  if (!cart) redirect("/cart?error=cart_unavailable");
+
+  const removed = await removeLineItem(cart.id, lineId);
+  if (!removed) redirect("/cart?error=remove_failed");
+
   revalidatePath("/cart");
+  // Redirect rather than fall through, so a successful removal also clears a
+  // `?error=` left over from the previous attempt. Without it the banner
+  // outlives the problem it describes.
+  redirect("/cart");
 }
 
 /**

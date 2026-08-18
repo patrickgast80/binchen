@@ -6,9 +6,12 @@ import { Input } from "@/components/ui/input";
 import { formatPrice, getProduct, type MedusaProduct, type MedusaProductVariant } from "@/lib/medusa";
 import { addToCartFromFormAction } from "@/app/cart/actions";
 import { ProductGallery, type GalleryImage } from "@/components/product/product-gallery";
+import { ProductErrorBanner } from "./product-error";
 
 interface PageProps {
   params: { id: string };
+  /** Only `?error=` (BIL-2516) — set by a failed "In den Warenkorb". */
+  searchParams?: Record<string, string | string[] | undefined>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -61,7 +64,7 @@ function galleryImages(product: MedusaProduct): GalleryImage[] {
   return images;
 }
 
-export default async function ProductDetailPage({ params }: PageProps) {
+export default async function ProductDetailPage({ params, searchParams }: PageProps) {
   const product = await getProduct(params.id);
   if (!product) notFound();
 
@@ -144,6 +147,14 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </div>
           )}
 
+          {/* Directly above the button that failed, not at the top of the page.
+              Measured: a server-action redirect keeps the scroll position, and
+              on 390x844 the customer taps "In den Warenkorb" ~900px down — a
+              banner under the breadcrumb landed 500px above her viewport, so
+              the click still looked like it did nothing. Same reason Gestalt
+              proximity wants it here: the message belongs to that control. */}
+          <ProductErrorBanner error={searchParams?.error} />
+
           {allSoldOut ? (
             <div className="mt-8 rounded-lg border border-binchen-border bg-binchen-cream-dark p-4">
               <p className="font-body text-sm text-binchen-ink-muted">
@@ -157,6 +168,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </div>
           ) : (
             <form action={addToCartFromFormAction} className="mt-8 space-y-5">
+              {/* Tells the action where to send her back when the add fails —
+                  BIL-2516. `params.id` and not `product.id`, so the error lands
+                  on exactly the URL she was on. */}
+              <input type="hidden" name="productId" value={params.id} />
               {availableVariants.length > 1 ? (
                 <fieldset>
                   <legend className="font-body text-sm font-medium text-binchen-ink">

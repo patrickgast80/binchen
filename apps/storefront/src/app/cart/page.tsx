@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { loadCart } from "@/lib/cart-cookie";
 import { formatPrice, lineItemSubtotal, type CartLineItem } from "@/lib/medusa";
 import { removeFromCartAction } from "./actions";
+import { CartErrorBanner } from "./cart-error";
 
 interface KonfiguratorSelection {
   /** Cart-line display title, e.g. "Konfigurator-Hose" */
@@ -112,7 +113,12 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function CartPage() {
+export default async function CartPage({
+  searchParams,
+}: {
+  /** Only `?error=` (BIL-2516) — set by a failed "Entfernen" or add-to-cart. */
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
   const cart = await loadCart();
   const items = cart?.items ?? [];
   const isEmpty = items.length === 0;
@@ -123,6 +129,8 @@ export default async function CartPage() {
       <h1 className="font-display text-3xl font-semibold text-binchen-ink sm:text-4xl">
         Warenkorb
       </h1>
+
+      <CartErrorBanner error={searchParams?.error} />
 
       {isEmpty ? (
         <div className="mt-12 text-center">

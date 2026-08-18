@@ -629,30 +629,102 @@ export async function getDefaultRegionId(): Promise<string | null> {
   return cachedRegionId;
 }
 
+/**
+ * Every cart call goes through here so an unreachable backend becomes a `null`
+ * the caller can turn into a banner — BIL-2516.
+ *
+ * Until now these used bare `fetch`, so pointing the storefront at a dead host
+ * did not return "add failed", it *threw* out of the server action and the
+ * customer got the generic 500 page. Same event, two completely different
+ * screens depending on whether the host answered badly or not at all. The
+ * transport error stays in the container log; the customer gets one story.
+ */
+async function cartFetch(
+  label: string,
+  url: string,
+  init: { method?: string; body?: string } = {},
+): Promise<Response | null> {
+  try {
+    return await fetch(url, { ...init, headers: authHeaders(), cache: "no-store" });
+  } catch (err) {
+    console.warn(
+      `[cart] ${label} transport error: ${err instanceof Error ? err.message : String(err)}`,
+    );
+    return null;
+  }
+}
+
 export async function createCart(): Promise<Cart | null> {
   if (!BACKEND_URL) return null;
   const region_id = await getDefaultRegionId();
-  const res = await fetch(appendCartFields(`${BACKEND_URL}/store/carts`), {
+  const res = await cartFetch("createCart", appendCartFields(`${BACKEND_URL}/store/carts`), {
     method: "POST",
-    headers: authHeaders(),
     body: JSON.stringify(region_id ? { region_id } : {}),
-    cache: "no-store",
   });
-  if (!res.ok) return null;
+  if (!res?.ok) return null;
   const data = (await res.json()) as { cart: Cart };
   return data.cart;
 }
 
 export async function getCart(cartId: string): Promise<Cart | null> {
   if (!BACKEND_URL) return null;
-  const res = await fetch(appendCartFields(`${BACKEND_URL}/store/carts/${cartId}`), {
-    headers: authHeaders(),
-    cache: "no-store",
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) return null;
+  const res = await cartFetch("getCart", appendCartFields(`${BACKEND_URL}/store/carts/${cartId}`));
+  if (!res?.ok) return null;
   const data = (await res.json()) as { cart: Cart };
   return data.cart;
+}
+
+/**
+ * Stable, storefront-owned reasons "In den Warenkorb" can fail — BIL-2516.
+ *
+ * Same contract as `CompleteCartFailure`: a Medusa message is English and
+ * version-dependent, so it never reaches a customer or a URL. The distinction
+ * that matters here is `out_of_stock` — for a one-off handmade piece "bitte
+ * gleich noch einmal" is not just useless, it is wrong.
+ */
+export type AddLineItemFailure = "out_of_stock" | "backend_unavailable" | "add_failed";
+
+function classifyAddFailure(status: number, body: unknown): AddLineItemFailure {
+  const { code, message } = readMedusaError(body);
+  if (code === "insufficient_inventory" || /inventory|stock/i.test(message)) return "out_of_stock";
+  if (status >= 500) return "backend_unavailable";
+  return "add_failed";
+}
+
+/**
+ * Add to cart and say *why* it failed. `addLineItem` below keeps the old
+ * `Cart | null` shape for the konfigurators, which deliberately show one single
+ * "geht gerade nicht" (BIL-2510) because their base products are made to order
+ * and can never run out.
+ */
+export async function addLineItemResult(
+  cartId: string,
+  variantId: string,
+  quantity = 1,
+  metadata?: Record<string, unknown>,
+): Promise<{ ok: true; cart: Cart } | { ok: false; reason: AddLineItemFailure }> {
+  if (!BACKEND_URL) return { ok: false, reason: "backend_unavailable" };
+  const body: Record<string, unknown> = { variant_id: variantId, quantity };
+  if (metadata && Object.keys(metadata).length > 0) body.metadata = metadata;
+  const res = await cartFetch(
+    "addLineItem",
+    appendCartFields(`${BACKEND_URL}/store/carts/${cartId}/line-items`),
+    { method: "POST", body: JSON.stringify(body) },
+  );
+  if (!res) return { ok: false, reason: "backend_unavailable" };
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => null);
+    const reason = classifyAddFailure(res.status, errBody);
+    // Server-side only, and loud: a lost add-to-cart on a Unikat is a lost
+    // sale, and the raw backend answer is the only way to tell an oversell
+    // from a broken variant afterwards.
+    console.warn(
+      `[cart] add failed cart=${cartId} variant=${variantId} status=${res.status} reason=${reason} medusa=${JSON.stringify(readMedusaError(errBody))}`,
+    );
+    return { ok: false, reason };
+  }
+  const data = (await res.json()) as { cart: Cart };
+  return { ok: true, cart: data.cart };
 }
 
 export async function addLineItem(
@@ -661,34 +733,18 @@ export async function addLineItem(
   quantity = 1,
   metadata?: Record<string, unknown>,
 ): Promise<Cart | null> {
-  if (!BACKEND_URL) return null;
-  const body: Record<string, unknown> = { variant_id: variantId, quantity };
-  if (metadata && Object.keys(metadata).length > 0) body.metadata = metadata;
-  const res = await fetch(
-    appendCartFields(`${BACKEND_URL}/store/carts/${cartId}/line-items`),
-    {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(body),
-      cache: "no-store",
-    },
-  );
-  if (!res.ok) return null;
-  const data = (await res.json()) as { cart: Cart };
-  return data.cart;
+  const result = await addLineItemResult(cartId, variantId, quantity, metadata);
+  return result.ok ? result.cart : null;
 }
 
 export async function removeLineItem(cartId: string, lineId: string): Promise<Cart | null> {
   if (!BACKEND_URL) return null;
-  const res = await fetch(
+  const res = await cartFetch(
+    "removeLineItem",
     appendCartFields(`${BACKEND_URL}/store/carts/${cartId}/line-items/${lineId}`),
-    {
-      method: "DELETE",
-      headers: authHeaders(),
-      cache: "no-store",
-    },
+    { method: "DELETE" },
   );
-  if (!res.ok) return null;
+  if (!res?.ok) return null;
   const data = (await res.json()) as { cart?: Cart; parent?: Cart };
   return data.cart ?? data.parent ?? null;
 }

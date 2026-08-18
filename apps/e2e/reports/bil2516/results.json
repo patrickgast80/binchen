@@ -1,0 +1,202 @@
+{
+  "productId": "prod_01KZ0PC73515RHSB8XJB1MJJBR",
+  "base": "http://127.0.0.1:3210",
+  "results": [
+    {
+      "mode": "off",
+      "viewport": "mobile",
+      "url": "/cart",
+      "urlOk": true,
+      "alertCount": 0,
+      "alertText": null,
+      "bannerOk": true,
+      "view": null,
+      "cartLines": 1,
+      "cartOk": true,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "pass": true,
+      "screenshot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2516\\add-control-mobile.png"
+    },
+    {
+      "mode": "off",
+      "viewport": "desktop",
+      "url": "/cart",
+      "urlOk": true,
+      "alertCount": 0,
+      "alertText": null,
+      "bannerOk": true,
+      "view": null,
+      "cartLines": 1,
+      "cartOk": true,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "pass": true,
+      "screenshot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2516\\add-control-desktop.png"
+    },
+    {
+      "mode": "out_of_stock",
+      "viewport": "mobile",
+      "url": "/product/prod_01KZ0PC73515RHSB8XJB1MJJBR?error=out_of_stock",
+      "urlOk": true,
+      "alertCount": 1,
+      "alertText": "Dieses Einzelstück wurde leider gerade verkauft Jedes Teil ist ein handgenähtes Unikat und nur einmal verfügbar — jemand war ein paar Sekunden schneller. Schau gern im Shop nach einem anderen Stück oder schreib uns an info@bilulu.de, wenn wir dir etwas Ähnliches nähen sollen. Weitere Unikate ansehen",
+      "bannerOk": true,
+      "view": {
+        "scrollY": 621,
+        "top": 378,
+        "inView": true
+      },
+      "cartLines": 0,
+      "cartOk": true,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "pass": true,
+      "screenshot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2516\\add-out_of_stock-mobile.png"
+    },
+    {
+      "mode": "out_of_stock",
+      "viewport": "desktop",
+      "url": "/product/prod_01KZ0PC73515RHSB8XJB1MJJBR?error=out_of_stock",
+      "urlOk": true,
+      "alertCount": 1,
+      "alertText": "Dieses Einzelstück wurde leider gerade verkauft Jedes Teil ist ein handgenähtes Unikat und nur einmal verfügbar — jemand war ein paar Sekunden schneller. Schau gern im Shop nach einem anderen Stück oder schreib uns an info@bilulu.de, wenn wir dir etwas Ähnliches nähen sollen. Weitere Unikate ansehen",
+      "bannerOk": true,
+      "view": {
+        "scrollY": 0,
+        "top": 447,
+        "inView": true
+      },
+      "cartLines": 0,
+      "cartOk": true,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "pass": true,
+      "screenshot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2516\\add-out_of_stock-desktop.png"
+    },
+    {
+      "mode": "backend_error",
+      "viewport": "mobile",
+      "url": "/product/prod_01KZ0PC73515RHSB8XJB1MJJBR?error=backend_unavailable",
+      "urlOk": true,
+      "alertCount": 1,
+      "alertText": "Das hat gerade nicht geklappt Wir konnten das Stück gerade nicht in den Warenkorb legen — es liegt an uns, nicht an dir. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+      "bannerOk": true,
+      "view": {
+        "scrollY": 621,
+        "top": 378,
+        "inView": true
+      },
+      "cartLines": 0,
+      "cartOk": true,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "pass": true,
+      "screenshot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2516\\add-backend_unavailable-mobile.png"
+    },
+    {
+      "mode": "backend_error",
+      "viewport": "desktop",
+      "url": "/product/prod_01KZ0PC73515RHSB8XJB1MJJBR?error=backend_unavailable",
+      "urlOk": true,
+      "alertCount": 1,
+      "alertText": "Das hat gerade nicht geklappt Wir konnten das Stück gerade nicht in den Warenkorb legen — es liegt an uns, nicht an dir. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+      "bannerOk": true,
+      "view": {
+        "scrollY": 0,
+        "top": 447,
+        "inView": true
+      },
+      "cartLines": 0,
+      "cartOk": true,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "pass": true,
+      "screenshot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2516\\add-backend_unavailable-desktop.png"
+    },
+    {
+      "mode": "hangup",
+      "viewport": "mobile",
+      "url": "/product/prod_01KZ0PC73515RHSB8XJB1MJJBR?error=backend_unavailable",
+      "urlOk": true,
+      "alertCount": 1,
+      "alertText": "Das hat gerade nicht geklappt Wir konnten das Stück gerade nicht in den Warenkorb legen — es liegt an uns, nicht an dir. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+      "bannerOk": true,
+      "view": {
+        "scrollY": 621,
+        "top": 378,
+        "inView": true
+      },
+      "cartLines": 0,
+      "cartOk": true,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "pass": true,
+      "screenshot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2516\\add-transport-mobile.png"
+    },
+    {
+      "mode": "hangup",
+      "viewport": "desktop",
+      "url": "/product/prod_01KZ0PC73515RHSB8XJB1MJJBR?error=backend_unavailable",
+      "urlOk": true,
+      "alertCount": 1,
+      "alertText": "Das hat gerade nicht geklappt Wir konnten das Stück gerade nicht in den Warenkorb legen — es liegt an uns, nicht an dir. Bitte klick gleich noch einmal auf „In den Warenkorb“. Bleibt es dabei, schreib uns kurz an info@bilulu.de — dann nehmen wir deine Bestellung persönlich auf.",
+      "bannerOk": true,
+      "view": {
+        "scrollY": 0,
+        "top": 447,
+        "inView": true
+      },
+      "cartLines": 0,
+      "cartOk": true,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "pass": true,
+      "screenshot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2516\\add-transport-desktop.png"
+    },
+    {
+      "mode": "cart:remove_failed",
+      "viewport": "mobile",
+      "url": "/cart?error=remove_failed",
+      "alertText": "Das Stück konnte nicht entfernt werden Es liegt noch im Warenkorb. Bitte lade die Seite neu und versuch es noch einmal — oder schreib uns kurz an info@bilulu.de.",
+      "linesBefore": 1,
+      "linesAfter": 1,
+      "axeViolations": [],
+      "pass": true,
+      "screenshot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2516\\remove-failed-mobile.png"
+    },
+    {
+      "mode": "cart:remove_failed",
+      "viewport": "desktop",
+      "url": "/cart?error=remove_failed",
+      "alertText": "Das Stück konnte nicht entfernt werden Es liegt noch im Warenkorb. Bitte lade die Seite neu und versuch es noch einmal — oder schreib uns kurz an info@bilulu.de.",
+      "linesBefore": 1,
+      "linesAfter": 1,
+      "axeViolations": [],
+      "pass": true,
+      "screenshot": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2516\\remove-failed-desktop.png"
+    },
+    {
+      "mode": "konfigurator:off",
+      "viewport": "mobile",
+      "url": "/cart?added=konfigurator",
+      "alertCount": 0,
+      "pass": true
+    },
+    {
+      "mode": "konfigurator:out_of_stock",
+      "viewport": "mobile",
+      "url": "/konfigurator/dreieckstuch?error=add_failed",
+      "alertCount": 1,
+      "pass": true
+    }
+  ]
+}
