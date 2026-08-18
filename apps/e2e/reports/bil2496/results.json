@@ -1,0 +1,68 @@
+{
+  "at": "2026-08-18T07:29:46.436Z",
+  "checks": {
+    "catalog_card_count": 28,
+    "catalog_absent_Wale[\"”\\s]*\\s*": true,
+    "catalog_absent_Bilulu-Body": true,
+    "homepage_absent_body": true,
+    "homepage_absent_wale_altrosa": true,
+    "hub_absent_body": true,
+    "body_route_status": 404,
+    "body_route_gated": true,
+    "hose_route_status": 200,
+    "hose_has_cart_button": true
+  },
+  "pages": {
+    "catalog_page_1": [
+      "Bilulu-Pumphose (Konfigurator)",
+      "Set Mütze + Loop-Schal \"Boho-Regenbogen\" creme",
+      "Mütze \"Winter-Kinder Schneeflocken\" marineblau",
+      "Mütze \"Boho-Regenbogen\" mint mit Schleife",
+      "Set Dreieckstuch + Halstuch \"Kleiner Zoo\" rosa",
+      "Turban-Mütze \"Rosen\" lila mit Schleife",
+      "Turban-Mütze \"Aquarell-Blüten\" bordeaux",
+      "Baby-Mütze \"Rosen\" navy mit pinker Schleife",
+      "Turban-Mütze \"Pastell-Aquarell\" mit rosa Schleife",
+      "Set Mütze + Halstuch \"Marienkäfer\" blau-rot",
+      "Turban-Mütze \"Bunte Wildblumen\"",
+      "Set Dreieckstuch + Halstuch \"Schmetterlinge & Pusteblumen\" hellblau"
+    ],
+    "catalog_page_2": [
+      "Pumphose \"Eukalyptus\" creme",
+      "Pumphose \"Regenbogen-Schmetterlinge\" navy",
+      "Pumphose \"Blätter-Aquarell\" creme",
+      "Pumphose \"Rosen\" rosa mit türkiser Schleife",
+      "Pumphose \"Wildblumen\" creme mit Paperbag-Bund",
+      "Pumphose \"Wale\" marineblau",
+      "Pumphose \"Vintage-Rosen\" cream mit bordeaux Bund",
+      "Pumphose \"Anker & Sterne\" marine-türkis",
+      "Pumphose \"Pferde & Blumen\" navy mit roten Bündchen",
+      "Pumphose \"Regenbogen & Wolken\" navy-rosa",
+      "Pumphose \"Dinos\" rosa mit braunem Bund",
+      "Pumphose \"Füchse im Wald\" creme-oliv"
+    ],
+    "catalog_page_3": [
+      "Pumphose \"Dinos\" rosa mit türkisem Bund",
+      "Pumphose \"Erdbeeren\" beere-türkis",
+      "Pumphose \"Dinos\" türkis mit orangen Bündchen",
+      "Mütze \"Winter-Kinder Herzen\" marineblau"
+    ],
+    "homepage_headings": [
+      "Handgemachte Kleidung für die kleinsten Wunder",
+      "Unsere Lieblinge",
+      "Bilulu-Pumphose (Konfigurator)",
+      "Pumphose \"Eukalyptus\" creme",
+      "Pumphose \"Regenbogen-Schmetterlinge\" navy",
+      "Stell deine Hose selbst zusammen",
+      "Jeder Stich mit Sorgfalt",
+      "Shop",
+      "Rechtliches"
+    ],
+    "hub_tiles": [
+      "Pumphose",
+      "Mütze",
+      "Shop",
+      "Rechtliches"
+    ]
+  }
+}
