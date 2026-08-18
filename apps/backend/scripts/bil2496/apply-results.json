@@ -1,0 +1,30 @@
+{
+  "dry_run": false,
+  "plan": [
+    {
+      "handle": "pumphose-wale-altrosa",
+      "title": "Pumphose \"Wale\" altrosa",
+      "action": "delete",
+      "id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR",
+      "previous_status": "published"
+    },
+    {
+      "handle": "body",
+      "title": "Bilulu-Body (Konfigurator)",
+      "action": "draft",
+      "id": "prod_01KZ6Q1S10H9S6SG11NRZAVG7M",
+      "previous_status": "published"
+    }
+  ],
+  "checks": {
+    "wale_absent_from_store": true,
+    "wale_absent_from_admin": true,
+    "body_absent_from_store": true,
+    "body_still_exists_as_draft": true,
+    "body_product_id": "prod_01KZ6Q1S10H9S6SG11NRZAVG7M",
+    "hose_konfigurator_resolves_to": "Bilulu-Pumphose (Konfigurator)",
+    "hose_konfigurator_variant": "variant_01KZ0PC73526W84C290ZDDBECJ",
+    "body_konfigurator_resolves_to": null,
+    "store_product_count": 28
+  }
+}

@@ -1,0 +1,120 @@
+[
+  {
+    "id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR",
+    "title": "Pumphose \"Wale\" altrosa",
+    "handle": "pumphose-wale-altrosa",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786983868672-prod_01KZ0VZYX96XZEMFFB19AQTCFR.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GKWK0WXSZ5EJYZDRHCRJ",
+        "url": "https://api.bilulu.de/static/1785841864522-photo-39.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR",
+        "created_at": "2026-08-04T11:11:04.596Z",
+        "updated_at": "2026-08-04T11:11:04.596Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZYZDH4CSB0BGHDDXK7QM",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-wale-altrosa",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR",
+        "created_at": "2026-08-02T09:13:32.398Z",
+        "updated_at": "2026-08-02T09:13:32.398Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZZ1JGENYW3ZFPRNFVT70",
+            "amount": 26.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZYZDH4CSB0BGHDDXK7QM",
+            "created_at": "2026-08-02T09:13:32.467Z",
+            "updated_at": "2026-08-02T10:07:51.190Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ6Q1S10H9S6SG11NRZAVG7M",
+    "title": "Bilulu-Body (Konfigurator)",
+    "handle": "body",
+    "status": "published",
+    "thumbnail": "https://bilulu.de/konfigurator/body-foto/base.webp",
+    "images": [
+      {
+        "id": "img_01KZ6Q1S16M3A1BGK4ETB3GWEX",
+        "url": "https://bilulu.de/konfigurator/body-foto/base.webp",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ6Q1S10H9S6SG11NRZAVG7M",
+        "created_at": "2026-08-04T15:42:35.560Z",
+        "updated_at": "2026-08-04T15:42:35.560Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ6Q1S40M6399DM4C28E26X2",
+        "title": "Unisize",
+        "sku": "BIL-2458-body-unisize",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ6Q1S10H9S6SG11NRZAVG7M",
+        "created_at": "2026-08-04T15:42:35.649Z",
+        "updated_at": "2026-08-04T15:42:35.649Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ6Q1S6MASW4RTDZ4P8C7S0Z",
+            "amount": 19.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ6Q1S40M6399DM4C28E26X2",
+            "created_at": "2026-08-04T15:42:35.733Z",
+            "updated_at": "2026-08-04T15:42:35.733Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  }
+]
