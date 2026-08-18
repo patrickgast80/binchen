@@ -54,6 +54,7 @@ import {
   normalizeShadingZoned,
   smoothBinary,
 } from "./lib/konfigurator-shading.mjs";
+import { applyRealFolds, foldsFromPhoto } from "./lib/konfigurator-folds.mjs";
 
 const SRC = "public/products/muetze/muetze-boho-mint-01.jpeg";
 const OUT_DIR = "public/konfigurator/muetze-foto";
@@ -275,13 +276,40 @@ const illum = estimateIllumination(deprinted, W, H, isBg, {
 // Zoned: the mint shell and the dusty-pink lining are different materials, so
 // a global stretch would leave the lining permanently darker than the shell
 // and the same chosen colour would render differently in the two zones.
-const { gray, unit } = normalizeShadingZoned(
+// BIL-2509: shadow floor 172 -> 158 and a stronger silhouette roll-off. The
+// deepest crease could only take the swatch to 67%, while the reference photo's
+// knot shadow and the fold under the brim go well past that.
+const SHADOW = 158;
+const LIT = 252;
+const ZONES = [isFutter, isShell];
+const { gray, unit, stats } = normalizeShadingZoned(
   illum, W, H, isBg,
-  [isFutter, isShell],
-  { shadow: 172, lit: 252 },
+  ZONES,
+  { shadow: SHADOW, lit: LIT },
 );
 
-applyEdgeShadow(gray, W, H, isBg, { radius: 16, strength: 0.16 });
+applyEdgeShadow(gray, W, H, isBg, { radius: 22, strength: 0.22 });
+
+// -- 3a2. REAL folds from the photo (BIL-2509) -------------------------------
+// Trusted: the lining (0) only — plain dusty pink, so its real creases can be
+// measured straight off the photo. NOT the shell (1): the boho rainbows are
+// ~120px motifs on mint and the de-print pass already has to smooth at radius 70
+// to hide them, which is exactly the regime where fold recovery returns motif
+// blobs instead of folds (see konfigurator-folds.mjs header). The shell keeps
+// the radial gather fan below, which is what BIL-2479 built it for.
+const { detail: folds, zoneOk, printiness } = foldsFromPhoto(data, W, H, isBg, ZONES, {
+  trustZones: [0], zoneNames: ["futter", "muetze"],
+  fine: 5, broad: 70, maxPrint: 0.22,
+});
+["futter", "muetze"].forEach((name, i) => {
+  console.log(
+    `zone ${name.padEnd(8)} printiness ${(printiness[i] * 100).toFixed(1)}% ` +
+      `-> real folds ${zoneOk[i] ? "YES" : "no (synthetic drape kept)"}`,
+  );
+});
+const foldSheen = applyRealFolds(gray, folds, W, H, isBg, ZONES, stats, {
+  shadow: SHADOW, lit: LIT, gain: 1.0, depth: 1.4, limit: 30, ceiling: 246,
+});
 
 // -- 3b. Fabric drawing — BIL-2479 -------------------------------------------
 //
@@ -413,6 +441,15 @@ const sheenDampSoft = boxBlurMasked(sheenDamp, W, H, isBg, 7, 2);
 
 const baseRGBA = grayToRGBA(gray, W, H, isBg);
 const highlight = buildHighlight(unit, W, H, isBg, { start: 0.72, gain: 0.3, damp: sheenDampSoft });
+
+// BIL-2509 — the fold crests the multiply base had to clip at `ceiling` go onto
+// the screen layer instead, where a highlight belongs and where it survives a
+// dark swatch (multiply loses fine bright structure as the swatch darkens).
+const FOLD_SHEEN_GAIN = 1.6;
+for (let p = 0; p < N; p++) {
+  if (isBg[p] || foldSheen[p] <= 0) continue;
+  highlight[p] = Math.min(255, highlight[p] + foldSheen[p] * FOLD_SHEEN_GAIN);
+}
 
 // Carry the crease crests on the SCREEN layer too, so the drawing survives a
 // dark swatch. Multiply runs in gamma space, so a fixed modulation in the base
