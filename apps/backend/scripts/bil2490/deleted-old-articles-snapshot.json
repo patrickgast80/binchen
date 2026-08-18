@@ -1,0 +1,799 @@
+[
+  {
+    "id": "prod_01KZ0VZR3GRE02ZXNAE1M1KJP0",
+    "title": "Turban-Mütze \"Pastell-Aquarell\" mit rosa Schleife",
+    "handle": "turban-pastell-aquarell",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988873708-prod_01KZ0VZR3GRE02ZXNAE1M1KJP0.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GESJB5FMQ6KPW1KMPFMH",
+        "url": "https://api.bilulu.de/static/1785841859142-photo-16.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZR3GRE02ZXNAE1M1KJP0",
+        "created_at": "2026-08-04T11:10:59.380Z",
+        "updated_at": "2026-08-04T11:10:59.380Z",
+        "deleted_at": null
+      },
+      {
+        "id": "img_01KZ67GESKC8JN83ZN61B4V5SQ",
+        "url": "https://api.bilulu.de/static/1785841859188-photo-17.jpg",
+        "metadata": null,
+        "rank": 1,
+        "product_id": "prod_01KZ0VZR3GRE02ZXNAE1M1KJP0",
+        "created_at": "2026-08-04T11:10:59.380Z",
+        "updated_at": "2026-08-04T11:10:59.380Z",
+        "deleted_at": null
+      },
+      {
+        "id": "img_01KZ67GESKB7BEFDHY0830ACTE",
+        "url": "https://api.bilulu.de/static/1785841859229-photo-18.jpg",
+        "metadata": null,
+        "rank": 2,
+        "product_id": "prod_01KZ0VZR3GRE02ZXNAE1M1KJP0",
+        "created_at": "2026-08-04T11:10:59.380Z",
+        "updated_at": "2026-08-04T11:10:59.380Z",
+        "deleted_at": null
+      },
+      {
+        "id": "img_01KZ67GESK6410MH31PMJ9FG9R",
+        "url": "https://api.bilulu.de/static/1785841859302-photo-20.jpg",
+        "metadata": null,
+        "rank": 3,
+        "product_id": "prod_01KZ0VZR3GRE02ZXNAE1M1KJP0",
+        "created_at": "2026-08-04T11:10:59.380Z",
+        "updated_at": "2026-08-04T11:10:59.380Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZR4QT5X031Q2D3VEPT6P",
+        "title": "Standard",
+        "sku": "BIL-2432-turban-pastell-aquarell",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZR3GRE02ZXNAE1M1KJP0",
+        "created_at": "2026-08-02T09:13:25.400Z",
+        "updated_at": "2026-08-02T09:13:25.400Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZR5RS6P3KZMTMPSN0XX2",
+            "amount": 18.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZR4QT5X031Q2D3VEPT6P",
+            "created_at": "2026-08-02T09:13:25.433Z",
+            "updated_at": "2026-08-02T10:07:48.714Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZV13GCM9ESBEDMTF2B65",
+    "title": "Pumphose \"Rosen\" rosa mit türkiser Schleife",
+    "handle": "pumphose-rosen-rosa",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988874991-prod_01KZ0VZV13GCM9ESBEDMTF2B65.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GH411FZB93BJHDDG9F41",
+        "url": "https://api.bilulu.de/static/1785841861697-photo-29.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZV13GCM9ESBEDMTF2B65",
+        "created_at": "2026-08-04T11:11:01.761Z",
+        "updated_at": "2026-08-04T11:11:01.761Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZV23YSWXX1NF63N0N7K2",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-rosen-rosa",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZV13GCM9ESBEDMTF2B65",
+        "created_at": "2026-08-02T09:13:28.387Z",
+        "updated_at": "2026-08-02T09:13:28.387Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZV2WZ0MSBG23VA4GGT6R",
+            "amount": 27.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZV23YSWXX1NF63N0N7K2",
+            "created_at": "2026-08-02T09:13:28.413Z",
+            "updated_at": "2026-08-02T10:07:49.914Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZVDANA7ZF9WKPMFTRHC7",
+    "title": "Pumphose \"Wildblumen\" creme mit Paperbag-Bund",
+    "handle": "pumphose-wildblumen-weiss",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988875188-prod_01KZ0VZVDANA7ZF9WKPMFTRHC7.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GHDM89QR661T6RVRNAS0",
+        "url": "https://api.bilulu.de/static/1785841862008-photo-30.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZVDANA7ZF9WKPMFTRHC7",
+        "created_at": "2026-08-04T11:11:02.069Z",
+        "updated_at": "2026-08-04T11:11:02.069Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZVF4E91K5Q5E2TC3YB6N",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-wildblumen-weiss",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZVDANA7ZF9WKPMFTRHC7",
+        "created_at": "2026-08-02T09:13:28.804Z",
+        "updated_at": "2026-08-02T09:13:28.804Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZVFYPH24GJ9ZVE3RZBFY",
+            "amount": 29.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZVF4E91K5Q5E2TC3YB6N",
+            "created_at": "2026-08-02T09:13:28.830Z",
+            "updated_at": "2026-08-02T10:07:50.041Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZVR4CGBWAM6QEKDFJTHW",
+    "title": "Pumphose \"Wale\" marineblau",
+    "handle": "pumphose-wale-marine",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988875417-prod_01KZ0VZVR4CGBWAM6QEKDFJTHW.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GHNVEB0XA6FRJV4CM6X3",
+        "url": "https://api.bilulu.de/static/1785841862259-photo-31.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZVR4CGBWAM6QEKDFJTHW",
+        "created_at": "2026-08-04T11:11:02.331Z",
+        "updated_at": "2026-08-04T11:11:02.331Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZVS7FKW9JTP9G5F07MG7",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-wale-marine",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZVR4CGBWAM6QEKDFJTHW",
+        "created_at": "2026-08-02T09:13:29.127Z",
+        "updated_at": "2026-08-02T09:13:29.127Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZVTFBWCFYB6CFSWVEG6G",
+            "amount": 27.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZVS7FKW9JTP9G5F07MG7",
+            "created_at": "2026-08-02T09:13:29.168Z",
+            "updated_at": "2026-08-02T10:07:50.159Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZW5YPJ3R9RVPH9GDKWH9",
+    "title": "Pumphose \"Vintage-Rosen\" cream mit bordeaux Bund",
+    "handle": "pumphose-vintage-rosen",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988875634-prod_01KZ0VZW5YPJ3R9RVPH9GDKWH9.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GHZ082V702DPKVXHPRFG",
+        "url": "https://api.bilulu.de/static/1785841862560-photo-32.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZW5YPJ3R9RVPH9GDKWH9",
+        "created_at": "2026-08-04T11:11:02.625Z",
+        "updated_at": "2026-08-04T11:11:02.625Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZW70V0ZSEP9HN9FP6YDF",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-vintage-rosen",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZW5YPJ3R9RVPH9GDKWH9",
+        "created_at": "2026-08-02T09:13:29.568Z",
+        "updated_at": "2026-08-02T09:13:29.568Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZW7ZR9KYNGS7P86P36WW",
+            "amount": 29.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZW70V0ZSEP9HN9FP6YDF",
+            "created_at": "2026-08-02T09:13:29.600Z",
+            "updated_at": "2026-08-02T10:07:50.278Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZWHC22ARK526BGW44NAF",
+    "title": "Pumphose \"Anker & Sterne\" marine-türkis",
+    "handle": "pumphose-anker-sterne",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988875854-prod_01KZ0VZWHC22ARK526BGW44NAF.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GJ8H1B7JK5ZS01CPSK37",
+        "url": "https://api.bilulu.de/static/1785841862845-photo-33.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZWHC22ARK526BGW44NAF",
+        "created_at": "2026-08-04T11:11:02.929Z",
+        "updated_at": "2026-08-04T11:11:02.929Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZWJ5YD97RGPJ3FTYHJZ6",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-anker-sterne",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZWHC22ARK526BGW44NAF",
+        "created_at": "2026-08-02T09:13:29.925Z",
+        "updated_at": "2026-08-02T09:13:29.925Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZWK4D0FNQ9J263HDWXT7",
+            "amount": 26.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZWJ5YD97RGPJ3FTYHJZ6",
+            "created_at": "2026-08-02T09:13:29.957Z",
+            "updated_at": "2026-08-02T10:07:50.425Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZWW1Z6ZEGWK2V6J5CZQK",
+    "title": "Pumphose \"Pferde & Blumen\" navy mit roten Bündchen",
+    "handle": "pumphose-pferde-blumen",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988876056-prod_01KZ0VZWW1Z6ZEGWK2V6J5CZQK.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GJFYKQ332NDRS3R50MF5",
+        "url": "https://api.bilulu.de/static/1785841863111-photo-34.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZWW1Z6ZEGWK2V6J5CZQK",
+        "created_at": "2026-08-04T11:11:03.167Z",
+        "updated_at": "2026-08-04T11:11:03.167Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZWX4FMSGSC7N3FXJXHVD",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-pferde-blumen",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZWW1Z6ZEGWK2V6J5CZQK",
+        "created_at": "2026-08-02T09:13:30.276Z",
+        "updated_at": "2026-08-02T09:13:30.276Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZWY434D5GBA912EHK44G",
+            "amount": 28.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZWX4FMSGSC7N3FXJXHVD",
+            "created_at": "2026-08-02T09:13:30.308Z",
+            "updated_at": "2026-08-02T10:07:50.539Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZX81WM4EY394HNG5TSXP",
+    "title": "Pumphose \"Regenbogen & Wolken\" navy-rosa",
+    "handle": "pumphose-regenbogen-wolken",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988876268-prod_01KZ0VZX81WM4EY394HNG5TSXP.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GJPW0E19PF59HBNZMV4Y",
+        "url": "https://api.bilulu.de/static/1785841863332-photo-35.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZX81WM4EY394HNG5TSXP",
+        "created_at": "2026-08-04T11:11:03.388Z",
+        "updated_at": "2026-08-04T11:11:03.388Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZX9TCB3KVD75SQ0W2N2F",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-regenbogen-wolken",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZX81WM4EY394HNG5TSXP",
+        "created_at": "2026-08-02T09:13:30.682Z",
+        "updated_at": "2026-08-02T09:13:30.682Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZXAT2E2DH4G110X48F1V",
+            "amount": 27.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZX9TCB3KVD75SQ0W2N2F",
+            "created_at": "2026-08-02T09:13:30.714Z",
+            "updated_at": "2026-08-02T10:07:50.667Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZXM09VDDKXDCSHBDMMZE",
+    "title": "Pumphose \"Dinos\" rosa mit braunem Bund",
+    "handle": "pumphose-dinos-rosa-braun",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988876455-prod_01KZ0VZXM09VDDKXDCSHBDMMZE.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GJZP2MWX87Z35FHHTP5H",
+        "url": "https://api.bilulu.de/static/1785841863594-photo-36.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZXM09VDDKXDCSHBDMMZE",
+        "created_at": "2026-08-04T11:11:03.671Z",
+        "updated_at": "2026-08-04T11:11:03.671Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZXN1FBTB8D9SCFT6Y38P",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-dinos-rosa-braun",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZXM09VDDKXDCSHBDMMZE",
+        "created_at": "2026-08-02T09:13:31.042Z",
+        "updated_at": "2026-08-02T09:13:31.042Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZXNZE4FS0JD5Y2B58YXC",
+            "amount": 27.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZXN1FBTB8D9SCFT6Y38P",
+            "created_at": "2026-08-02T09:13:31.071Z",
+            "updated_at": "2026-08-02T10:07:50.787Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZXZMY5F8TMSEF4WP4H1K",
+    "title": "Pumphose \"Füchse im Wald\" creme-oliv",
+    "handle": "pumphose-fuechse-waldgeist",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988876635-prod_01KZ0VZXZMY5F8TMSEF4WP4H1K.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GK8E61SV4FEPJG0087B1",
+        "url": "https://api.bilulu.de/static/1785841863858-photo-37.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZXZMY5F8TMSEF4WP4H1K",
+        "created_at": "2026-08-04T11:11:03.950Z",
+        "updated_at": "2026-08-04T11:11:03.950Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZY0HM5WESZKV6DNRMTQT",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-fuechse-waldgeist",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZXZMY5F8TMSEF4WP4H1K",
+        "created_at": "2026-08-02T09:13:31.410Z",
+        "updated_at": "2026-08-02T09:13:31.410Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZY198ZGWW83YQCAPEWES",
+            "amount": 28.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZY0HM5WESZKV6DNRMTQT",
+            "created_at": "2026-08-02T09:13:31.434Z",
+            "updated_at": "2026-08-02T10:07:50.916Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZYBX4DWZK4JX5BEQ4KWQ",
+    "title": "Pumphose \"Dinos\" rosa mit türkisem Bund",
+    "handle": "pumphose-dinos-rosa-tuerkis",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988876873-prod_01KZ0VZYBX4DWZK4JX5BEQ4KWQ.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GKKFXG8Q6N90DJB7E619",
+        "url": "https://api.bilulu.de/static/1785841864170-photo-38.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZYBX4DWZK4JX5BEQ4KWQ",
+        "created_at": "2026-08-04T11:11:04.304Z",
+        "updated_at": "2026-08-04T11:11:04.304Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZYDCERE7AB0SPFT1TSSP",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-dinos-rosa-tuerkis",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZYBX4DWZK4JX5BEQ4KWQ",
+        "created_at": "2026-08-02T09:13:31.820Z",
+        "updated_at": "2026-08-02T09:13:31.821Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZYEZS1WVAVJP2D1JM2VW",
+            "amount": 27.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZYDCERE7AB0SPFT1TSSP",
+            "created_at": "2026-08-02T09:13:31.872Z",
+            "updated_at": "2026-08-02T10:07:51.045Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR",
+    "title": "Pumphose \"Wale\" altrosa",
+    "handle": "pumphose-wale-altrosa",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786983868672-prod_01KZ0VZYX96XZEMFFB19AQTCFR.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GKWK0WXSZ5EJYZDRHCRJ",
+        "url": "https://api.bilulu.de/static/1785841864522-photo-39.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR",
+        "created_at": "2026-08-04T11:11:04.596Z",
+        "updated_at": "2026-08-04T11:11:04.596Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZYZDH4CSB0BGHDDXK7QM",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-wale-altrosa",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR",
+        "created_at": "2026-08-02T09:13:32.398Z",
+        "updated_at": "2026-08-02T09:13:32.398Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZZ1JGENYW3ZFPRNFVT70",
+            "amount": 26.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZYZDH4CSB0BGHDDXK7QM",
+            "created_at": "2026-08-02T09:13:32.467Z",
+            "updated_at": "2026-08-02T10:07:51.190Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_01KZ0VZZC7V6PMQH9R54KNM10R",
+    "title": "Pumphose \"Erdbeeren\" beere-türkis",
+    "handle": "pumphose-erdbeeren",
+    "status": "published",
+    "thumbnail": "https://api.bilulu.de/static/1786988877095-prod_01KZ0VZZC7V6PMQH9R54KNM10R.jpg",
+    "images": [
+      {
+        "id": "img_01KZ67GM6GBHFB0P7M1DYWGPTZ",
+        "url": "https://api.bilulu.de/static/1785841864821-photo-40.jpg",
+        "metadata": null,
+        "rank": 0,
+        "product_id": "prod_01KZ0VZZC7V6PMQH9R54KNM10R",
+        "created_at": "2026-08-04T11:11:04.913Z",
+        "updated_at": "2026-08-04T11:11:04.913Z",
+        "deleted_at": null
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant_01KZ0VZZEQ9BXFG7FZM90H9XYR",
+        "title": "Standard",
+        "sku": "BIL-2432-pumphose-erdbeeren",
+        "barcode": null,
+        "ean": null,
+        "upc": null,
+        "allow_backorder": false,
+        "manage_inventory": true,
+        "hs_code": null,
+        "origin_country": null,
+        "mid_code": null,
+        "material": null,
+        "weight": null,
+        "length": null,
+        "height": null,
+        "width": null,
+        "metadata": null,
+        "variant_rank": 0,
+        "thumbnail": null,
+        "product_id": "prod_01KZ0VZZC7V6PMQH9R54KNM10R",
+        "created_at": "2026-08-02T09:13:32.887Z",
+        "updated_at": "2026-08-02T09:13:32.887Z",
+        "deleted_at": null,
+        "prices": [
+          {
+            "id": "price_01KZ0VZZFSV0HRYSV2YCQ7Q5JT",
+            "amount": 27.9,
+            "currency_code": "eur",
+            "min_quantity": null,
+            "max_quantity": null,
+            "variant_id": "variant_01KZ0VZZEQ9BXFG7FZM90H9XYR",
+            "created_at": "2026-08-02T09:13:32.921Z",
+            "updated_at": "2026-08-02T10:07:51.308Z",
+            "rules": {}
+          }
+        ]
+      }
+    ]
+  }
+]

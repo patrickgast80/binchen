@@ -1,0 +1,85 @@
+{
+  "dry_run": true,
+  "at": "2026-08-18T07:00:58.259Z",
+  "plan": [
+    {
+      "handle": "turban-pastell-aquarell",
+      "title": "Turban-Mütze \"Pastell-Aquarell\" mit rosa Schleife",
+      "action": "delete",
+      "id": "prod_01KZ0VZR3GRE02ZXNAE1M1KJP0"
+    },
+    {
+      "handle": "pumphose-rosen-rosa",
+      "title": "Pumphose \"Rosen\" rosa mit türkiser Schleife",
+      "action": "delete",
+      "id": "prod_01KZ0VZV13GCM9ESBEDMTF2B65"
+    },
+    {
+      "handle": "pumphose-wildblumen-weiss",
+      "title": "Pumphose \"Wildblumen\" creme mit Paperbag-Bund",
+      "action": "delete",
+      "id": "prod_01KZ0VZVDANA7ZF9WKPMFTRHC7"
+    },
+    {
+      "handle": "pumphose-wale-marine",
+      "title": "Pumphose \"Wale\" marineblau",
+      "action": "delete",
+      "id": "prod_01KZ0VZVR4CGBWAM6QEKDFJTHW"
+    },
+    {
+      "handle": "pumphose-vintage-rosen",
+      "title": "Pumphose \"Vintage-Rosen\" cream mit bordeaux Bund",
+      "action": "delete",
+      "id": "prod_01KZ0VZW5YPJ3R9RVPH9GDKWH9"
+    },
+    {
+      "handle": "pumphose-anker-sterne",
+      "title": "Pumphose \"Anker & Sterne\" marine-türkis",
+      "action": "delete",
+      "id": "prod_01KZ0VZWHC22ARK526BGW44NAF"
+    },
+    {
+      "handle": "pumphose-pferde-blumen",
+      "title": "Pumphose \"Pferde & Blumen\" navy mit roten Bündchen",
+      "action": "delete",
+      "id": "prod_01KZ0VZWW1Z6ZEGWK2V6J5CZQK"
+    },
+    {
+      "handle": "pumphose-regenbogen-wolken",
+      "title": "Pumphose \"Regenbogen & Wolken\" navy-rosa",
+      "action": "delete",
+      "id": "prod_01KZ0VZX81WM4EY394HNG5TSXP"
+    },
+    {
+      "handle": "pumphose-dinos-rosa-braun",
+      "title": "Pumphose \"Dinos\" rosa mit braunem Bund",
+      "action": "delete",
+      "id": "prod_01KZ0VZXM09VDDKXDCSHBDMMZE"
+    },
+    {
+      "handle": "pumphose-fuechse-waldgeist",
+      "title": "Pumphose \"Füchse im Wald\" creme-oliv",
+      "action": "delete",
+      "id": "prod_01KZ0VZXZMY5F8TMSEF4WP4H1K"
+    },
+    {
+      "handle": "pumphose-dinos-rosa-tuerkis",
+      "title": "Pumphose \"Dinos\" rosa mit türkisem Bund",
+      "action": "delete",
+      "id": "prod_01KZ0VZYBX4DWZK4JX5BEQ4KWQ"
+    },
+    {
+      "handle": "pumphose-wale-altrosa",
+      "title": "Pumphose \"Wale\" altrosa",
+      "action": "delete",
+      "id": "prod_01KZ0VZYX96XZEMFFB19AQTCFR"
+    },
+    {
+      "handle": "pumphose-erdbeeren",
+      "title": "Pumphose \"Erdbeeren\" beere-türkis",
+      "action": "delete",
+      "id": "prod_01KZ0VZZC7V6PMQH9R54KNM10R"
+    }
+  ],
+  "remaining": 17
+}
