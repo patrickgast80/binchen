@@ -1,0 +1,27 @@
+{
+  "generated_by": "apps/backend/scripts/bil2505/verify-resolver.mjs",
+  "backend": "https://api.bilulu.de",
+  "region": "reg_01KVFAA131VGWJ6DF74JBYRMTM",
+  "store_product_count": 16,
+  "draft_product": {
+    "id": "prod_01M0A30XEEB7FQDJSFEWVAF7DP",
+    "title": "Bilulu-Pumphose kurz (Konfigurator)",
+    "status": "draft",
+    "price": "34.9 eur"
+  },
+  "ist": {
+    "lang": "Bilulu-Pumphose (Konfigurator) — 39 eur",
+    "kurz": "Bilulu-Pumphose (Konfigurator) — 39 eur"
+  },
+  "nach_publish": {
+    "lang": "Bilulu-Pumphose (Konfigurator) — 39 eur",
+    "kurz": "Bilulu-Pumphose kurz (Konfigurator) — 34.9 eur"
+  },
+  "checks": {
+    "kurz_faellt_heute_auf_lange_basis": true,
+    "lang_bleibt_nach_publish_unveraendert": true,
+    "kurz_greift_nach_publish_neues_produkt": true,
+    "draft_ist_nicht_in_store_api": true
+  },
+  "pass": true
+}
