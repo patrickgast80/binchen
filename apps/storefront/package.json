@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "css:inline": "node scripts/build-inline-css.mjs",
+    "prebuild": "node scripts/build-inline-css.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -11,10 +13,10 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@paypal/react-paypal-js": "^8.8.3",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-separator": "^1.1.1",
-
     "@radix-ui/react-slot": "^1.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -22,7 +24,6 @@
     "next": "14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@paypal/react-paypal-js": "^8.8.3",
     "sharp": "^0.33.5",
     "tailwind-merge": "^2.6.0"
   },

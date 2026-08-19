@@ -573,3 +573,47 @@ Sandbox-ID — beide Apps redeployen. Kein Code-Revert, keine Migration.
 „nur Vorkasse" zurück (`apps/storefront/src/app/checkout/payment/page.tsx:38`
 `paypalReady = Boolean(PAYPAL_CLIENT_ID)`). Eine Variable, sofort reversibel,
 kein Backend-Deploy.
+
+## Inline-CSS im Storefront (BIL-2526)
+
+Die globalen Styles gehen im Production-Build **inline in den `<head>`**; es gibt
+keinen `<link rel="stylesheet">` und kein `.next/static/css/` mehr.
+
+Grund: das Stylesheet war der einzige render-blockierende Request und fiel in ein
+Fenster, in dem ~135 KiB async-JS und das 56-KiB-LCP-Bild um dieselbe gedrosselte
+Leitung kämpften. Gemessen (Lighthouse 12.8.2, mobil, `devtools`-Throttling):
+7 KiB CSS brauchten **911 ms**, und der erste Frame kam erst ~1 s danach.
+
+### Teile
+
+| Datei | Rolle |
+| --- | --- |
+| `apps/storefront/scripts/build-inline-css.mjs` | erzeugt `src/generated/inline-css.ts` aus `globals.css`, läuft als `prebuild` |
+| `src/components/layout/global-styles.inline.tsx` | Production: `<style precedence="next">` |
+| `src/components/layout/global-styles.linked.tsx` | Dev + Notausstieg: `import "./globals.css"` |
+| `next.config.mjs` (`webpack`) | schaltet per `NormalModuleReplacementPlugin` zwischen beiden |
+
+### Rollback ohne Code-Revert
+
+```
+BILULU_INLINE_CSS=0 pnpm --filter=storefront build
+```
+
+In Coolify entsprechend `BILULU_INLINE_CSS=0` als **Build**-Variable setzen und
+rebuilden. Der Build liefert dann wieder das verlinkte Stylesheet (Prüfung:
+`curl -s https://bilulu.de/ | grep -c 'rel="stylesheet"'` → `1` statt `0`).
+
+### Fallen
+
+* `experimental.optimizeCss` (critters) bringt hier **nichts**: die Option hängt
+  in Next 14.2 nur im Pages-Router (`server/render.js` → `server/post-process.js`).
+  Der App-Router-Renderer ruft den Post-Prozessor nie auf — ein Build damit
+  liefert unverändertes HTML. Nachgebaut, gemessen, verworfen.
+* `resolve.alias` auf `@/...` greift **nicht**: Next löst `@/` über seinen
+  eigenen `JsConfigPathsPlugin` in `resolve.plugins` auf, der davor liegt. Ein
+  solcher Alias wird still ignoriert und der Build nimmt die falsche Variante,
+  ohne zu meckern. Deshalb `NormalModuleReplacementPlugin` auf dem Dateipfad.
+* Der Minifier kommt aus `next/dist/compiled/cssnano-simple`, erreichbar nur über
+  `require.resolve('next/package.json')` (die `exports`-Map von Next
+  veröffentlicht `dist/compiled/*` nicht). Nach einem Next-Upgrade bricht der
+  Build dort **absichtlich laut ab**, statt still unminifiziert weiterzulaufen.

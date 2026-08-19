@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import "./globals.css";
+// BIL-2526: kein `import "./globals.css"` mehr — die Styles kommen inline im
+// <head> (Production) bzw. weiterhin per CSS-Import (Dev). Siehe
+// src/components/layout/global-styles.tsx.
+import { GlobalStyles } from "@/components/layout/global-styles";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CookieConsent } from "@/components/cookie-consent/cookie-consent";
@@ -29,6 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
+      <GlobalStyles />
       <body className="flex min-h-screen flex-col">
         <a
           href="#main-content"
