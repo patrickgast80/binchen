@@ -40,8 +40,50 @@ interface SwatchChipProps {
   children?: React.ReactNode;
 }
 
+/**
+ * BIL-2526 — die Texturen erst NACH dem `load`-Event anfordern.
+ *
+ * Warum das noetig wurde: seit das globale CSS inline im <head> steht, malt die
+ * Seite ~1,1 s frueher. `loading="lazy"`-Bilder holt der Preload-Scanner nicht,
+ * sie starten erst mit dem ersten Layout — und das ist jetzt eben 1,1 s frueher.
+ * Live gemessen auf `turban` (35 Chips): erster Chip-Request 2434 ms -> 1471 ms,
+ * und `base.webp` (das LCP-Element) wurde dadurch von 2570 ms auf 3210 ms
+ * hinausgeschoben. LCP 2924 -> 3245 ms. `hose` mit genau EINEM Chip verbesserte
+ * sich im selben Lauf um 623 ms — das ist der Gegenbeweis, dass es die Palette
+ * ist und nicht der Tag.
+ *
+ * `fetchpriority="low"` allein reicht dagegen nicht: auf einer gesaettigten
+ * gedrosselten Leitung teilt sich der Stream die Bandbreite trotzdem.
+ *
+ * Der Verzicht kostet visuell nichts: der Chip traegt den echten Dominantton des
+ * Stoffs als Hintergrund (siehe oben), er gewinnt durch die Textur nur Detail.
+ * Der Timer ist die Reissleine — bleibt `load` aus (haengender Request), sind
+ * die Texturen trotzdem da.
+ */
+function useAfterPageLoad(fallbackMs = 4000): boolean {
+  const [ready, setReady] = React.useState(false);
+
+  React.useEffect(() => {
+    if (document.readyState === "complete") {
+      setReady(true);
+      return;
+    }
+    const done = () => setReady(true);
+    window.addEventListener("load", done, { once: true });
+    const timer = window.setTimeout(done, fallbackMs);
+    return () => {
+      window.removeEventListener("load", done);
+      window.clearTimeout(timer);
+    };
+  }, [fallbackMs]);
+
+  return ready;
+}
+
 export function SwatchChip({ swatch, className, children }: SwatchChipProps) {
-  const src = swatch.chipSrc ?? swatch.textureSrc;
+  // Server und erster Client-Render sind beide `false` — kein Hydration-Mismatch.
+  const afterLoad = useAfterPageLoad();
+  const src = afterLoad ? (swatch.chipSrc ?? swatch.textureSrc) : null;
 
   return (
     <span
