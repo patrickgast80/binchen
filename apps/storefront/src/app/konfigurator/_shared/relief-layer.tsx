@@ -105,21 +105,27 @@ async function loadTile(src: string, rotation: number, px: number) {
 }
 
 /**
- * Height of one paint band, in rows.
+ * Target length of one uninterrupted paint slice, in ms.
  *
  * Painting a whole zone in one call is ~1.9s of unbroken main thread on a
  * throttled mobile CPU — measured on the live Turban page against the same URL
- * with a uni colour (where this layer paints nothing): total blocking time went
- * 350ms -> 2210ms and Lighthouse performance 70 -> 50. The work itself is not
- * the problem, its granularity is: Lighthouse counts everything a task spends
- * beyond 50ms, so one 1.9s task is ~1.85s of blocking while forty 48ms tasks
- * are none.
+ * with a uni colour, where this layer paints nothing: total blocking time went
+ * 350ms -> 2210ms, Lighthouse performance 70 -> 50. The work itself is not the
+ * problem, its granularity is: a long task counts as blocking for everything
+ * beyond 50ms, so one 1.9s task is ~1.85s of blocking while many short ones are
+ * none.
  *
- * 48 rows is ~40k pixels — comfortably under 50ms on the throttled profile with
- * room to spare on slower hardware, and small enough that input stays
- * responsive while the preview fills in.
+ * Slicing by a fixed row count was the first attempt and only got TBT to
+ * 1360ms: 48 rows happens to be well over 50ms on that profile. Fixing the row
+ * count means tuning to one CPU, so the band is sized by the CLOCK instead —
+ * paint rows until the slice has run this long, then yield. Slow phone, fast
+ * laptop, throttled audit: all end up with slices of the same duration and none
+ * of them are long tasks.
  */
-const BAND_ROWS = 48;
+const SLICE_MS = 16;
+
+/** Rows per measurement step — small enough to overshoot SLICE_MS only barely. */
+const STEP_ROWS = 8;
 
 /** Yield to the event loop so the browser can paint and handle input. */
 function yieldToBrowser() {
@@ -221,18 +227,26 @@ export function ReliefFabricLayer({
               tilePx(width, grain),
             );
             if (cancelled) return;
-            for (let y = 0; y < height; y += BAND_ROWS) {
-              paintReliefZone(
-                layer.data,
-                relief.data,
-                maskAlpha,
-                tile,
-                width,
-                height,
-                grain,
-                y,
-                Math.min(height, y + BAND_ROWS),
-              );
+            let y = 0;
+            while (y < height) {
+              const sliceStart = performance.now();
+              // Paint in small steps and stop as soon as this slice has used
+              // its budget, so the yield rate follows the actual device speed.
+              do {
+                const end = Math.min(height, y + STEP_ROWS);
+                paintReliefZone(
+                  layer.data,
+                  relief.data,
+                  maskAlpha,
+                  tile,
+                  width,
+                  height,
+                  grain,
+                  y,
+                  end,
+                );
+                y = end;
+              } while (y < height && performance.now() - sliceStart < SLICE_MS);
               await yieldToBrowser();
               if (cancelled) return;
             }
