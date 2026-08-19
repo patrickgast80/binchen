@@ -1,0 +1,74 @@
+[
+  {
+    "variant": "base",
+    "route": "turban",
+    "docKiB": 168.6,
+    "inlineScriptKiB": 43.8,
+    "styleKiB": 32.2,
+    "styleTags": 1,
+    "cssLinks": 0,
+    "cssInFlight": true,
+    "buildId": "8B8iS-eqBNutQ3jQelelN",
+    "owned": true
+  },
+  {
+    "variant": "base",
+    "route": "hose",
+    "docKiB": 158.1,
+    "inlineScriptKiB": 43.8,
+    "styleKiB": 32.2,
+    "styleTags": 1,
+    "cssLinks": 0,
+    "cssInFlight": true,
+    "buildId": "8B8iS-eqBNutQ3jQelelN",
+    "owned": true
+  },
+  {
+    "variant": "base",
+    "route": "catalog",
+    "docKiB": 152.8,
+    "inlineScriptKiB": 66.6,
+    "styleKiB": 32.2,
+    "styleTags": 1,
+    "cssLinks": 0,
+    "cssInFlight": true,
+    "buildId": "8B8iS-eqBNutQ3jQelelN",
+    "owned": true
+  },
+  {
+    "variant": "cut",
+    "route": "turban",
+    "docKiB": 136,
+    "inlineScriptKiB": 11.3,
+    "styleKiB": 32.2,
+    "styleTags": 1,
+    "cssLinks": 0,
+    "cssInFlight": false,
+    "buildId": "-iU-FMkXSe87smj3VB4Zz",
+    "owned": true
+  },
+  {
+    "variant": "cut",
+    "route": "hose",
+    "docKiB": 125.6,
+    "inlineScriptKiB": 11.2,
+    "styleKiB": 32.2,
+    "styleTags": 1,
+    "cssLinks": 0,
+    "cssInFlight": false,
+    "buildId": "-iU-FMkXSe87smj3VB4Zz",
+    "owned": true
+  },
+  {
+    "variant": "cut",
+    "route": "catalog",
+    "docKiB": 120.3,
+    "inlineScriptKiB": 34.1,
+    "styleKiB": 32.2,
+    "styleTags": 1,
+    "cssLinks": 0,
+    "cssInFlight": false,
+    "buildId": "-iU-FMkXSe87smj3VB4Zz",
+    "owned": true
+  }
+]

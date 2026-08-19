@@ -32,12 +32,33 @@ const nextConfig = {
   // ein Base-Build mit gesetztem Flag lieferte weiterhin 0 Stylesheet-Links.
   // Der Plugin-Weg arbeitet auf dem aufgeloesten Dateipfad und kann das nicht
   // verfehlen.
-  webpack: (config, { dev, webpack }) => {
-    if (dev || process.env.BILULU_INLINE_CSS === "0") {
+  webpack: (config, { dev, isServer, webpack }) => {
+    const inlineCss = !dev && process.env.BILULU_INLINE_CSS !== "0";
+    if (!inlineCss) {
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(
           /[\\/]components[\\/]layout[\\/]global-styles\.inline\.tsx$/,
           path.join(__dirname, "src/components/layout/global-styles.linked.tsx")
+        )
+      );
+    }
+    // BIL-2527: der CSS-Text gehoert ins SSR-HTML, aber nicht ins Client-Bundle.
+    // `global-styles.inline.tsx` ist seit BIL-2527 eine Client-Komponente —
+    // damit faellt die 32,6-KiB-Kopie im RSC-Flight-Payload weg (Begruendung
+    // dort im Kopfkommentar). Ohne diese Ersetzung waeren dieselben Bytes
+    // stattdessen in einem JS-Chunk gelandet: nichts gewonnen, nur verschoben.
+    // Der Client bekommt deshalb einen leeren String; React adoptiert beim
+    // Hydrieren den bereits vorhandenen Float-Style-Tag ueber sein `data-href`.
+    //
+    // `NormalModuleReplacementPlugin` und nicht `resolve.alias` — aus demselben
+    // Grund wie oben: `@/generated/inline-css` laeuft ueber Nexts
+    // `JsConfigPathsPlugin` in `resolve.plugins`, der vor der Alias-Aufloesung
+    // greift, und ein Alias wuerde hier still ins Leere laufen.
+    if (inlineCss && !isServer) {
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(
+          /[\\/]generated[\\/]inline-css\.ts$/,
+          path.join(__dirname, "src/generated/inline-css.client.ts")
         )
       );
     }
