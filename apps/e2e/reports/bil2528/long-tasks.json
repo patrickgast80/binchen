@@ -1,0 +1,304 @@
+{
+  "hose-default-r1": {
+    "url": "https://bilulu.de/konfigurator/hose",
+    "lighthouseVersion": "12.8.2",
+    "fetchTime": "2026-08-19T20:35:21.305Z",
+    "longTasks": [
+      {
+        "start": 685,
+        "dur": 87,
+        "url": "Unattributable"
+      },
+      {
+        "start": 859,
+        "dur": 443,
+        "url": "/konfigurator/hose"
+      },
+      {
+        "start": 1329,
+        "dur": 372,
+        "url": "/konfigurator/hose"
+      },
+      {
+        "start": 2603,
+        "dur": 303,
+        "url": "/_next/static/chunks/6be5ad14-6313add234990526.js"
+      },
+      {
+        "start": 3306,
+        "dur": 213,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      },
+      {
+        "start": 3519,
+        "dur": 66,
+        "url": "/_next/static/chunks/927-e175ae45c51d5aa9.js"
+      },
+      {
+        "start": 3598,
+        "dur": 66,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      }
+    ]
+  },
+  "hose-default-r2": {
+    "url": "https://bilulu.de/konfigurator/hose",
+    "lighthouseVersion": "12.8.2",
+    "fetchTime": "2026-08-19T20:37:01.559Z",
+    "longTasks": [
+      {
+        "start": 666,
+        "dur": 93,
+        "url": "Unattributable"
+      },
+      {
+        "start": 835,
+        "dur": 161,
+        "url": "/konfigurator/hose"
+      },
+      {
+        "start": 1007,
+        "dur": 330,
+        "url": "/konfigurator/hose"
+      },
+      {
+        "start": 1354,
+        "dur": 325,
+        "url": "/konfigurator/hose"
+      },
+      {
+        "start": 2597,
+        "dur": 242,
+        "url": "/_next/static/chunks/6be5ad14-6313add234990526.js"
+      },
+      {
+        "start": 3025,
+        "dur": 75,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      },
+      {
+        "start": 3316,
+        "dur": 204,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      },
+      {
+        "start": 3520,
+        "dur": 82,
+        "url": "/_next/static/chunks/927-e175ae45c51d5aa9.js"
+      }
+    ]
+  },
+  "hose-stoff-r1": {
+    "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage",
+    "lighthouseVersion": "12.8.2",
+    "fetchTime": "2026-08-19T20:35:50.608Z",
+    "longTasks": [
+      {
+        "start": 699,
+        "dur": 80,
+        "url": "Unattributable"
+      },
+      {
+        "start": 838,
+        "dur": 460,
+        "url": "/konfigurator/hose?hose=stoff-15&bund=sage"
+      },
+      {
+        "start": 1313,
+        "dur": 104,
+        "url": "/konfigurator/hose?hose=stoff-15&bund=sage"
+      },
+      {
+        "start": 1440,
+        "dur": 354,
+        "url": "/konfigurator/hose?hose=stoff-15&bund=sage"
+      },
+      {
+        "start": 2855,
+        "dur": 279,
+        "url": "/_next/static/chunks/6be5ad14-6313add234990526.js"
+      },
+      {
+        "start": 3296,
+        "dur": 55,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      },
+      {
+        "start": 3570,
+        "dur": 203,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      },
+      {
+        "start": 3773,
+        "dur": 80,
+        "url": "/_next/static/chunks/927-e175ae45c51d5aa9.js"
+      },
+      {
+        "start": 3869,
+        "dur": 60,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      },
+      {
+        "start": 5823,
+        "dur": 130,
+        "url": "Unattributable"
+      },
+      {
+        "start": 5968,
+        "dur": 161,
+        "url": "Unattributable"
+      },
+      {
+        "start": 6731,
+        "dur": 251,
+        "url": "Unattributable"
+      }
+    ]
+  },
+  "hose-stoff-r2": {
+    "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage",
+    "lighthouseVersion": "12.8.2",
+    "fetchTime": "2026-08-19T20:37:40.299Z",
+    "longTasks": [
+      {
+        "start": 678,
+        "dur": 193,
+        "url": "Unattributable"
+      },
+      {
+        "start": 963,
+        "dur": 471,
+        "url": "/konfigurator/hose?hose=stoff-15&bund=sage"
+      },
+      {
+        "start": 1456,
+        "dur": 148,
+        "url": "/konfigurator/hose?hose=stoff-15&bund=sage"
+      },
+      {
+        "start": 1622,
+        "dur": 282,
+        "url": "/konfigurator/hose?hose=stoff-15&bund=sage"
+      },
+      {
+        "start": 2935,
+        "dur": 291,
+        "url": "/_next/static/chunks/6be5ad14-6313add234990526.js"
+      },
+      {
+        "start": 3549,
+        "dur": 52,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      },
+      {
+        "start": 3855,
+        "dur": 422,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      },
+      {
+        "start": 4277,
+        "dur": 110,
+        "url": "/_next/static/chunks/927-e175ae45c51d5aa9.js"
+      },
+      {
+        "start": 6422,
+        "dur": 106,
+        "url": "Unattributable"
+      },
+      {
+        "start": 6549,
+        "dur": 145,
+        "url": "Unattributable"
+      },
+      {
+        "start": 7293,
+        "dur": 223,
+        "url": "Unattributable"
+      },
+      {
+        "start": 8155,
+        "dur": 62,
+        "url": "/_next/static/chunks/128-9d234febd7af77c6.js"
+      },
+      {
+        "start": 8217,
+        "dur": 51,
+        "url": "/_next/static/chunks/128-9d234febd7af77c6.js"
+      }
+    ]
+  },
+  "turban-uni-r1": {
+    "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream",
+    "lighthouseVersion": "12.8.2",
+    "fetchTime": "2026-08-19T20:36:21.537Z",
+    "longTasks": [
+      {
+        "start": 772,
+        "dur": 553,
+        "url": "/konfigurator/turban?turban=sage&schleife=cream"
+      },
+      {
+        "start": 1352,
+        "dur": 386,
+        "url": "/konfigurator/turban?turban=sage&schleife=cream"
+      },
+      {
+        "start": 2579,
+        "dur": 293,
+        "url": "/_next/static/chunks/6be5ad14-6313add234990526.js"
+      },
+      {
+        "start": 3042,
+        "dur": 61,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      },
+      {
+        "start": 3363,
+        "dur": 329,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      },
+      {
+        "start": 3692,
+        "dur": 187,
+        "url": "/_next/static/chunks/927-e175ae45c51d5aa9.js"
+      }
+    ]
+  },
+  "turban-uni-r2": {
+    "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream",
+    "lighthouseVersion": "12.8.2",
+    "fetchTime": "2026-08-19T20:38:28.604Z",
+    "longTasks": [
+      {
+        "start": 668,
+        "dur": 115,
+        "url": "Unattributable"
+      },
+      {
+        "start": 857,
+        "dur": 555,
+        "url": "/konfigurator/turban?turban=sage&schleife=cream"
+      },
+      {
+        "start": 1435,
+        "dur": 198,
+        "url": "/konfigurator/turban?turban=sage&schleife=cream"
+      },
+      {
+        "start": 1656,
+        "dur": 109,
+        "url": "/konfigurator/turban?turban=sage&schleife=cream"
+      },
+      {
+        "start": 2697,
+        "dur": 345,
+        "url": "/_next/static/chunks/6be5ad14-6313add234990526.js"
+      },
+      {
+        "start": 3231,
+        "dur": 74,
+        "url": "/_next/static/chunks/129-5f055ce3ce876eb3.js"
+      }
+    ]
+  }
+}

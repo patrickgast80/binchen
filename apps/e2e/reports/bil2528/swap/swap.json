@@ -1,0 +1,37 @@
+{
+  "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage",
+  "shots": {
+    "mobileBefore": {
+      "label": "mobile-before-flat-css",
+      "file": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2528\\swap\\mobile-before-flat-css.png",
+      "visibleAt": null,
+      "md5": "825b17778150676e9b0cfb37b37b4f52"
+    },
+    "mobileAfter": {
+      "label": "mobile-after-relief",
+      "file": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2528\\swap\\mobile-after-relief.png",
+      "visibleAt": 732,
+      "md5": "1827c67beaa361e48a8ac6a37ff8a666"
+    },
+    "desktopBefore": {
+      "label": "desktop-before-flat-css",
+      "file": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2528\\swap\\desktop-before-flat-css.png",
+      "visibleAt": null,
+      "md5": "bac565344826982c1461e2fcd40babc5"
+    },
+    "desktopAfter": {
+      "label": "desktop-after-relief",
+      "file": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2528\\swap\\desktop-after-relief.png",
+      "visibleAt": 722,
+      "md5": "8bbba053254b38326091ce4abd1bf014"
+    },
+    "desktopAfterJitter": {
+      "label": "desktop-after-relief-jitter",
+      "file": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2528\\swap\\desktop-after-relief-jitter.png",
+      "visibleAt": 891,
+      "md5": "8bbba053254b38326091ce4abd1bf014"
+    }
+  },
+  "stable": true,
+  "changed": true
+}

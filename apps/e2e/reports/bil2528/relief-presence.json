@@ -1,0 +1,68 @@
+[
+  {
+    "name": "hose-default",
+    "url": "https://bilulu.de/konfigurator/hose",
+    "canvasExists": false,
+    "canvasPx": null,
+    "cssPx": null,
+    "dpr": 2.75,
+    "reliefVisibleAfterLoadMs": null,
+    "longTaskCountAfterLoad": 0
+  },
+  {
+    "name": "hose-stoff",
+    "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage",
+    "canvasExists": true,
+    "canvasPx": {
+      "w": 900,
+      "h": 1006
+    },
+    "cssPx": {
+      "w": 311,
+      "h": 348
+    },
+    "dpr": 2.75,
+    "reliefVisibleAfterLoadMs": 909,
+    "longTaskCountAfterLoad": 0
+  },
+  {
+    "name": "hose-kurz-default",
+    "url": "https://bilulu.de/konfigurator/hose-kurz",
+    "canvasExists": false,
+    "canvasPx": null,
+    "cssPx": null,
+    "dpr": 2.75,
+    "reliefVisibleAfterLoadMs": null,
+    "longTaskCountAfterLoad": 0
+  },
+  {
+    "name": "muetze-default",
+    "url": "https://bilulu.de/konfigurator/muetze",
+    "canvasExists": false,
+    "canvasPx": null,
+    "cssPx": null,
+    "dpr": 2.75,
+    "reliefVisibleAfterLoadMs": null,
+    "longTaskCountAfterLoad": 0
+  },
+  {
+    "name": "turban-default",
+    "url": "https://bilulu.de/konfigurator/turban",
+    "canvasExists": false,
+    "canvasPx": null,
+    "cssPx": null,
+    "dpr": 2.75,
+    "reliefVisibleAfterLoadMs": null,
+    "longTaskCountAfterLoad": 0
+  },
+  {
+    "name": "dreieckstuch-default",
+    "url": "https://bilulu.de/konfigurator/dreieckstuch",
+    "canvasExists": false,
+    "canvasPx": null,
+    "cssPx": null,
+    "dpr": 2.75,
+    "reliefVisibleAfterLoadMs": null,
+    "longTaskCountAfterLoad": 0
+  }
+]
