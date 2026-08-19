@@ -1,0 +1,218 @@
+[
+  {
+    "run": 1,
+    "variant": "sheet-split-base",
+    "total": 0.13255006060570268,
+    "shifts": [
+      {
+        "value": 0.13255006060570268,
+        "startTime": 3437,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              756,
+              67
+            ],
+            "next": [
+              488,
+              335
+            ]
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1345,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 3400,
+        "top": 766,
+        "h": 57
+      },
+      {
+        "key": "cookie",
+        "t": 3436,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "variant": "sheet-split-fix",
+    "total": 0,
+    "shifts": [],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1204,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 3417,
+        "top": 790,
+        "h": 33
+      },
+      {
+        "key": "cookie",
+        "t": 3467,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "variant": "sheet-split-base",
+    "total": 0.13255006060570268,
+    "shifts": [
+      {
+        "value": 0.13255006060570268,
+        "startTime": 3466,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              756,
+              67
+            ],
+            "next": [
+              488,
+              335
+            ]
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1240,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 3429,
+        "top": 766,
+        "h": 57
+      },
+      {
+        "key": "cookie",
+        "t": 3465,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "variant": "sheet-split-fix",
+    "total": 0,
+    "shifts": [],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1222,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 3422,
+        "top": 602,
+        "h": 221
+      },
+      {
+        "key": "cookie",
+        "t": 3448,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "variant": "sheet-split-base",
+    "total": 0.13255006060570268,
+    "shifts": [
+      {
+        "value": 0.13255006060570268,
+        "startTime": 3385,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              756,
+              67
+            ],
+            "next": [
+              488,
+              335
+            ]
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1197,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 3357,
+        "top": 766,
+        "h": 57
+      },
+      {
+        "key": "cookie",
+        "t": 3384,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "variant": "sheet-split-fix",
+    "total": 0,
+    "shifts": [],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1277,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 3336,
+        "top": 790,
+        "h": 33
+      },
+      {
+        "key": "cookie",
+        "t": 3387,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  }
+]

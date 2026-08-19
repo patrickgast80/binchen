@@ -1,0 +1,88 @@
+[
+  {
+    "run": 1,
+    "variant": "prefix",
+    "total": 0,
+    "shifts": [],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1673,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 1674,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "variant": "prefix",
+    "total": 0.05950431769494589,
+    "shifts": [
+      {
+        "value": 0.05950431769494589,
+        "startTime": 1627,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "md:hidden fixed inset-x-0 bottom-0 z-30 rounded-t-2xl border-t border-",
+            "id": "",
+            "prev": [
+              453,
+              370
+            ],
+            "next": [
+              365,
+              458
+            ]
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1547,
+        "top": 485,
+        "h": 339
+      },
+      {
+        "key": "sheet",
+        "t": 1625,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 1625,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "variant": "prefix",
+    "total": 0,
+    "shifts": [],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1755,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 1983,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  }
+]

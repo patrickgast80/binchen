@@ -1,0 +1,97 @@
+{
+  "origin": "http://127.0.0.1:3274",
+  "checks": [
+    {
+      "route": "turban",
+      "viewport": "390x844",
+      "js": true,
+      "bannerVisible": true,
+      "bannerBox": {
+        "y": 519,
+        "h": 325
+      },
+      "console": [],
+      "axe": []
+    },
+    {
+      "route": "hose",
+      "viewport": "390x844",
+      "js": true,
+      "bannerVisible": true,
+      "bannerBox": {
+        "y": 519,
+        "h": 325
+      },
+      "console": [],
+      "axe": []
+    },
+    {
+      "route": "turban",
+      "viewport": "390x844",
+      "js": false,
+      "bannerVisible": true,
+      "bannerBox": {
+        "y": 519,
+        "h": 325
+      },
+      "console": []
+    },
+    {
+      "route": "hose",
+      "viewport": "390x844",
+      "js": false,
+      "bannerVisible": true,
+      "bannerBox": {
+        "y": 519,
+        "h": 325
+      },
+      "console": []
+    },
+    {
+      "route": "turban",
+      "viewport": "1440x900",
+      "js": true,
+      "bannerVisible": true,
+      "bannerBox": {
+        "y": 763,
+        "h": 137
+      },
+      "console": [],
+      "axe": []
+    },
+    {
+      "route": "hose",
+      "viewport": "1440x900",
+      "js": true,
+      "bannerVisible": true,
+      "bannerBox": {
+        "y": 763,
+        "h": 137
+      },
+      "console": [],
+      "axe": []
+    },
+    {
+      "route": "turban",
+      "viewport": "1440x900",
+      "js": false,
+      "bannerVisible": true,
+      "bannerBox": {
+        "y": 763,
+        "h": 137
+      },
+      "console": []
+    },
+    {
+      "route": "hose",
+      "viewport": "1440x900",
+      "js": false,
+      "bannerVisible": true,
+      "bannerBox": {
+        "y": 763,
+        "h": 137
+      },
+      "console": []
+    }
+  ]
+}

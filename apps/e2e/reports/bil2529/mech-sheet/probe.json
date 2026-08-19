@@ -1,0 +1,140 @@
+[
+  {
+    "run": 1,
+    "variant": "sheet-split-base",
+    "total": 0.13255006060570268,
+    "shifts": [
+      {
+        "value": 0.13255006060570268,
+        "startTime": 3498,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              756,
+              67
+            ],
+            "next": [
+              488,
+              335
+            ]
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1300,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 3462,
+        "top": 766,
+        "h": 57
+      },
+      {
+        "key": "cookie",
+        "t": 3497,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "variant": "sheet-split-base",
+    "total": 0.05143733695146672,
+    "shifts": [
+      {
+        "value": 0.05143733695146672,
+        "startTime": 3491,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              592,
+              231
+            ],
+            "next": [
+              488,
+              335
+            ]
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1240,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 3419,
+        "top": 602,
+        "h": 221
+      },
+      {
+        "key": "cookie",
+        "t": 3491,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "variant": "sheet-split-base",
+    "total": 0.13255006060570268,
+    "shifts": [
+      {
+        "value": 0.13255006060570268,
+        "startTime": 3420,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              756,
+              67
+            ],
+            "next": [
+              488,
+              335
+            ]
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1285,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 3391,
+        "top": 766,
+        "h": 57
+      },
+      {
+        "key": "cookie",
+        "t": 3419,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  }
+]

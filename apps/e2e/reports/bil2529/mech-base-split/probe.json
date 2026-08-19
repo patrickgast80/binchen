@@ -1,0 +1,215 @@
+[
+  {
+    "run": 1,
+    "variant": "base-split",
+    "total": 0.07251424344742363,
+    "shifts": [
+      {
+        "value": 0.04679557497169027,
+        "startTime": 2686,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              652,
+              171
+            ],
+            "next": [
+              540,
+              283
+            ]
+          }
+        ]
+      },
+      {
+        "value": 0.02571866847573336,
+        "startTime": 2712,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              540,
+              283
+            ],
+            "next": [
+              488,
+              335
+            ]
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1348,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 1478,
+        "top": 662,
+        "h": 161
+      },
+      {
+        "key": "cookie",
+        "t": 2685,
+        "top": 550,
+        "h": 273
+      },
+      {
+        "key": "cookie",
+        "t": 2711,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "variant": "base-split",
+    "total": 0.07251424344742363,
+    "shifts": [
+      {
+        "value": 0.04679557497169027,
+        "startTime": 2595,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              652,
+              171
+            ],
+            "next": [
+              540,
+              283
+            ]
+          }
+        ]
+      },
+      {
+        "value": 0.02571866847573336,
+        "startTime": 2628,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              540,
+              283
+            ],
+            "next": [
+              488,
+              335
+            ]
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1320,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 1399,
+        "top": 662,
+        "h": 161
+      },
+      {
+        "key": "cookie",
+        "t": 2595,
+        "top": 550,
+        "h": 273
+      },
+      {
+        "key": "cookie",
+        "t": 2627,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "variant": "base-split",
+    "total": 0.07251424344742363,
+    "shifts": [
+      {
+        "value": 0.04679557497169027,
+        "startTime": 2609,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              652,
+              171
+            ],
+            "next": [
+              540,
+              283
+            ]
+          }
+        ]
+      },
+      {
+        "value": 0.02571866847573336,
+        "startTime": 2642,
+        "sources": [
+          {
+            "tag": "DIV",
+            "cls": "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-b",
+            "id": "cookie-consent",
+            "prev": [
+              540,
+              283
+            ],
+            "next": [
+              488,
+              335
+            ]
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1291,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 1367,
+        "top": 662,
+        "h": 161
+      },
+      {
+        "key": "cookie",
+        "t": 2609,
+        "top": 550,
+        "h": 273
+      },
+      {
+        "key": "cookie",
+        "t": 2642,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  }
+]
