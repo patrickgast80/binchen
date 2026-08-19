@@ -1,0 +1,31 @@
+{
+  "paintPx": 144,
+  "cssPx": 48,
+  "dpr": 3,
+  "variants": [
+    {
+      "label": "heute 128@q80",
+      "size": 128,
+      "quality": 80,
+      "totalBytes": 196852
+    },
+    {
+      "label": "96@q70",
+      "size": 96,
+      "quality": 70,
+      "totalBytes": 98144
+    },
+    {
+      "label": "80@q72",
+      "size": 80,
+      "quality": 72,
+      "totalBytes": 73434
+    },
+    {
+      "label": "64@q75",
+      "size": 64,
+      "quality": 75,
+      "totalBytes": 52718
+    }
+  ]
+}

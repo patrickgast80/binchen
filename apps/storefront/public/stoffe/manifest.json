@@ -1,14 +1,14 @@
 {
   "generatedAt": null,
   "tile": 512,
-  "chip": 128,
+  "chip": 96,
   "swatches": [
     {
       "id": "stoff-01",
       "name": "Stoff 01",
       "hex": "#783898",
       "textureSrc": "/stoffe/stoff-01.webp",
-      "chipSrc": "/stoffe/stoff-01-128.webp",
+      "chipSrc": "/stoffe/stoff-01-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.00.jpeg"
     },
     {
@@ -16,7 +16,7 @@
       "name": "Stoff 02",
       "hex": "#e8c8d8",
       "textureSrc": "/stoffe/stoff-02.webp",
-      "chipSrc": "/stoffe/stoff-02-128.webp",
+      "chipSrc": "/stoffe/stoff-02-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.03 (1).jpeg"
     },
     {
@@ -24,7 +24,7 @@
       "name": "Stoff 03",
       "hex": "#f8c8f8",
       "textureSrc": "/stoffe/stoff-03.webp",
-      "chipSrc": "/stoffe/stoff-03-128.webp",
+      "chipSrc": "/stoffe/stoff-03-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.03 (2).jpeg"
     },
     {
@@ -32,7 +32,7 @@
       "name": "Stoff 04",
       "hex": "#3858a8",
       "textureSrc": "/stoffe/stoff-04.webp",
-      "chipSrc": "/stoffe/stoff-04-128.webp",
+      "chipSrc": "/stoffe/stoff-04-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.03.jpeg"
     },
     {
@@ -40,7 +40,7 @@
       "name": "Stoff 05",
       "hex": "#e8c8d8",
       "textureSrc": "/stoffe/stoff-05.webp",
-      "chipSrc": "/stoffe/stoff-05-128.webp",
+      "chipSrc": "/stoffe/stoff-05-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.04 (1).jpeg"
     },
     {
@@ -48,7 +48,7 @@
       "name": "Stoff 06",
       "hex": "#f8c8d8",
       "textureSrc": "/stoffe/stoff-06.webp",
-      "chipSrc": "/stoffe/stoff-06-128.webp",
+      "chipSrc": "/stoffe/stoff-06-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.04 (2).jpeg"
     },
     {
@@ -56,7 +56,7 @@
       "name": "Stoff 07",
       "hex": "#e898c8",
       "textureSrc": "/stoffe/stoff-07.webp",
-      "chipSrc": "/stoffe/stoff-07-128.webp",
+      "chipSrc": "/stoffe/stoff-07-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.04.jpeg"
     },
     {
@@ -64,7 +64,7 @@
       "name": "Stoff 08",
       "hex": "#d8d8d8",
       "textureSrc": "/stoffe/stoff-08.webp",
-      "chipSrc": "/stoffe/stoff-08-128.webp",
+      "chipSrc": "/stoffe/stoff-08-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.05 (1).jpeg"
     },
     {
@@ -72,7 +72,7 @@
       "name": "Stoff 09",
       "hex": "#c8c8c8",
       "textureSrc": "/stoffe/stoff-09.webp",
-      "chipSrc": "/stoffe/stoff-09-128.webp",
+      "chipSrc": "/stoffe/stoff-09-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.05 (2).jpeg"
     },
     {
@@ -80,7 +80,7 @@
       "name": "Stoff 10",
       "hex": "#c8c8c8",
       "textureSrc": "/stoffe/stoff-10.webp",
-      "chipSrc": "/stoffe/stoff-10-128.webp",
+      "chipSrc": "/stoffe/stoff-10-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.05 (3).jpeg"
     },
     {
@@ -88,7 +88,7 @@
       "name": "Stoff 11",
       "hex": "#d8d8d8",
       "textureSrc": "/stoffe/stoff-11.webp",
-      "chipSrc": "/stoffe/stoff-11-128.webp",
+      "chipSrc": "/stoffe/stoff-11-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.05.jpeg"
     },
     {
@@ -96,7 +96,7 @@
       "name": "Stoff 12",
       "hex": "#4858a8",
       "textureSrc": "/stoffe/stoff-12.webp",
-      "chipSrc": "/stoffe/stoff-12-128.webp",
+      "chipSrc": "/stoffe/stoff-12-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.06 (1).jpeg"
     },
     {
@@ -104,7 +104,7 @@
       "name": "Stoff 13",
       "hex": "#4878c8",
       "textureSrc": "/stoffe/stoff-13.webp",
-      "chipSrc": "/stoffe/stoff-13-128.webp",
+      "chipSrc": "/stoffe/stoff-13-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.06.jpeg"
     },
     {
@@ -112,7 +112,7 @@
       "name": "Stoff 14",
       "hex": "#a8c8f8",
       "textureSrc": "/stoffe/stoff-14.webp",
-      "chipSrc": "/stoffe/stoff-14-128.webp",
+      "chipSrc": "/stoffe/stoff-14-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.07.jpeg"
     },
     {
@@ -120,7 +120,7 @@
       "name": "Stoff 15",
       "hex": "#e8e8d8",
       "textureSrc": "/stoffe/stoff-15.webp",
-      "chipSrc": "/stoffe/stoff-15-128.webp",
+      "chipSrc": "/stoffe/stoff-15-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.20 (1).jpeg"
     },
     {
@@ -128,7 +128,7 @@
       "name": "Stoff 16",
       "hex": "#b8d8f8",
       "textureSrc": "/stoffe/stoff-16.webp",
-      "chipSrc": "/stoffe/stoff-16-128.webp",
+      "chipSrc": "/stoffe/stoff-16-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.20.jpeg"
     },
     {
@@ -136,7 +136,7 @@
       "name": "Stoff 17",
       "hex": "#b8b8b8",
       "textureSrc": "/stoffe/stoff-17.webp",
-      "chipSrc": "/stoffe/stoff-17-128.webp",
+      "chipSrc": "/stoffe/stoff-17-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.21 (1).jpeg"
     },
     {
@@ -144,7 +144,7 @@
       "name": "Stoff 18",
       "hex": "#98b8e8",
       "textureSrc": "/stoffe/stoff-18.webp",
-      "chipSrc": "/stoffe/stoff-18-128.webp",
+      "chipSrc": "/stoffe/stoff-18-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.21.jpeg"
     },
     {
@@ -152,7 +152,7 @@
       "name": "Stoff 19",
       "hex": "#a8c8f8",
       "textureSrc": "/stoffe/stoff-19.webp",
-      "chipSrc": "/stoffe/stoff-19-128.webp",
+      "chipSrc": "/stoffe/stoff-19-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.22.jpeg"
     },
     {
@@ -160,7 +160,7 @@
       "name": "Stoff 20",
       "hex": "#c88808",
       "textureSrc": "/stoffe/stoff-20.webp",
-      "chipSrc": "/stoffe/stoff-20-128.webp",
+      "chipSrc": "/stoffe/stoff-20-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.23 (1).jpeg"
     },
     {
@@ -168,7 +168,7 @@
       "name": "Stoff 21",
       "hex": "#e8c8c8",
       "textureSrc": "/stoffe/stoff-21.webp",
-      "chipSrc": "/stoffe/stoff-21-128.webp",
+      "chipSrc": "/stoffe/stoff-21-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.23 (2).jpeg"
     },
     {
@@ -176,7 +176,7 @@
       "name": "Stoff 22",
       "hex": "#c8c8c8",
       "textureSrc": "/stoffe/stoff-22.webp",
-      "chipSrc": "/stoffe/stoff-22-128.webp",
+      "chipSrc": "/stoffe/stoff-22-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.23 (3).jpeg"
     },
     {
@@ -184,7 +184,7 @@
       "name": "Stoff 23",
       "hex": "#d8d8d8",
       "textureSrc": "/stoffe/stoff-23.webp",
-      "chipSrc": "/stoffe/stoff-23-128.webp",
+      "chipSrc": "/stoffe/stoff-23-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.23 (4).jpeg"
     },
     {
@@ -192,7 +192,7 @@
       "name": "Stoff 24",
       "hex": "#5878a8",
       "textureSrc": "/stoffe/stoff-24.webp",
-      "chipSrc": "/stoffe/stoff-24-128.webp",
+      "chipSrc": "/stoffe/stoff-24-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.23.jpeg"
     },
     {
@@ -200,7 +200,7 @@
       "name": "Stoff 25",
       "hex": "#385888",
       "textureSrc": "/stoffe/stoff-25.webp",
-      "chipSrc": "/stoffe/stoff-25-128.webp",
+      "chipSrc": "/stoffe/stoff-25-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.24.jpeg"
     },
     {
@@ -208,7 +208,7 @@
       "name": "Stoff 26",
       "hex": "#c89888",
       "textureSrc": "/stoffe/stoff-26.webp",
-      "chipSrc": "/stoffe/stoff-26-128.webp",
+      "chipSrc": "/stoffe/stoff-26-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.40 (1).jpeg"
     },
     {
@@ -216,7 +216,7 @@
       "name": "Stoff 27",
       "hex": "#b8b8b8",
       "textureSrc": "/stoffe/stoff-27.webp",
-      "chipSrc": "/stoffe/stoff-27-128.webp",
+      "chipSrc": "/stoffe/stoff-27-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.40.jpeg"
     },
     {
@@ -224,7 +224,7 @@
       "name": "Stoff 28",
       "hex": "#d8d8c8",
       "textureSrc": "/stoffe/stoff-28.webp",
-      "chipSrc": "/stoffe/stoff-28-128.webp",
+      "chipSrc": "/stoffe/stoff-28-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.41.jpeg"
     },
     {
@@ -232,7 +232,7 @@
       "name": "Stoff 29",
       "hex": "#b8b8b8",
       "textureSrc": "/stoffe/stoff-29.webp",
-      "chipSrc": "/stoffe/stoff-29-128.webp",
+      "chipSrc": "/stoffe/stoff-29-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.42 (1).jpeg"
     },
     {
@@ -240,7 +240,7 @@
       "name": "Stoff 30",
       "hex": "#282838",
       "textureSrc": "/stoffe/stoff-30.webp",
-      "chipSrc": "/stoffe/stoff-30-128.webp",
+      "chipSrc": "/stoffe/stoff-30-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.42.jpeg"
     },
     {
@@ -248,7 +248,7 @@
       "name": "Stoff 31",
       "hex": "#d8d8d8",
       "textureSrc": "/stoffe/stoff-31.webp",
-      "chipSrc": "/stoffe/stoff-31-128.webp",
+      "chipSrc": "/stoffe/stoff-31-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.43 (1).jpeg"
     },
     {
@@ -256,7 +256,7 @@
       "name": "Stoff 32",
       "hex": "#b8b8b8",
       "textureSrc": "/stoffe/stoff-32.webp",
-      "chipSrc": "/stoffe/stoff-32-128.webp",
+      "chipSrc": "/stoffe/stoff-32-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.43 (2).jpeg"
     },
     {
@@ -264,7 +264,7 @@
       "name": "Stoff 33",
       "hex": "#b8b8b8",
       "textureSrc": "/stoffe/stoff-33.webp",
-      "chipSrc": "/stoffe/stoff-33-128.webp",
+      "chipSrc": "/stoffe/stoff-33-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.43 (3).jpeg"
     },
     {
@@ -272,7 +272,7 @@
       "name": "Stoff 34",
       "hex": "#b8b8b8",
       "textureSrc": "/stoffe/stoff-34.webp",
-      "chipSrc": "/stoffe/stoff-34-128.webp",
+      "chipSrc": "/stoffe/stoff-34-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.43.jpeg"
     },
     {
@@ -280,7 +280,7 @@
       "name": "Stoff 35",
       "hex": "#c8c8c8",
       "textureSrc": "/stoffe/stoff-35.webp",
-      "chipSrc": "/stoffe/stoff-35-128.webp",
+      "chipSrc": "/stoffe/stoff-35-96.webp",
       "source": "WhatsApp Image 2026-08-09 at 21.40.44.jpeg"
     }
   ]

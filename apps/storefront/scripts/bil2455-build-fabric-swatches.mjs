@@ -21,14 +21,25 @@
 // renders 35 fabric chips as 44–48px circles, and they must not each pull the
 // preview-sized tile.
 //
-// CAREFUL (BIL-2497): this script writes the plain centre-crop tile. If the
-// seamless tiles from bil2497-build-seamless-swatches.mjs are live, re-running
-// this overwrites them and the visible repeat grid comes back. Re-run that
-// script with --apply afterwards, or pass --out to a scratch directory.
+// BIL-2524 — chip size: 96x96 @ q70, down from 128 @ q80 (192 kB -> 96 kB over
+// all 35 fabrics, ~42 % of the Konfigurator's mobile transfer halved). The chip
+// paints at 48 CSS px (`h-12 w-12`; 44 only from `sm:` up), so 96 is exact at
+// DPR 2 and a mild upscale at DPR 3. The size was picked on the sheets from
+// bil2524-chip-size-study.mjs, not on the byte table: 112 is indistinguishable
+// from 96 at paint size for +30 % bytes, and below 96 the dense low-contrast
+// millefleurs (stoff-27/33/34) stop being tellable apart and the small
+// figurative motifs (stoff-17) turn to smudges. q75 buys nothing over q70 here.
+//
+// CAREFUL (BIL-2497/2508): this script writes the plain centre-crop tile. The
+// live tiles are the seam-corrected ones from bil2508-build-seamless-swatches;
+// re-running this without --chips-only overwrites them and the visible repeat
+// grid comes back. For a chip-only rebuild — which is all BIL-2524 needed —
+// pass --chips-only and the tiles are left completely untouched.
 //
 // Usage:
 //   node apps/storefront/scripts/bil2455-build-fabric-swatches.mjs \
 //     --src "C:/Users/Besitzer/Desktop/bilulu/stoffe"
+//   ... --chips-only     # rebuild chips + manifest + generated TS, keep tiles
 //
 // Board can rename slugs later by editing manifest.json + palette entry;
 // the storefront resolves swatches by slug id.
@@ -51,8 +62,13 @@ const STOREFRONT_ROOT = resolve(HERE, "..");
 const SRC = resolve(arg("src", "C:/Users/Besitzer/Desktop/bilulu/stoffe"));
 const OUT = resolve(arg("out", join(STOREFRONT_ROOT, "public", "stoffe")));
 const TILE = Number(arg("size", 512));
-const CHIP = Number(arg("chip", 128));
+const CHIP = Number(arg("chip", 96));
 const QUALITY = Number(arg("q", 80));
+// The chip carries its own quality: it is viewed at 48 CSS px, where q70 is
+// visually identical to q80 and 25 % cheaper (BIL-2524).
+const CHIP_QUALITY = Number(arg("chip-q", 70));
+// Leaves the seam-corrected BIL-2508 tiles alone. See the CAREFUL note above.
+const CHIPS_ONLY = args.includes("--chips-only");
 // `effort` costs encode time only, never quality — worth it for assets that
 // are generated once and shipped to every visitor.
 const EFFORT = Number(arg("effort", 6));
@@ -108,16 +124,19 @@ async function main() {
         .map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, "0"))
         .join("");
 
-    const tileInfo = await square.clone().webp({ quality: QUALITY, effort: EFFORT }).toFile(tileOut);
+    const tileInfo = CHIPS_ONLY
+      ? null
+      : await square.clone().webp({ quality: QUALITY, effort: EFFORT }).toFile(tileOut);
     const chipInfo = await square
       .clone()
       .resize(CHIP, CHIP, { fit: "cover" })
-      .webp({ quality: QUALITY, effort: EFFORT })
+      .webp({ quality: CHIP_QUALITY, effort: EFFORT })
       .toFile(chipOut);
-    tileBytes += tileInfo.size;
+    tileBytes += tileInfo?.size ?? 0;
     chipBytes += chipInfo.size;
     console.log(
-      `  → ${slug}  hex=${hex}  tile ${kb(tileInfo.size)}  chip ${kb(chipInfo.size)}  from ${basename(src)}`,
+      `  → ${slug}  hex=${hex}  tile ${tileInfo ? kb(tileInfo.size) : "kept"}  ` +
+        `chip ${kb(chipInfo.size)}  from ${basename(src)}`,
     );
     manifest.push({
       id: slug,
@@ -159,7 +178,7 @@ async function main() {
 // Do not edit by hand — re-run the script when new fabrics arrive.
 //
 // textureSrc = ${TILE}x${TILE} preview tile (ZoneOverlay, OG card, Merken thumbnail)
-// chipSrc    = ${CHIP}x${CHIP} palette chip (swatchChipStyle) — BIL-2493
+// chipSrc    = ${CHIP}x${CHIP} palette chip (<SwatchChip>) — BIL-2493, resized in BIL-2524
 import type { Swatch } from "../hose/palette";
 
 export const FABRICS: readonly Swatch[] = [
@@ -169,7 +188,9 @@ ${body}
   await writeFile(tsOut, ts, "utf8");
   console.log(`Wrote generated fabric list → ${tsOut}`);
   console.log(
-    `Total: ${manifest.length} tiles ${kb(tileBytes)} (avg ${kb(tileBytes / manifest.length)}), ` +
+    (CHIPS_ONLY
+      ? `Total: tiles untouched (--chips-only), `
+      : `Total: ${manifest.length} tiles ${kb(tileBytes)} (avg ${kb(tileBytes / manifest.length)}), `) +
       `${manifest.length} chips ${kb(chipBytes)} (avg ${kb(chipBytes / manifest.length)})`,
   );
 }
