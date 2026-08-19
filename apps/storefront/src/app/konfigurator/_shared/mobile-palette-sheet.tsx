@@ -132,6 +132,11 @@ export function MobilePaletteSheet({
       )}
       role="region"
       aria-label="Farbauswahl-Panel"
+      // BIL-2526 — die Endhoehe des GANZEN Sheets reservieren, nicht nur die
+      // der Swatch-Liste. Sonst waechst das Sheet beim Streamen weiter um die
+      // Teile, die im Markup nach dem Scroller kommen (die Dreh-Zeile), und
+      // Lighthouse sieht dafuer weiter CLS 0,086.
+      style={{ minHeight: sheetMinHeight(reservedScrollerHeight, showRotate) }}
     >
       {/* Grip handle — purely visual affordance suggesting a sheet */}
       <div className="flex justify-center pt-2" aria-hidden="true">
@@ -304,6 +309,39 @@ const SWATCH_GRID_PADDING_BOTTOM = 4;
 export function reserveSwatchScrollerHeight(swatchCount: number): number {
   const rows = Math.ceil(Math.max(swatchCount, 1) / SWATCH_GRID_COLUMNS);
   return rows * SWATCH_ROW_HEIGHT + (rows - 1) * SWATCH_ROW_GAP + SWATCH_GRID_PADDING_BOTTOM;
+}
+
+/**
+ * BIL-2526 — dasselbe fuer das Sheet als Ganzes.
+ *
+ * Den Scroller allein zu reservieren hat den groessten Sprung genommen (die
+ * Sonde ging live von 2/16 auf 0/16), aber nicht alle: Lighthouse mass danach
+ * auf `hose` weiter einmal CLS 0,086 mit dem Sheet als Verursacher. Was nach
+ * dem Scroller im Markup steht — die "Muster drehen"-Zeile — kommt im Stream
+ * eben trotzdem zuletzt.
+ *
+ * Deshalb traegt das Sheet seine Endhoehe selbst. Das Modell ist an allen
+ * fuenf Routen x beiden Mobil-Viewports gegen die gemessenen Hoehen geprueft
+ * und trifft 8/8 exakt (503 / 495 / 263 / 263 / 434 / 426 / 434 / 426 px):
+ *
+ *   Griff + Tab-Zeile + Label-Zeile + Rand  = 113 px  (konstant)
+ *   + Scroller                              = min(38svh, reserviert)
+ *   + Dreh-Zeile, nur wenn ein Druck aktiv  =  69 px
+ *
+ * `min-height` ist hier richtig (anders als am Scroller, wo es den 38svh-Deckel
+ * schlagen wuerde) — das Sheet hat kein `max-height`, und der ResizeObserver
+ * veroeffentlicht weiterhin die tatsaechliche Hoehe fuer das Seiten-Padding.
+ *
+ * Ohne `svh`-Unterstuetzung ist der ganze Wert ungueltig und die Deklaration
+ * faellt weg — dann verhaelt es sich wie vorher, nicht schlechter.
+ */
+const SHEET_CHROME_HEIGHT = 113;
+const SHEET_ROTATE_ROW_HEIGHT = 69;
+const SWATCH_SCROLLER_CAP = "38svh";
+
+export function sheetMinHeight(reservedScrollerHeight: number, showRotate: boolean): string {
+  const rotate = showRotate ? ` + ${SHEET_ROTATE_ROW_HEIGHT}px` : "";
+  return `calc(${SHEET_CHROME_HEIGHT}px + min(${SWATCH_SCROLLER_CAP}, ${reservedScrollerHeight}px)${rotate})`;
 }
 
 function swatchTextColor(hex: string): string {
