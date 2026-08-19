@@ -1,0 +1,130 @@
+[
+  {
+    "run": 1,
+    "variant": "live-split",
+    "total": 0,
+    "shifts": [],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1313,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 1395,
+        "top": 662,
+        "h": 161
+      },
+      {
+        "key": "cookie",
+        "t": 2860,
+        "top": 550,
+        "h": 273
+      },
+      {
+        "key": "cookie",
+        "t": 2913,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "variant": "live-split",
+    "total": 0,
+    "shifts": [],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1580,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 1704,
+        "top": 662,
+        "h": 161
+      },
+      {
+        "key": "cookie",
+        "t": 2719,
+        "top": 550,
+        "h": 273
+      },
+      {
+        "key": "cookie",
+        "t": 2755,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "variant": "live-split",
+    "total": 0,
+    "shifts": [],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1178,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 1353,
+        "top": 662,
+        "h": 161
+      },
+      {
+        "key": "cookie",
+        "t": 2717,
+        "top": 550,
+        "h": 273
+      },
+      {
+        "key": "cookie",
+        "t": 2752,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  },
+  {
+    "run": 4,
+    "variant": "live-split",
+    "total": 0,
+    "shifts": [],
+    "timeline": [
+      {
+        "key": "sheet",
+        "t": 1310,
+        "top": 397,
+        "h": 426
+      },
+      {
+        "key": "cookie",
+        "t": 1412,
+        "top": 662,
+        "h": 161
+      },
+      {
+        "key": "cookie",
+        "t": 2729,
+        "top": 550,
+        "h": 273
+      },
+      {
+        "key": "cookie",
+        "t": 2765,
+        "top": 498,
+        "h": 325
+      }
+    ]
+  }
+]
