@@ -71,6 +71,7 @@ export function DreieckstuchPhoto({
         width={ASSET_W}
         height={ASSET_H}
         loading="eager"
+        fetchPriority="high"
         decoding="async"
         draggable={false}
         style={{

@@ -47,6 +47,7 @@ export function BodyPhoto({ paints, title = "Body-Vorschau", className }: BodyPh
         width={ASSET_W}
         height={ASSET_H}
         loading="eager"
+        fetchPriority="high"
         decoding="async"
         draggable={false}
         style={{

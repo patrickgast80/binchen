@@ -6,11 +6,11 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   resolveSwatch,
-  swatchChipStyle,
   swatchesForRegion,
   type Swatch,
 } from "../hose/palette";
 import { MusterRotationControl } from "./muster-rotation-control";
+import { SwatchChip } from "./swatch-chip";
 import type { MusterRotation } from "./rotation";
 
 export interface MobileRegion {
@@ -168,10 +168,9 @@ export function MobilePaletteSheet({
                     : "border-binchen-border bg-binchen-cream-dark text-binchen-ink",
                 )}
               >
-                <span
-                  aria-hidden="true"
+                <SwatchChip
+                  swatch={swatch}
                   className="h-4 w-4 shrink-0 rounded-full border border-binchen-border/70"
-                  style={swatchChipStyle(swatch)}
                 />
                 <span className="whitespace-nowrap font-medium">{region.label}</span>
               </button>
@@ -223,13 +222,12 @@ export function MobilePaletteSheet({
                     isActive && "bg-binchen-cream-dark",
                   )}
                 >
-                  <span
-                    aria-hidden="true"
+                  <SwatchChip
+                    swatch={swatch}
                     className={cn(
                       "relative flex h-11 w-11 items-center justify-center rounded-full border-2 transition-transform",
                       isActive ? "border-binchen-ink shadow-inner" : "border-binchen-border",
                     )}
-                    style={swatchChipStyle(swatch)}
                   >
                     {isActive && (
                       <Check
@@ -238,7 +236,7 @@ export function MobilePaletteSheet({
                         style={{ color: swatchTextColor(swatch.hex) }}
                       />
                     )}
-                  </span>
+                  </SwatchChip>
                   <span className="text-center font-body text-[10px] leading-tight text-binchen-ink">
                     {swatch.name}
                   </span>

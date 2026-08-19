@@ -78,6 +78,7 @@ export function MuetzePhoto({ paints, title = "Mütze-Vorschau", className }: Mu
         width={ASSET_W}
         height={ASSET_H}
         loading="eager"
+        fetchPriority="high"
         decoding="async"
         draggable={false}
         style={{

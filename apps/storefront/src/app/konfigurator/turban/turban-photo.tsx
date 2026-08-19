@@ -75,6 +75,7 @@ export function TurbanPhoto({ paints, title = "Turban-Vorschau", className }: Tu
         width={ASSET_W}
         height={ASSET_H}
         loading="eager"
+        fetchPriority="high"
         decoding="async"
         draggable={false}
         style={{

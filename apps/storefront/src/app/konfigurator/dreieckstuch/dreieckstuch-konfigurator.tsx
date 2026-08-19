@@ -14,13 +14,13 @@ import {
   type DreieckstuchRegionDef,
   resolveSwatch,
   resolveSwatchId,
-  swatchChipStyle,
   swatchesForRegion,
   type Swatch,
 } from "./palette";
 import { DreieckstuchPhoto, type DreieckstuchPhotoPaints } from "./dreieckstuch-photo";
 import { buildConfigHref, configParams, shareableUrl } from "../_shared/config-url";
 import { MobilePaletteSheet } from "../_shared/mobile-palette-sheet";
+import { SwatchChip } from "../_shared/swatch-chip";
 import { SavedConfigsSection } from "../_shared/saved-configs-section";
 import { MusterRotationControl } from "../_shared/muster-rotation-control";
 import {
@@ -264,13 +264,12 @@ export function DreieckstuchKonfigurator() {
                           isActive && "bg-binchen-cream shadow-sm",
                         )}
                       >
-                        <span
-                          aria-hidden="true"
+                        <SwatchChip
+                          swatch={swatch}
                           className={cn(
                             "relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-transform group-hover:scale-105 sm:h-11 sm:w-11",
                             isActive ? "border-binchen-ink shadow-inner" : "border-binchen-border",
                           )}
-                          style={swatchChipStyle(swatch)}
                         >
                           {isActive && (
                             <Check
@@ -279,7 +278,7 @@ export function DreieckstuchKonfigurator() {
                               style={{ color: swatchTextColor(swatch.hex) }}
                             />
                           )}
-                        </span>
+                        </SwatchChip>
                         <span className="text-center font-body text-xs leading-tight text-binchen-ink">
                           {swatch.name}
                         </span>

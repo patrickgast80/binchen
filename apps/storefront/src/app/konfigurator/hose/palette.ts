@@ -116,6 +116,14 @@ export function resolveSwatch(id: string | null | undefined, fallback: string): 
  *
  * Always prefers the small `chipSrc` — a 44px circle has no use for the
  * preview tile, and the palette shows dozens of chips at once (BIL-2493).
+ *
+ * @deprecated BIL-2523 — use `<SwatchChip>` from `_shared/swatch-chip` instead.
+ * A CSS background image cannot be lazy-loaded, so this fetched all ~35 fabric
+ * chips immediately, competing with `base.webp` — the LCP element — for a
+ * throttled mobile connection. `<SwatchChip>` renders a real `<img
+ * loading="lazy">`, which keeps those bytes out of the LCP window since the
+ * palette sits below the fold. Kept only so the re-exports in the per-
+ * Konfigurator palettes keep resolving; there are no callers left.
  */
 export function swatchChipStyle(swatch: Swatch): CSSProperties {
   const src = swatch.chipSrc ?? swatch.textureSrc;
