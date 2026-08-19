@@ -1,0 +1,22 @@
+{
+  "label": "after-bitmap",
+  "base": "http://127.0.0.1:3988",
+  "path": "/konfigurator/hose?hose=stoff-15&bund=sage",
+  "shots": [
+    {
+      "name": "desktop",
+      "file": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2531\\after-bitmap-desktop.png",
+      "visibleAt": 983,
+      "md5": "8bbba053254b38326091ce4abd1bf014",
+      "errors": []
+    },
+    {
+      "name": "desktop-jitter",
+      "file": "C:\\Users\\Besitzer\\.paperclip\\instances\\default\\projects\\723a0156-47d4-4ec0-9d21-81a1cebeb182\\5e251e01-8c35-4243-9a64-ebccc2ffed74\\_default\\apps\\e2e\\reports\\bil2531\\after-bitmap-desktop-jitter.png",
+      "visibleAt": 444,
+      "md5": "8bbba053254b38326091ce4abd1bf014",
+      "errors": []
+    }
+  ],
+  "stable": true
+}

@@ -1,0 +1,198 @@
+{
+  "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage",
+  "visibleAt": 3344,
+  "tasks": [
+    {
+      "start": 159,
+      "dur": 71,
+      "ts": 543721718267,
+      "end": 543721789445,
+      "top": [
+        {
+          "name": "RunTask",
+          "ms": 53
+        },
+        {
+          "name": "HTMLDocumentParser::MaybeFetchQueuedPreloads",
+          "ms": 18
+        }
+      ]
+    },
+    {
+      "start": 287,
+      "dur": 347,
+      "ts": 543721846106,
+      "end": 543722193309,
+      "top": [
+        {
+          "name": "Layout",
+          "ms": 302
+        },
+        {
+          "name": "UpdateLayoutTree",
+          "ms": 34
+        }
+      ]
+    },
+    {
+      "start": 691,
+      "dur": 73,
+      "ts": 543722249406,
+      "end": 543722322269,
+      "top": [
+        {
+          "name": "Layout",
+          "ms": 55
+        },
+        {
+          "name": "UpdateLayoutTree",
+          "ms": 10
+        }
+      ]
+    },
+    {
+      "start": 783,
+      "dur": 125,
+      "ts": 543722341746,
+      "end": 543722466937,
+      "top": [
+        {
+          "name": "Layout",
+          "ms": 67
+        },
+        {
+          "name": "Paint",
+          "ms": 30
+        },
+        {
+          "name": "UpdateLayoutTree",
+          "ms": 17
+        },
+        {
+          "name": "RunTask",
+          "ms": 6
+        }
+      ]
+    },
+    {
+      "start": 920,
+      "dur": 212,
+      "ts": 543722478498,
+      "end": 543722690738,
+      "top": [
+        {
+          "name": "EvaluateScript webpack-87d71e3c0688ecde.js",
+          "ms": 148
+        },
+        {
+          "name": "RunMicrotasks",
+          "ms": 52
+        },
+        {
+          "name": "FunctionCall 6be5ad14-6313add234990526.js",
+          "ms": 9
+        }
+      ]
+    },
+    {
+      "start": 1237,
+      "dur": 44,
+      "ts": 543722795752,
+      "end": 543722839980,
+      "top": [
+        {
+          "name": "FunctionCall 129-5f055ce3ce876eb3.js",
+          "ms": 37
+        }
+      ]
+    },
+    {
+      "start": 1479,
+      "dur": 135,
+      "ts": 543723037893,
+      "end": 543723172768,
+      "top": [
+        {
+          "name": "FunctionCall 129-5f055ce3ce876eb3.js",
+          "ms": 120
+        },
+        {
+          "name": "RunMicrotasks",
+          "ms": 10
+        }
+      ]
+    },
+    {
+      "start": 1614,
+      "dur": 57,
+      "ts": 543723172785,
+      "end": 543723230114,
+      "top": [
+        {
+          "name": "UpdateLayoutTree",
+          "ms": 41
+        }
+      ]
+    },
+    {
+      "start": 2027,
+      "dur": 106,
+      "ts": 543723586202,
+      "end": 543723691840,
+      "top": [
+        {
+          "name": "Decode Image",
+          "ms": 89
+        },
+        {
+          "name": "RunMicrotasks",
+          "ms": 11
+        },
+        {
+          "name": "RunTask",
+          "ms": 5
+        }
+      ]
+    },
+    {
+      "start": 2207,
+      "dur": 90,
+      "ts": 543723765358,
+      "end": 543723855140,
+      "top": [
+        {
+          "name": "Decode Image",
+          "ms": 78
+        },
+        {
+          "name": "RunMicrotasks",
+          "ms": 7
+        }
+      ]
+    },
+    {
+      "start": 2454,
+      "dur": 82,
+      "ts": 543724012749,
+      "end": 543724094995,
+      "top": [
+        {
+          "name": "Decode Image",
+          "ms": 78
+        }
+      ]
+    },
+    {
+      "start": 2554,
+      "dur": 48,
+      "ts": 543724112609,
+      "end": 543724160790,
+      "top": [
+        {
+          "name": "RunMicrotasks",
+          "ms": 41
+        }
+      ]
+    }
+  ]
+}

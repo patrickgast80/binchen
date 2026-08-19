@@ -44,6 +44,10 @@ import {
  * them is byte-neutral by construction — see the note on `inSlices` — and
  * `apps/e2e/scripts/bil2531-slice-equivalence.mjs` checks the tile half of that
  * against the one-shot code path offline.
+ *
+ * That halved those blocks but did not remove them; what was left in each was
+ * an image DECODE, which no amount of slicing reaches because it is one call
+ * inside the browser. See `decodeImage` below.
  */
 
 export interface ReliefZoneSpec {
@@ -155,7 +159,37 @@ function scratchCanvas(w: number, h: number) {
   return { canvas, ctx };
 }
 
-async function loadImage(src: string): Promise<HTMLImageElement> {
+/**
+ * Decode an asset OFF the main thread.
+ *
+ * BIL-2531, second pass. Slicing the four assembly steps shrank the three late
+ * long tasks (251/161/130 -> 116/86/80 ms) but did not remove them, and a CDP
+ * trace of the live page says why: what is left in each of them is a
+ * `Decode Image` event, not our arithmetic. `HTMLImageElement.decode()` returns
+ * a promise but Chrome still runs the decode as a main-thread task, so awaiting
+ * it only moves the block, it does not remove it. The control is exact — the
+ * same route with a uni colour, where this layer never runs, has zero such
+ * tasks (`apps/e2e/scripts/bil2531-task-attribution.mjs`).
+ *
+ * `createImageBitmap` on a Blob decodes on a worker thread, so the main thread
+ * only sees the (cheap) upload. Pixels are unaffected: no options are passed,
+ * so colour-space conversion and premultiplication stay at the same defaults
+ * the `<img>` path used, and `bil2531-decode-equivalence.mjs` compares both
+ * readbacks byte-for-byte in a real browser for exactly the three assets this
+ * layer loads.
+ *
+ * Falls back to the `<img>` path when `createImageBitmap` or blob decoding is
+ * missing — a slow correct preview beats no preview (property 1 above).
+ */
+async function decodeImage(src: string): Promise<ImageBitmap | HTMLImageElement> {
+  if (typeof createImageBitmap === "function") {
+    try {
+      const res = await fetch(src, { credentials: "same-origin" });
+      if (res.ok) return await createImageBitmap(await res.blob());
+    } catch {
+      /* falls through to the <img> path below */
+    }
+  }
   const img = new Image();
   // Same-origin assets; set anyway so a future CDN move cannot silently taint
   // the canvas and turn getImageData into a SecurityError at runtime.
@@ -163,6 +197,12 @@ async function loadImage(src: string): Promise<HTMLImageElement> {
   img.src = src;
   await img.decode();
   return img;
+}
+
+function sizeOf(img: ImageBitmap | HTMLImageElement) {
+  return img instanceof HTMLImageElement
+    ? { w: img.naturalWidth, h: img.naturalHeight }
+    : { w: img.width, h: img.height };
 }
 
 /**
@@ -183,12 +223,17 @@ async function loadImageData(
 ): Promise<ImageData | null> {
   const hit = imageDataCache.get(src);
   if (hit) return hit;
-  const img = await loadImage(src);
-  if (cancelled()) return null;
-  const w = img.naturalWidth;
-  const h = img.naturalHeight;
+  const img = await decodeImage(src);
+  if (cancelled()) {
+    if (!(img instanceof HTMLImageElement)) img.close();
+    return null;
+  }
+  const { w, h } = sizeOf(img);
   const { ctx } = scratchCanvas(w, h);
   ctx.drawImage(img, 0, 0);
+  // An ImageBitmap holds its own copy of the pixels until it is closed; the
+  // canvas has them now, so hand the memory back instead of waiting for GC.
+  if (!(img instanceof HTMLImageElement)) img.close();
   // The upload above is one indivisible blit; give the thread back before
   // starting the readback rather than chaining both into the same task.
   await yieldToBrowser();

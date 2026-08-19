@@ -1,0 +1,154 @@
+{
+  "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage",
+  "visibleAt": 2718,
+  "tasks": [
+    {
+      "start": 432,
+      "dur": 79,
+      "ts": 543752961758,
+      "end": 543753040477,
+      "top": [
+        {
+          "name": "RunTask",
+          "ms": 65
+        },
+        {
+          "name": "HTMLDocumentParser::MaybeFetchQueuedPreloads",
+          "ms": 14
+        }
+      ]
+    },
+    {
+      "start": 580,
+      "dur": 234,
+      "ts": 543753109478,
+      "end": 543753343679,
+      "top": [
+        {
+          "name": "Layout",
+          "ms": 184
+        },
+        {
+          "name": "UpdateLayoutTree",
+          "ms": 37
+        }
+      ]
+    },
+    {
+      "start": 866,
+      "dur": 43,
+      "ts": 543753395529,
+      "end": 543753438889,
+      "top": [
+        {
+          "name": "Layout",
+          "ms": 34
+        },
+        {
+          "name": "UpdateLayoutTree",
+          "ms": 5
+        }
+      ]
+    },
+    {
+      "start": 947,
+      "dur": 120,
+      "ts": 543753476113,
+      "end": 543753596017,
+      "top": [
+        {
+          "name": "Layout",
+          "ms": 82
+        },
+        {
+          "name": "Paint",
+          "ms": 19
+        },
+        {
+          "name": "UpdateLayoutTree",
+          "ms": 13
+        }
+      ]
+    },
+    {
+      "start": 1075,
+      "dur": 171,
+      "ts": 543753604069,
+      "end": 543753775121,
+      "top": [
+        {
+          "name": "EvaluateScript chunks/webpack-87d71e3c0688ecde.js",
+          "ms": 112
+        },
+        {
+          "name": "RunMicrotasks",
+          "ms": 44
+        },
+        {
+          "name": "FunctionCall chunks/6be5ad14-6313add234990526.js",
+          "ms": 12
+        }
+      ]
+    },
+    {
+      "start": 1479,
+      "dur": 105,
+      "ts": 543754008374,
+      "end": 543754113752,
+      "top": [
+        {
+          "name": "FunctionCall chunks/129-5f055ce3ce876eb3.js",
+          "ms": 95
+        },
+        {
+          "name": "RunMicrotasks",
+          "ms": 6
+        }
+      ]
+    },
+    {
+      "start": 1975,
+      "dur": 73,
+      "ts": 543754504089,
+      "end": 543754577153,
+      "top": [
+        {
+          "name": "Decode Image",
+          "ms": 53
+        },
+        {
+          "name": "RunMicrotasks",
+          "ms": 16
+        }
+      ]
+    },
+    {
+      "start": 2071,
+      "dur": 48,
+      "ts": 543754601022,
+      "end": 543754649221,
+      "top": [
+        {
+          "name": "Decode Image",
+          "ms": 41
+        },
+        {
+          "name": "RunMicrotasks",
+          "ms": 5
+        }
+      ]
+    },
+    {
+      "start": 2243,
+      "dur": 64,
+      "ts": 543754772247,
+      "end": 543754836574,
+      "top": [
+        {
+          "name": "Decode Image",
+          "ms": 61
+        }
+      ]
+    }
+  ]
+}

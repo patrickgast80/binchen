@@ -1,0 +1,33 @@
+{
+  "base": "https://bilulu.de",
+  "selftest": true,
+  "results": [
+    {
+      "src": "/konfigurator/hose-foto/relief.webp",
+      "w": 900,
+      "h": 1006,
+      "same": false,
+      "diffs": 1,
+      "firstDiff": 1810800,
+      "err": null
+    },
+    {
+      "src": "/konfigurator/hose-foto/mask-hose.webp",
+      "w": 900,
+      "h": 1006,
+      "same": false,
+      "diffs": 1,
+      "firstDiff": 1810800,
+      "err": null
+    },
+    {
+      "src": "/stoffe/stoff-15.webp",
+      "w": 512,
+      "h": 512,
+      "same": false,
+      "diffs": 1,
+      "firstDiff": 524288,
+      "err": null
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "url": "https://bilulu.de/konfigurator/hose",
+  "visibleAt": null,
+  "tasks": [
+    {
+      "start": 177,
+      "dur": 72,
+      "ts": 543770394744,
+      "end": 543770466347,
+      "top": [
+        {
+          "name": "RunTask",
+          "ms": 60
+        },
+        {
+          "name": "HTMLDocumentParser::MaybeFetchQueuedPreloads",
+          "ms": 12
+        }
+      ]
+    },
+    {
+      "start": 295,
+      "dur": 286,
+      "ts": 543770513310,
+      "end": 543770799108,
+      "top": [
+        {
+          "name": "Layout",
+          "ms": 246
+        },
+        {
+          "name": "UpdateLayoutTree",
+          "ms": 30
+        }
+      ]
+    },
+    {
+      "start": 670,
+      "dur": 201,
+      "ts": 543770887320,
+      "end": 543771088308,
+      "top": [
+        {
+          "name": "Layout",
+          "ms": 129
+        },
+        {
+          "name": "UpdateLayoutTree",
+          "ms": 34
+        },
+        {
+          "name": "Paint",
+          "ms": 30
+        }
+      ]
+    },
+    {
+      "start": 884,
+      "dur": 182,
+      "ts": 543771102074,
+      "end": 543771283796,
+      "top": [
+        {
+          "name": "EvaluateScript chunks/webpack-87d71e3c0688ecde.js",
+          "ms": 124
+        },
+        {
+          "name": "RunMicrotasks",
+          "ms": 47
+        },
+        {
+          "name": "FunctionCall chunks/6be5ad14-6313add234990526.js",
+          "ms": 8
+        }
+      ]
+    },
+    {
+      "start": 1164,
+      "dur": 40,
+      "ts": 543771381706,
+      "end": 543771422117,
+      "top": [
+        {
+          "name": "FunctionCall chunks/129-5f055ce3ce876eb3.js",
+          "ms": 34
+        }
+      ]
+    },
+    {
+      "start": 1351,
+      "dur": 103,
+      "ts": 543771568463,
+      "end": 543771671657,
+      "top": [
+        {
+          "name": "FunctionCall chunks/129-5f055ce3ce876eb3.js",
+          "ms": 92
+        },
+        {
+          "name": "RunMicrotasks",
+          "ms": 7
+        }
+      ]
+    },
+    {
+      "start": 1454,
+      "dur": 46,
+      "ts": 543771671828,
+      "end": 543771718089,
+      "top": [
+        {
+          "name": "UpdateLayoutTree",
+          "ms": 36
+        }
+      ]
+    }
+  ]
+}
