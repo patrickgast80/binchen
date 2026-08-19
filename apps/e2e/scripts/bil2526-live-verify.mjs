@@ -18,11 +18,12 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const OUT = resolve(HERE, '../reports/bil2526/live');
+const OUT = resolve(HERE, '../reports/bil2526/live2');
 const LH = 'C:/Users/Besitzer/AppData/Local/npm-cache/_npx/6ee2f8988123e994/node_modules/lighthouse/cli/index.js';
 
 const RUNS = [
   { name: 'turban', url: 'https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream' },
+  { name: 'turban-jitter', url: 'https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream' },
   { name: 'hose', url: 'https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage' },
   { name: 'home', url: 'https://bilulu.de/' },
   { name: 'catalog', url: 'https://bilulu.de/catalog' },
@@ -97,6 +98,7 @@ const BEFORE = {
   turban: baseline('turban-uni.json'),
   hose: baseline('hose-stoff.json'),
   'hose-jitter': baseline('hose-stoff-jitter.json'),
+  'turban-jitter': baseline('turban-uni.json'),
 };
 
 const rows = [];
