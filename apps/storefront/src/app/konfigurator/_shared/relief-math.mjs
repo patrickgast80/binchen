@@ -187,9 +187,22 @@ export const tilePx = (W, grain) =>
  */
 export function resampleTile(src, sw, sh, stride, dw, dh) {
   const out = new Uint8ClampedArray(dw * dh * 3);
+  resampleTileRows(out, src, sw, sh, stride, dw, dh, 0, dh);
+  return out;
+}
+
+/**
+ * One horizontal band of `resampleTile`, written into a caller-owned buffer.
+ *
+ * Destination rows are independent — each one only reads `src` — so filling
+ * `[0,dh)` in any partition produces the same bytes as one call for the whole
+ * tile. That is what lets the browser build a tile across several event-loop
+ * tasks (BIL-2531) while the Node renderer keeps calling `resampleTile`.
+ */
+export function resampleTileRows(out, src, sw, sh, stride, dw, dh, y0, y1) {
   const sx = sw / dw;
   const sy = sh / dh;
-  for (let dy = 0; dy < dh; dy++) {
+  for (let dy = y0; dy < y1; dy++) {
     const y0 = dy * sy;
     const y1 = y0 + sy;
     const iy0 = Math.floor(y0);
@@ -224,7 +237,15 @@ export function resampleTile(src, sw, sh, stride, dw, dh) {
       out[o + 2] = Math.round(b / wsum);
     }
   }
-  return out;
+}
+
+const normalRotation = (rotation) => ((rotation % 360) + 360) % 360;
+
+/** Destination extent of `rotateTile` — a quarter turn swaps the axes. */
+export function rotatedTileSize(w, h, rotation) {
+  const r = normalRotation(rotation);
+  const quarter = r === 90 || r === 270;
+  return { TW: quarter ? h : w, TH: quarter ? w : h };
 }
 
 /**
@@ -233,17 +254,28 @@ export function resampleTile(src, sw, sh, stride, dw, dh) {
  * pipeline to rotate for us.
  */
 export function rotateTile(src, w, h, rotation) {
-  const r = ((rotation % 360) + 360) % 360;
-  if (r === 0) return { data: src, TW: w, TH: h };
-  const quarter = r === 90 || r === 270;
-  const dw = quarter ? h : w;
-  const dh = quarter ? w : h;
-  const out = new Uint8ClampedArray(dw * dh * 3);
-  for (let y = 0; y < h; y++) {
+  if (normalRotation(rotation) === 0) return { data: src, TW: w, TH: h };
+  const { TW, TH } = rotatedTileSize(w, h, rotation);
+  const out = new Uint8ClampedArray(TW * TH * 3);
+  rotateTileRows(out, src, w, h, TW, rotation, 0, h);
+  return { data: out, TW, TH };
+}
+
+/**
+ * One band of SOURCE rows of `rotateTile`. The permutation is a pure scatter —
+ * every source pixel lands at exactly one destination index and nothing is read
+ * back — so covering `[0,h)` in any partition writes the same bytes.
+ */
+export function rotateTileRows(out, src, w, h, dw, rotation, y0, y1) {
+  const r = normalRotation(rotation);
+  for (let y = y0; y < y1; y++) {
     for (let x = 0; x < w; x++) {
       let nx;
       let ny;
-      if (r === 90) {
+      if (r === 0) {
+        nx = x;
+        ny = y;
+      } else if (r === 90) {
         nx = h - 1 - y;
         ny = x;
       } else if (r === 180) {
@@ -260,7 +292,6 @@ export function rotateTile(src, w, h, rotation) {
       out[di + 2] = src[si + 2];
     }
   }
-  return { data: out, TW: dw, TH: dh };
 }
 
 /**
