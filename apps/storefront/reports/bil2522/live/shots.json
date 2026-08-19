@@ -1,0 +1,56 @@
+[
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-04&bund=mustard&buendchen=mustard",
+    "viewport": "desktop",
+    "shot": "hose-stoff-04-mustard-desktop.png",
+    "jitterIdentical": true,
+    "md5": "2f328bf5f161",
+    "fallbackMd5": "f4df6ad74ae1",
+    "fallbackDiffers": true
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-15&bund=sage&buendchen=sage",
+    "viewport": "desktop",
+    "shot": "hose-stoff-15-sage-desktop.png",
+    "jitterIdentical": true,
+    "md5": "2410a2168ce2",
+    "fallbackMd5": "2dc8501d2596",
+    "fallbackDiffers": true
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-20&bund=petrol&buendchen=petrol&rot=90",
+    "viewport": "desktop",
+    "shot": "hose-stoff-20-petrol-rot90-desktop.png",
+    "jitterIdentical": true,
+    "md5": "3253e5c69e71",
+    "fallbackMd5": "94d07731862b",
+    "fallbackDiffers": true
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-04&bund=mustard&buendchen=mustard",
+    "viewport": "mobile",
+    "shot": "hose-stoff-04-mustard-mobile.png",
+    "jitterIdentical": true,
+    "md5": "98c089a2e9ff",
+    "fallbackMd5": "1a3adbc25cee",
+    "fallbackDiffers": true
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-15&bund=sage&buendchen=sage",
+    "viewport": "mobile",
+    "shot": "hose-stoff-15-sage-mobile.png",
+    "jitterIdentical": true,
+    "md5": "f920ccc1e5ed",
+    "fallbackMd5": "91bf9548e1b5",
+    "fallbackDiffers": true
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-20&bund=petrol&buendchen=petrol&rot=90",
+    "viewport": "mobile",
+    "shot": "hose-stoff-20-petrol-rot90-mobile.png",
+    "jitterIdentical": true,
+    "md5": "a9dc6843e5eb",
+    "fallbackMd5": "10b9a3ca96fc",
+    "fallbackDiffers": true
+  }
+]

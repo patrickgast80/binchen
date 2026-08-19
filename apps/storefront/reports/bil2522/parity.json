@@ -1,0 +1,26 @@
+[
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-04&bund=mustard&buendchen=mustard",
+    "jitterBytes": 0,
+    "comparedPixels": 432351,
+    "meanChannelDiff": 0.005,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-15&bund=sage&buendchen=sage",
+    "jitterBytes": 0,
+    "comparedPixels": 432351,
+    "meanChannelDiff": 0.005,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-20&bund=petrol&buendchen=petrol&rot=90",
+    "jitterBytes": 0,
+    "comparedPixels": 432351,
+    "meanChannelDiff": 0.005,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  }
+]
