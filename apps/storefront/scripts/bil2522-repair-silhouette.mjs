@@ -49,17 +49,43 @@ import { readFile, rename } from "node:fs/promises";
 import { KONFIGS } from "./bil2509-composite.mjs";
 
 /**
- * Write lossless webp back over its own source.
+ * Encoder settings per asset kind — BIL-2523.
+ *
+ * This used to write `{ lossless: true }` for everything, which is right for a
+ * mask and wrong for a photo. `base.webp` is the Konfigurator's LCP element,
+ * and repairing it lossless tripled it: turban 64 kB -> 180 kB, dreieckstuch
+ * 29 kB -> 69 kB. On a throttled mobile that alone put the turban LCP at 4.5 s
+ * against 2.7 s on the untouched hose route.
+ *
+ * So a base is written with the SAME `quality: 82, alphaQuality: 90` its
+ * builder (bil2444/bil2446-build-*-assets.mjs) uses — the repair should change
+ * the pixels, not the format. Measured against the lossless render, that costs
+ * a mean 0.73/255 per RGB channel and leaves the alpha channel BIT-IDENTICAL,
+ * so the silhouette repair this script exists for survives the encode exactly.
+ *
+ * Masks stay lossless: they are alpha-only, the relief math thresholds them
+ * per pixel, and lossless is actually the SMALLER encode for them
+ * (mask-turban 23.4 kB lossy -> 20.0 kB lossless).
+ *
+ * Re-running the repair on an already-repaired base compounds a lossy
+ * generation. That is the same deal the builders already make, and the fix is
+ * the same: re-run the builder first, then this.
+ */
+const BASE_WEBP = { quality: 82, alphaQuality: 90 };
+const MASK_WEBP = { lossless: true };
+
+/**
+ * Write webp back over its own source.
  *
  * sharp keeps the input file open for the lifetime of the pipeline, so writing
  * straight back to the path it was read from fails on Windows with a bare
  * "unable to open for write". Via a sibling temp file plus a rename, which is
  * also atomic — a crash mid-encode cannot leave a half-written asset behind.
  */
-async function writeInPlace(rgba, W, H, file) {
+async function writeInPlace(rgba, W, H, file, webpOpts) {
   const tmp = `${file}.tmp`;
   await sharp(rgba, { raw: { width: W, height: H, channels: 4 } })
-    .webp({ lossless: true })
+    .webp(webpOpts)
     .toFile(tmp);
   await rename(tmp, file);
 }
@@ -373,7 +399,7 @@ export async function repair(konfigId, { check = false, debug = false } = {}) {
 
   const files = [];
   if (!check) {
-    await writeInPlace(base.data, W, H, path.join(dir, "base.webp"));
+    await writeInPlace(base.data, W, H, path.join(dir, "base.webp"), BASE_WEBP);
     files.push("base.webp");
   }
 
@@ -410,7 +436,7 @@ export async function repair(konfigId, { check = false, debug = false } = {}) {
     }
     zoneStats.push(`${z}+${mAdded}/-${mRemoved}`);
     if (!check && (mAdded > 0 || mRemoved > 0)) {
-      await writeInPlace(m.data, W, H, file);
+      await writeInPlace(m.data, W, H, file, MASK_WEBP);
       files.push(`mask-${z}.webp`);
     }
   }
