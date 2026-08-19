@@ -107,6 +107,8 @@ export function MobilePaletteSheet({
   if (!activeRegion) return null;
 
   const activeSwatchId = selection[activeRegion.param];
+  const activeSwatches = swatchesForRegion(activeRegion);
+  const reservedScrollerHeight = reserveSwatchScrollerHeight(activeSwatches.length);
   // The rotate control only means something while a *print* is on this zone —
   // a uni colour looks identical at every angle, so showing it there would be
   // a dead control in the most cramped part of the UI.
@@ -200,13 +202,17 @@ export function MobilePaletteSheet({
           // Hard ceiling so a longer fabric list can never grow the sheet back
           // over the preview. vh first for engines without svh support.
           className="max-h-[38vh] overflow-y-auto overscroll-contain supports-[height:1svh]:max-h-[38svh]"
+          // BIL-2526 — Platz reservieren, BEVOR die Swatches da sind. `height`
+          // (nicht `min-height`), damit der Deckel oben weiter gewinnt:
+          // min-height wuerde max-height schlagen und das Sheet aufblasen.
+          style={{ height: `${reservedScrollerHeight}px` }}
         >
           <div
             role="radiogroup"
             aria-label={`Farbe für ${activeRegion.label}`}
             className="grid grid-cols-6 gap-2 pb-1"
           >
-            {swatchesForRegion(activeRegion).map((swatch) => {
+            {activeSwatches.map((swatch) => {
               const isActive = swatch.id === activeSwatchId;
               return (
                 <button
@@ -265,6 +271,39 @@ export function MobilePaletteSheet({
       </span>
     </div>
   );
+}
+
+/**
+ * BIL-2526 — die Endhoehe des Swatch-Scrollers, bevor ein einziger Swatch im
+ * DOM ist.
+ *
+ * Warum das gebraucht wird: das Sheet haengt `fixed bottom-0`. Wenn es waechst,
+ * wandert seine Oberkante nach OBEN und alles darin springt mit — ein echter
+ * Layout-Shift. Solange die Seite erst nach ~2,7 s malte, war das unsichtbar:
+ * das HTML war da lange fertig gestreamt. Seit das globale CSS inline im <head>
+ * steht, malt der Browser bei ~700-900 ms, also MITTEN im Stream, und sieht das
+ * Sheet erst mit zwei Swatch-Reihen, dann mit acht. Live gemessen an
+ * `turban`: 186 -> 503 px, dy = -97 px, CLS bis 0,105.
+ *
+ * Die Endhoehe ist zur Render-Zeit bekannt — die Spaltenzahl ist mit
+ * `grid-cols-6` fest verdrahtet, also folgt sie allein aus der Anzahl. Damit
+ * kann das oeffnende Tag des Scrollers seine volle Hoehe schon tragen, wenn
+ * seine Kinder noch unterwegs sind.
+ *
+ * Die Konstanten sind live an beiden Mobil-Viewports (390x844 und 412x823)
+ * gemessen und dort identisch: Kachel 69 px, `gap-2` 8 px, `pb-1` 4 px.
+ * Wer die Kachelgroesse aendert (`h-11` am Chip, `text-[10px]` am Label),
+ * muss hier nachziehen — der Selbsttest in
+ * `apps/e2e/scripts/bil2526-sheet-shift-hunt.mjs` faellt sonst auf.
+ */
+const SWATCH_GRID_COLUMNS = 6;
+const SWATCH_ROW_HEIGHT = 69;
+const SWATCH_ROW_GAP = 8;
+const SWATCH_GRID_PADDING_BOTTOM = 4;
+
+export function reserveSwatchScrollerHeight(swatchCount: number): number {
+  const rows = Math.ceil(Math.max(swatchCount, 1) / SWATCH_GRID_COLUMNS);
+  return rows * SWATCH_ROW_HEIGHT + (rows - 1) * SWATCH_ROW_GAP + SWATCH_GRID_PADDING_BOTTOM;
 }
 
 function swatchTextColor(hex: string): string {

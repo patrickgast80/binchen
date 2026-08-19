@@ -1,0 +1,954 @@
+[
+ {
+  "url": "http://localhost:3212/konfigurator/turban?turban=stoff-15&schleife=sage",
+  "viewport": "390x844",
+  "run": 1,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 1380,
+    "h": 503,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2687,
+    "h": 503,
+    "cssVar": "503px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 1380,
+    "h": 503,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 1476,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 1476,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 2292
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 2310
+   },
+   {
+    "kind": "sheet",
+    "t": 2687,
+    "h": 503,
+    "cssVar": "503px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/turban?turban=stoff-15&schleife=sage",
+  "viewport": "390x844",
+  "run": 2,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 769,
+    "h": 434,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 854,
+    "h": 503,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2741,
+    "h": 503,
+    "cssVar": "503px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 769,
+    "h": 434,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 260,
+    "name": "first-paint"
+   },
+   {
+    "kind": "sheet",
+    "t": 854,
+    "h": 503,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 608,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 2266
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 2277
+   },
+   {
+    "kind": "sheet",
+    "t": 2741,
+    "h": 503,
+    "cssVar": "503px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/turban?turban=stoff-15&schleife=sage",
+  "viewport": "390x844",
+  "run": 3,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 749,
+    "h": 503,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2673,
+    "h": 503,
+    "cssVar": "503px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 749,
+    "h": 503,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 268,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 592,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 2241
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 2256
+   },
+   {
+    "kind": "sheet",
+    "t": 2673,
+    "h": 503,
+    "cssVar": "503px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/turban?turban=stoff-15&schleife=sage",
+  "viewport": "390x844",
+  "run": 4,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 844,
+    "h": 434,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 954,
+    "h": 503,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2752,
+    "h": 503,
+    "cssVar": "503px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 844,
+    "h": 434,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 954,
+    "h": 503,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 276,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 688,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 2288
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 2301
+   },
+   {
+    "kind": "sheet",
+    "t": 2752,
+    "h": 503,
+    "cssVar": "503px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/hose",
+  "viewport": "390x844",
+  "run": 1,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 685,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2275,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 685,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 260,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 588,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 1895
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 1903
+   },
+   {
+    "kind": "sheet",
+    "t": 2275,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/hose",
+  "viewport": "390x844",
+  "run": 2,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 739,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2278,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 739,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 272,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 576,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 1868
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 1876
+   },
+   {
+    "kind": "sheet",
+    "t": 2278,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/hose",
+  "viewport": "390x844",
+  "run": 3,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 672,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2151,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 672,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 312,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 312,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 1807
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 1825
+   },
+   {
+    "kind": "sheet",
+    "t": 2151,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/hose",
+  "viewport": "390x844",
+  "run": 4,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 749,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2208,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 749,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 248,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 580,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 1821
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 1841
+   },
+   {
+    "kind": "sheet",
+    "t": 2208,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/turban?turban=stoff-15&schleife=sage",
+  "viewport": "412x823",
+  "run": 1,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 709,
+    "h": 426,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 829,
+    "h": 495,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2492,
+    "h": 495,
+    "cssVar": "495px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 709,
+    "h": 426,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 829,
+    "h": 495,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 284,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 740,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 2238
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 2249
+   },
+   {
+    "kind": "sheet",
+    "t": 2492,
+    "h": 495,
+    "cssVar": "495px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/turban?turban=stoff-15&schleife=sage",
+  "viewport": "412x823",
+  "run": 2,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 777,
+    "h": 495,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2560,
+    "h": 495,
+    "cssVar": "495px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 777,
+    "h": 495,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 288,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 616,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 2261
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 2272
+   },
+   {
+    "kind": "sheet",
+    "t": 2560,
+    "h": 495,
+    "cssVar": "495px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/turban?turban=stoff-15&schleife=sage",
+  "viewport": "412x823",
+  "run": 3,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 744,
+    "h": 495,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2592,
+    "h": 495,
+    "cssVar": "495px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 744,
+    "h": 495,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 268,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 572,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 2245
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 2254
+   },
+   {
+    "kind": "sheet",
+    "t": 2592,
+    "h": 495,
+    "cssVar": "495px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/turban?turban=stoff-15&schleife=sage",
+  "viewport": "412x823",
+  "run": 4,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 717,
+    "h": 495,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2569,
+    "h": 495,
+    "cssVar": "495px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 717,
+    "h": 495,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 272,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 588,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 2270
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 2288
+   },
+   {
+    "kind": "sheet",
+    "t": 2569,
+    "h": 495,
+    "cssVar": "495px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/hose",
+  "viewport": "412x823",
+  "run": 1,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 619,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2223,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 619,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 364,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 364,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 1843
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 1861
+   },
+   {
+    "kind": "sheet",
+    "t": 2223,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/hose",
+  "viewport": "412x823",
+  "run": 2,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 655,
+    "h": 97,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 795,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2206,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 655,
+    "h": 97,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 795,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 336,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 336,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 1868
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 1886
+   },
+   {
+    "kind": "sheet",
+    "t": 2206,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/hose",
+  "viewport": "412x823",
+  "run": 3,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 736,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2320,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 736,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 268,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 564,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 1878
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 1888
+   },
+   {
+    "kind": "sheet",
+    "t": 2320,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ]
+ },
+ {
+  "url": "http://localhost:3212/konfigurator/hose",
+  "viewport": "412x823",
+  "run": 4,
+  "cls": 0,
+  "sheetHeights": [
+   {
+    "kind": "sheet",
+    "t": 593,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "sheet",
+    "t": 2233,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ],
+  "events": [
+   {
+    "kind": "sheet",
+    "t": 593,
+    "h": 263,
+    "cssVar": "(unset -> 280px Fallback)",
+    "hydrated": true
+   },
+   {
+    "kind": "paint",
+    "t": 320,
+    "name": "first-paint"
+   },
+   {
+    "kind": "paint",
+    "t": 320,
+    "name": "first-contentful-paint"
+   },
+   {
+    "kind": "load",
+    "t": 1827
+   },
+   {
+    "kind": "fonts-ready",
+    "t": 1861
+   },
+   {
+    "kind": "sheet",
+    "t": 2233,
+    "h": 263,
+    "cssVar": "263px",
+    "hydrated": true
+   }
+  ]
+ }
+]
