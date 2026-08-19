@@ -23,9 +23,20 @@ const PAD = 22;
 const LABEL_H = 34;
 const BG = { r: 250, g: 247, b: 242 };
 
-/** Real product photos to compare against, per Konfigurator. */
+/**
+ * The photo each render is judged against — board direction of 2026-08-19
+ * 11:54Z: "vergleiche immer mit dem original bild des jeweiligen konfigurator,
+ * nicht mit der vorherigen version". So this is deliberately the PINNED SOURCE
+ * the base asset was built from, not a catalog crop and not the last render.
+ * Pinned under scripts/sources/ because the catalog normalisation pass has
+ * silently rewritten these files before (see scripts/sources/README.md).
+ */
 const REFERENCE = {
-  hose: "public/konfigurator/hose-ref.jpg",
+  hose: "scripts/sources/hose-pumphose-05.jpg",
+  "hose-kurz": "scripts/sources/hose-kurz-dinos-01.jpeg",
+  muetze: "scripts/sources/muetze-boho-mint-01.jpeg",
+  turban: "scripts/sources/turban-rosen-01.jpeg",
+  dreieckstuch: "scripts/sources/dreieckstuch-zoo-01.jpeg",
 };
 
 const escapeXml = (s) => s.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));

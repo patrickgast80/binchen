@@ -1,6 +1,9 @@
+"use client";
+
 import * as React from "react";
 
 import { SheenOverlay, ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
+import { ReliefFabricLayer, useReliefTakeover } from "../_shared/relief-layer";
 
 export interface MuetzePhotoPaints {
   muetze: ZonePaint;
@@ -21,6 +24,11 @@ interface MuetzePhotoProps {
  * einen Stoffdruck rendern.
  *
  * Assets werden von scripts/bil2445-build-muetze-assets.mjs erzeugt.
+ *
+ * BIL-2522 — auf einem gewählten Stoff liegt zusätzlich die Relief-Ebene:
+ * das Muster folgt der Kuppel der Mütze und den echten Raffungen an der
+ * Krone, statt als flache Kachel darüberzuliegen. Sie liegt über dem Sheen,
+ * damit der weiße Screen-Fleck einen Druck nicht entsättigt.
  */
 const ASSET_BASE = "/konfigurator/muetze-foto";
 const ASSET_W = 900;
@@ -31,7 +39,23 @@ const ASSET_W = 900;
 // letterboxes the photo and reintroduces the CLS regress of BIL-2206.
 const ASSET_H = 880;
 
+const ZONES = [
+  { zone: "muetze", mask: `${ASSET_BASE}/mask-muetze.webp` },
+  { zone: "futter", mask: `${ASSET_BASE}/mask-futter.webp` },
+] as const;
+
 export function MuetzePhoto({ paints, title = "Mütze-Vorschau", className }: MuetzePhotoProps) {
+  const zoneSpecs = React.useMemo(
+    () =>
+      ZONES.map(({ zone, mask }) => ({
+        zone,
+        maskSrc: mask,
+        paint: paints[zone as keyof MuetzePhotoPaints],
+      })),
+    [paints],
+  );
+  const { takenOver, onReady } = useReliefTakeover(zoneSpecs);
+
   return (
     <div
       role="img"
@@ -66,9 +90,23 @@ export function MuetzePhoto({ paints, title = "Mütze-Vorschau", className }: Mu
           pointerEvents: "none",
         }}
       />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-muetze.webp`} paint={paints.muetze} ratio={ASSET_W / ASSET_H} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-futter.webp`} paint={paints.futter} ratio={ASSET_W / ASSET_H} />
+      {zoneSpecs.map((spec) => (
+        <ZoneOverlay
+          key={spec.zone}
+          src={spec.maskSrc}
+          paint={spec.paint}
+          ratio={ASSET_W / ASSET_H}
+          hidden={takenOver.has(spec.zone)}
+        />
+      ))}
       <SheenOverlay src={`${ASSET_BASE}/highlight.webp`} />
+      <ReliefFabricLayer
+        assetBase={ASSET_BASE}
+        width={ASSET_W}
+        height={ASSET_H}
+        zones={zoneSpecs}
+        onReady={onReady}
+      />
     </div>
   );
 }

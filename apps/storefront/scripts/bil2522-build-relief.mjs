@@ -15,13 +15,77 @@ import path from "node:path";
 import { KONFIGS } from "./bil2509-composite.mjs";
 import { buildRelief, WARP_RANGE } from "./lib/bil2522-relief.mjs";
 
-/** Per-Konfigurator overrides — limb radius scales with how big the piece is. */
+/**
+ * Per-Konfigurator overrides.
+ *
+ * Two measurements decide these, not taste:
+ *
+ *   1. How ROUND the piece is — `limbRadius` is the tube/dome radius in px. The
+ *      approved hose sits at 108px against a median depth-inside-silhouette of
+ *      86px (`.tmp-geo`, ratio 1.25). Pieces that are genuinely volumes (puff
+ *      legs, hat dome, knotted turban) keep that ratio against their own median
+ *      depth; a Dreieckstuch lying FLAT on the table is not a tube at all and
+ *      gets a small radius that only rounds off its hem.
+ *   2. How much real cloth structure the base carries — `sigma_fine` from
+ *      bil2509-detail-probe. A base with real folds must not have invented ones
+ *      painted over them; a base that is a smooth balloon needs them.
+ *
+ * Median depth / sigma_fine of the main zone, measured 2026-08-19:
+ *   hose 86px / 8.35 · hose-kurz 97px / 6.50 · muetze 117px / 7.96
+ *   turban 106px / 12.28 · dreieckstuch 49px / 8.03 (residue, not folds)
+ */
 export const RELIEF_OPTS = {
+  // Approved by the board on the proof — do not retune without a new pass.
   hose: { limbRadius: 108 },
-  "hose-kurz": { limbRadius: 96 },
-  muetze: { limbRadius: 120 },
-  turban: { limbRadius: 110 },
-  dreieckstuch: { limbRadius: 90 },
+
+  // Same architecture as hose and an even flatter base (the balloon shorts are
+  // literally featureless in the body), so the drape amplitude carries over.
+  // The legs are short and wide, though: at the long-pants pitch of 210px a
+  // 300px leg gets less than one and a half creases, which reads as a stain
+  // rather than as drape. Halved along the limb, tightened across it.
+  "hose-kurz": { limbRadius: 120, drapeScaleX: 40, drapeScaleY: 118 },
+
+  // A hat is a real dome, so it takes the full roll. Its crown gathers ARE in
+  // the photo (the radial creases), so the invented drape only has to cover the
+  // smooth flanks — a third of the pants amount, and near-isotropic because a
+  // knitted hat creases in no particular direction. The base is washed out to
+  // near-white by the de-print, so its own shading needs more gain to survive.
+  muetze: {
+    limbRadius: 150,
+    drapeAmp: 0.02,
+    drapeScaleX: 62,
+    drapeScaleY: 90,
+    foldGain: 2.45,
+  },
+
+  // The one base with genuinely strong folds — the bow alone measures
+  // sigma_fine 26. Inventing creases on top of real ones is how a render starts
+  // looking busy instead of real, so the drape is off entirely and the photo
+  // does all the geometry.
+  turban: { limbRadius: 135, drapeAmp: 0 },
+
+  // The awkward one. It lies FLAT (no tube), it has NO real folds, and its
+  // remaining fine structure is de-print residue — faint "Kleiner Zoo" motifs,
+  // clearly visible when the base is dumped as PNG. So:
+  //   · small radius, weak limb: round off the hem, do not inflate the scarf
+  //   · foldGain down, not up: amplifying that residue would push the old print
+  //     back through the chosen fabric — a straight BIL-2512 regress
+  //   · foldPhotoWeight 0.12: the displacement must not trace zoo animals
+  //   · drapeYieldToPhoto off: otherwise the drape fades out around every ghost
+  //     motif, i.e. the print would still be shaping the cloth, just indirectly
+  // The geometry then comes from the drape alone: broad, soft, diagonal ripples
+  // at the scale a jersey scarf actually falls in.
+  dreieckstuch: {
+    limbRadius: 46,
+    limbStrength: 0.2,
+    foldGain: 0.6,
+    foldPhotoWeight: 0.12,
+    drapeYieldToPhoto: false,
+    drapeAmp: 0.05,
+    drapeScaleX: 96,
+    drapeScaleY: 78,
+    rimRadius: 8,
+  },
 };
 
 export async function buildFor(konfigId, { debug = false, opts = {} } = {}) {

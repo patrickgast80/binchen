@@ -97,6 +97,15 @@ export function buildRelief(rgba, W, H, opts = {}) {
     drapeScaleX = 46,
     drapeScaleY = 210,
     drapeSeed = 2522,
+    /**
+     * Whether the synthesised drape yields where the photo's own `detail` is
+     * large. That is right whenever `detail` really is gathers (hose waistband,
+     * cuff rib) and WRONG where it is de-print residue: the Dreieckstuch base
+     * still carries faint "Kleiner Zoo" ghosts, and yielding to those would
+     * punch a crease-shaped hole around every little motif — the print driving
+     * the drape, which is the exact BIL-2509 trap one level further down.
+     */
+    drapeYieldToPhoto = true,
     /** Radius of the local mean the fold band is measured against. */
     foldRadius = 26,
     /** Limb radius in px — how far in from the silhouette counts as "round". */
@@ -112,6 +121,14 @@ export function buildRelief(rgba, W, H, opts = {}) {
     // ---- displacement --------------------------------------------------
     /** px of texture shift per unit of fold slope. */
     warpFold = 19,
+    /**
+     * How much of the PHOTO's fold band drives the displacement, relative to
+     * the synthesised drape. 1 wherever `detail` is genuine cloth structure.
+     * Turned down for a base whose remaining fine structure is de-print
+     * residue rather than creases — warping a fabric along ghost motifs is
+     * worse than not warping it at all.
+     */
+    foldPhotoWeight = 1,
     /** Fraction of the geometric limb roll that is actually applied. */
     warpLimb = 0.55,
     /**
@@ -229,7 +246,9 @@ export function buildRelief(rgba, W, H, opts = {}) {
     // Synthetic drape yields to whatever the photo actually recorded: where
     // the base carries real gathers (waistband, cuff rib) `detail` is large and
     // the invented creases fade out, so nothing competes with the real thing.
-    drapeFade[p] = (1 - clamp(sv, 0, 1)) * (1 - smoothstep((Math.abs(detail[p]) - 2) / 7));
+    drapeFade[p] =
+      (1 - clamp(sv, 0, 1)) *
+      (drapeYieldToPhoto ? 1 - smoothstep((Math.abs(detail[p]) - 2) / 7) : 1);
     const crease = 1 + drapeAmp * drape[p] * drapeFade[p];
 
     shade[p] = photo * limb * rim * crease;
@@ -266,7 +285,9 @@ export function buildRelief(rgba, W, H, opts = {}) {
   // reads worse than no crease at all. Same units as `detail` (luminance).
   const foldField = new Float32Array(N);
   for (let p = 0; p < N; p++) {
-    foldField[p] = isBg[p] ? 0 : detail[p] + drape[p] * drapeFade[p] * drapeAmp * litRef;
+    foldField[p] = isBg[p]
+      ? 0
+      : detail[p] * foldPhotoWeight + drape[p] * drapeFade[p] * drapeAmp * litRef;
   }
   const detailSmooth = boxBlurMasked(foldField, W, H, isBg, 8, 2);
   const dx = new Float32Array(N);
