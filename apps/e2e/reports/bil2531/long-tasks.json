@@ -1,351 +1,281 @@
 {
   "hose-default-r1": {
     "url": "https://bilulu.de/konfigurator/hose",
-    "fetchTime": "2026-08-19T21:06:33.566Z",
+    "fetchTime": "2026-08-19T21:24:01.240Z",
     "longTasks": [
       {
-        "start": 872,
-        "dur": 408,
+        "start": 836,
+        "dur": 351,
         "url": "https://bilulu.de/konfigurator/hose"
       },
       {
-        "start": 2593,
-        "dur": 267,
+        "start": 1280,
+        "dur": 243,
+        "url": "https://bilulu.de/konfigurator/hose"
+      },
+      {
+        "start": 2583,
+        "dur": 191,
         "url": "https://bilulu.de/_next/static/chunks/6be5ad14-6313add234990526.js"
       },
       {
-        "start": 1576,
-        "dur": 197,
-        "url": "https://bilulu.de/konfigurator/hose"
-      },
-      {
-        "start": 3259,
-        "dur": 191,
+        "start": 3053,
+        "dur": 146,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       },
       {
-        "start": 1412,
-        "dur": 137,
-        "url": "https://bilulu.de/konfigurator/hose"
-      },
-      {
-        "start": 702,
-        "dur": 100,
+        "start": 691,
+        "dur": 82,
         "url": "Unattributable"
       },
       {
-        "start": 1294,
-        "dur": 96,
-        "url": "https://bilulu.de/konfigurator/hose"
-      },
-      {
-        "start": 3450,
-        "dur": 68,
+        "start": 3199,
+        "dur": 52,
         "url": "https://bilulu.de/_next/static/chunks/927-e175ae45c51d5aa9.js"
-      },
-      {
-        "start": 3530,
-        "dur": 63,
-        "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
-      },
-      {
-        "start": 2987,
-        "dur": 55,
-        "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       }
     ]
   },
   "hose-stoff-r1": {
     "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage",
-    "fetchTime": "2026-08-19T21:07:02.139Z",
+    "fetchTime": "2026-08-19T21:24:27.493Z",
     "longTasks": [
       {
-        "start": 849,
-        "dur": 406,
+        "start": 840,
+        "dur": 449,
         "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage"
       },
       {
-        "start": 1530,
-        "dur": 284,
+        "start": 1526,
+        "dur": 259,
         "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage"
       },
       {
-        "start": 2859,
-        "dur": 244,
+        "start": 2838,
+        "dur": 236,
         "url": "https://bilulu.de/_next/static/chunks/6be5ad14-6313add234990526.js"
       },
       {
-        "start": 3516,
-        "dur": 204,
+        "start": 3462,
+        "dur": 171,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       },
       {
-        "start": 1270,
-        "dur": 130,
+        "start": 1303,
+        "dur": 109,
         "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage"
       },
       {
-        "start": 5800,
-        "dur": 116,
+        "start": 664,
+        "dur": 107,
         "url": "Unattributable"
       },
       {
-        "start": 669,
-        "dur": 106,
-        "url": "Unattributable"
-      },
-      {
-        "start": 5965,
-        "dur": 86,
-        "url": "Unattributable"
-      },
-      {
-        "start": 6715,
-        "dur": 80,
-        "url": "Unattributable"
-      },
-      {
-        "start": 1424,
-        "dur": 79,
+        "start": 1439,
+        "dur": 64,
         "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage"
       },
       {
-        "start": 3720,
-        "dur": 77,
+        "start": 3633,
+        "dur": 61,
         "url": "https://bilulu.de/_next/static/chunks/927-e175ae45c51d5aa9.js"
-      },
-      {
-        "start": 3813,
-        "dur": 59,
-        "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
-      },
-      {
-        "start": 3247,
-        "dur": 54,
-        "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       }
     ]
   },
   "turban-uni-r1": {
     "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream",
-    "fetchTime": "2026-08-19T21:07:32.157Z",
+    "fetchTime": "2026-08-19T21:24:56.108Z",
     "longTasks": [
       {
-        "start": 897,
-        "dur": 561,
+        "start": 886,
+        "dur": 490,
         "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream"
       },
       {
-        "start": 3296,
-        "dur": 270,
+        "start": 3183,
+        "dur": 235,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       },
       {
-        "start": 1475,
-        "dur": 268,
+        "start": 1467,
+        "dur": 226,
         "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream"
       },
       {
-        "start": 2611,
-        "dur": 268,
+        "start": 2629,
+        "dur": 225,
         "url": "https://bilulu.de/_next/static/chunks/6be5ad14-6313add234990526.js"
       },
       {
-        "start": 3566,
-        "dur": 160,
-        "url": "https://bilulu.de/_next/static/chunks/927-e175ae45c51d5aa9.js"
-      },
-      {
-        "start": 1809,
-        "dur": 143,
+        "start": 1726,
+        "dur": 150,
         "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream"
       },
       {
-        "start": 678,
-        "dur": 128,
+        "start": 3418,
+        "dur": 137,
+        "url": "https://bilulu.de/_next/static/chunks/927-e175ae45c51d5aa9.js"
+      },
+      {
+        "start": 722,
+        "dur": 91,
         "url": "Unattributable"
       },
       {
-        "start": 3022,
-        "dur": 58,
+        "start": 3574,
+        "dur": 61,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       },
       {
-        "start": 3751,
-        "dur": 55,
-        "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
+        "start": 1394,
+        "dur": 50,
+        "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream"
       }
     ]
   },
   "hose-default-r2": {
     "url": "https://bilulu.de/konfigurator/hose",
-    "fetchTime": "2026-08-19T21:08:03.533Z",
+    "fetchTime": "2026-08-19T21:25:24.424Z",
     "longTasks": [
       {
-        "start": 844,
-        "dur": 415,
+        "start": 868,
+        "dur": 417,
         "url": "https://bilulu.de/konfigurator/hose"
       },
       {
-        "start": 2588,
-        "dur": 269,
+        "start": 1396,
+        "dur": 254,
+        "url": "https://bilulu.de/konfigurator/hose"
+      },
+      {
+        "start": 2605,
+        "dur": 241,
         "url": "https://bilulu.de/_next/static/chunks/6be5ad14-6313add234990526.js"
       },
       {
-        "start": 1576,
-        "dur": 214,
-        "url": "https://bilulu.de/konfigurator/hose"
-      },
-      {
-        "start": 3268,
-        "dur": 194,
+        "start": 3225,
+        "dur": 177,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       },
       {
-        "start": 1398,
-        "dur": 142,
-        "url": "https://bilulu.de/konfigurator/hose"
-      },
-      {
-        "start": 664,
-        "dur": 106,
+        "start": 698,
+        "dur": 99,
         "url": "Unattributable"
       },
       {
-        "start": 1273,
-        "dur": 102,
+        "start": 1299,
+        "dur": 78,
         "url": "https://bilulu.de/konfigurator/hose"
       },
       {
-        "start": 3463,
-        "dur": 69,
+        "start": 1685,
+        "dur": 74,
+        "url": "https://bilulu.de/konfigurator/hose"
+      },
+      {
+        "start": 3402,
+        "dur": 64,
         "url": "https://bilulu.de/_next/static/chunks/927-e175ae45c51d5aa9.js"
       },
       {
-        "start": 3554,
-        "dur": 61,
+        "start": 3472,
+        "dur": 60,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       },
       {
-        "start": 2996,
-        "dur": 58,
+        "start": 2969,
+        "dur": 53,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       }
     ]
   },
   "hose-stoff-r2": {
     "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage",
-    "fetchTime": "2026-08-19T21:08:31.969Z",
+    "fetchTime": "2026-08-19T21:25:52.607Z",
     "longTasks": [
       {
-        "start": 843,
-        "dur": 287,
+        "start": 846,
+        "dur": 353,
         "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage"
       },
       {
-        "start": 2791,
-        "dur": 220,
+        "start": 1336,
+        "dur": 307,
+        "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage"
+      },
+      {
+        "start": 2854,
+        "dur": 218,
         "url": "https://bilulu.de/_next/static/chunks/6be5ad14-6313add234990526.js"
       },
       {
-        "start": 3404,
-        "dur": 190,
+        "start": 3427,
+        "dur": 144,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       },
       {
-        "start": 1146,
-        "dur": 166,
+        "start": 1212,
+        "dur": 110,
         "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage"
       },
       {
-        "start": 717,
-        "dur": 111,
-        "url": "https://bilulu.de/konfigurator/hose?hose=stoff-15&bund=sage"
-      },
-      {
-        "start": 5664,
-        "dur": 103,
+        "start": 679,
+        "dur": 104,
         "url": "Unattributable"
-      },
-      {
-        "start": 6553,
-        "dur": 81,
-        "url": "Unattributable"
-      },
-      {
-        "start": 5808,
-        "dur": 75,
-        "url": "Unattributable"
-      },
-      {
-        "start": 3594,
-        "dur": 66,
-        "url": "https://bilulu.de/_next/static/chunks/927-e175ae45c51d5aa9.js"
-      },
-      {
-        "start": 3145,
-        "dur": 51,
-        "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
-      },
-      {
-        "start": 3675,
-        "dur": 50,
-        "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       }
     ]
   },
   "turban-uni-r2": {
     "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream",
-    "fetchTime": "2026-08-19T21:09:01.271Z",
+    "fetchTime": "2026-08-19T21:26:22.956Z",
     "longTasks": [
       {
-        "start": 834,
-        "dur": 438,
+        "start": 971,
+        "dur": 503,
         "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream"
       },
       {
-        "start": 3218,
-        "dur": 286,
+        "start": 3297,
+        "dur": 237,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       },
       {
-        "start": 2569,
-        "dur": 256,
+        "start": 2713,
+        "dur": 237,
         "url": "https://bilulu.de/_next/static/chunks/6be5ad14-6313add234990526.js"
       },
       {
-        "start": 1382,
-        "dur": 245,
+        "start": 1789,
+        "dur": 182,
         "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream"
       },
       {
-        "start": 3504,
-        "dur": 170,
+        "start": 1595,
+        "dur": 165,
+        "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream"
+      },
+      {
+        "start": 3535,
+        "dur": 145,
         "url": "https://bilulu.de/_next/static/chunks/927-e175ae45c51d5aa9.js"
       },
       {
-        "start": 1661,
-        "dur": 162,
-        "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream"
-      },
-      {
-        "start": 674,
-        "dur": 94,
+        "start": 815,
+        "dur": 90,
         "url": "Unattributable"
       },
       {
-        "start": 1287,
-        "dur": 77,
+        "start": 1494,
+        "dur": 78,
         "url": "https://bilulu.de/konfigurator/turban?turban=sage&schleife=cream"
       },
       {
-        "start": 3701,
-        "dur": 65,
+        "start": 3066,
+        "dur": 59,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       },
       {
-        "start": 2964,
-        "dur": 55,
+        "start": 3698,
+        "dur": 58,
         "url": "https://bilulu.de/_next/static/chunks/129-5f055ce3ce876eb3.js"
       }
     ]
