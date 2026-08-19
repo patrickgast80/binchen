@@ -445,7 +445,25 @@ rein additiv (nur Kommentare/Issues/Attachments).
 
 ## PayPal Live-Cutover (BIL-2482)
 
-Der PayPal-Button ist seit 2026-08-14 im Shop sichtbar, läuft aber mit
+> **Stand 2026-08-19 (BIL-2525, Board-Entscheidung B):** Der PayPal-Button ist
+> **ausgeblendet**. `NEXT_PUBLIC_PAYPAL_CLIENT_ID` wurde in Coolify
+> (Storefront-App `f12ixtdb`, prod- **und** preview-Env) gelöscht; leere
+> Client-ID ⇒ `paypalReady=false` in
+> `apps/storefront/src/app/checkout/payment/page.tsx` ⇒ kein SDK-Tag, kein
+> Button. Vorkasse ist unberührt. Backend-Env (`PAYPAL_*`) ist absichtlich
+> **nicht** angefasst.
+>
+> **Reaktivierung (Sandbox-Stand):** Wert steht in
+> `infra/.vault/paypal-sandbox.env` → `NEXT_PUBLIC_PAYPAL_CLIENT_ID`. In
+> Coolify als Env der Storefront-App wieder anlegen (nur diese eine Variable —
+> über build-time.env haben wir uns schon einmal `NODE_ENV=production` und
+> damit einen kaputten Build eingefangen; nichts anderes ändern), Redeploy
+> (echter Rebuild nötig,
+> `NEXT_PUBLIC_*` wird zur Build-Zeit inlined), dann
+> `node apps/e2e/scripts/bil2525-paypal-hidden.mjs --expect-present` (echter
+> Cart, misst SDK-Tag + Button). **Für Live statt Sandbox:** Playbook unten.
+
+Der PayPal-Button war seit 2026-08-14 im Shop sichtbar, lief aber mit
 **Sandbox**-Credentials. Eine echte Kundin landet im Sandbox-Login und kommt nicht
 durch; Vorkasse/Überweisung daneben ist unberührt und grün. PayPal-Event-Log:
 0 Events — es hat real noch nie jemand bezahlt.
