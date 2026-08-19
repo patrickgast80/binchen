@@ -1,0 +1,15 @@
+{
+ "url": "http://127.0.0.1:3142/konfigurator/turban?turban=sage&schleife=cream",
+ "paints": [
+  {
+   "name": "first-paint",
+   "t": 1204
+  },
+  {
+   "name": "first-contentful-paint",
+   "t": 1204
+  }
+ ],
+ "cls": 0,
+ "shifts": []
+}

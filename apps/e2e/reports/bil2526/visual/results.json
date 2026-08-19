@@ -1,0 +1,181 @@
+{
+ "rows": [
+  {
+   "page": "turban",
+   "viewport": "mobile",
+   "build": "base",
+   "links": 1,
+   "styles": 0,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "085179a53bbc",
+   "erstframeMd5": "085179a53bbc"
+  },
+  {
+   "page": "home",
+   "viewport": "mobile",
+   "build": "base",
+   "links": 1,
+   "styles": 0,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "547a56f9ba9b",
+   "erstframeMd5": "547a56f9ba9b"
+  },
+  {
+   "page": "catalog",
+   "viewport": "mobile",
+   "build": "base",
+   "links": 1,
+   "styles": 0,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "271a69dbcac6",
+   "erstframeMd5": "271a69dbcac6"
+  },
+  {
+   "page": "checkout",
+   "viewport": "mobile",
+   "build": "base",
+   "links": 1,
+   "styles": 0,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "0a7bb719b223",
+   "erstframeMd5": "0a7bb719b223"
+  },
+  {
+   "page": "turban",
+   "viewport": "mobile",
+   "build": "inline",
+   "links": 0,
+   "styles": 1,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "085179a53bbc",
+   "erstframeMd5": "085179a53bbc"
+  },
+  {
+   "page": "home",
+   "viewport": "mobile",
+   "build": "inline",
+   "links": 0,
+   "styles": 1,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "547a56f9ba9b",
+   "erstframeMd5": "547a56f9ba9b"
+  },
+  {
+   "page": "catalog",
+   "viewport": "mobile",
+   "build": "inline",
+   "links": 0,
+   "styles": 1,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "271a69dbcac6",
+   "erstframeMd5": "271a69dbcac6"
+  },
+  {
+   "page": "checkout",
+   "viewport": "mobile",
+   "build": "inline",
+   "links": 0,
+   "styles": 1,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "0a7bb719b223",
+   "erstframeMd5": "0a7bb719b223"
+  },
+  {
+   "page": "turban",
+   "viewport": "desktop",
+   "build": "base",
+   "links": 1,
+   "styles": 0,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "eeab419da573",
+   "erstframeMd5": "eeab419da573"
+  },
+  {
+   "page": "home",
+   "viewport": "desktop",
+   "build": "base",
+   "links": 1,
+   "styles": 0,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "45140dfe1b4b",
+   "erstframeMd5": "45140dfe1b4b"
+  },
+  {
+   "page": "catalog",
+   "viewport": "desktop",
+   "build": "base",
+   "links": 1,
+   "styles": 0,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "f92927bac004",
+   "erstframeMd5": "1ad977f54627"
+  },
+  {
+   "page": "checkout",
+   "viewport": "desktop",
+   "build": "base",
+   "links": 1,
+   "styles": 0,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "6fe02fa74f0d",
+   "erstframeMd5": "6fe02fa74f0d"
+  },
+  {
+   "page": "turban",
+   "viewport": "desktop",
+   "build": "inline",
+   "links": 0,
+   "styles": 1,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "eeab419da573",
+   "erstframeMd5": "eeab419da573"
+  },
+  {
+   "page": "home",
+   "viewport": "desktop",
+   "build": "inline",
+   "links": 0,
+   "styles": 1,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "45140dfe1b4b",
+   "erstframeMd5": "45140dfe1b4b"
+  },
+  {
+   "page": "catalog",
+   "viewport": "desktop",
+   "build": "inline",
+   "links": 0,
+   "styles": 1,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "f92927bac004",
+   "erstframeMd5": "1ad977f54627"
+  },
+  {
+   "page": "checkout",
+   "viewport": "desktop",
+   "build": "inline",
+   "links": 0,
+   "styles": 1,
+   "bg": "rgb(250, 247, 242)",
+   "banner": 3,
+   "md5": "6fe02fa74f0d",
+   "erstframeMd5": "6fe02fa74f0d"
+  }
+ ],
+ "mismatches": 0
+}
