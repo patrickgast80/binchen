@@ -28,11 +28,41 @@ const { chromium } = await import(
   new URL("../../e2e/node_modules/@playwright/test/index.mjs", import.meta.url).href
 );
 
-const CASES = [
-  { tag: "stoff-04-mustard", query: "hose=stoff-04&bund=mustard&buendchen=mustard" },
-  { tag: "stoff-15-sage", query: "hose=stoff-15&bund=sage&buendchen=sage" },
-  { tag: "stoff-20-petrol-rot90", query: "hose=stoff-20&bund=petrol&buendchen=petrol&rot=90" },
-];
+/**
+ * Two fabrics plus a quarter-turn per Konfigurator — the acceptance criteria
+ * ask for at least two different fabrics on desktop and at 390px. The zone
+ * parameter names differ per piece, so they cannot be shared.
+ */
+const CASES_BY_KONFIG = {
+  hose: [
+    { tag: "stoff-04-mustard", query: "hose=stoff-04&bund=mustard&buendchen=mustard" },
+    { tag: "stoff-15-sage", query: "hose=stoff-15&bund=sage&buendchen=sage" },
+    { tag: "stoff-20-petrol-rot90", query: "hose=stoff-20&bund=petrol&buendchen=petrol&rot=90" },
+  ],
+  "hose-kurz": [
+    { tag: "stoff-04-mustard", query: "hose=stoff-04&bund=mustard&buendchen=mustard" },
+    { tag: "stoff-15-sage", query: "hose=stoff-15&bund=sage&buendchen=sage" },
+    { tag: "stoff-20-petrol-rot90", query: "hose=stoff-20&bund=petrol&buendchen=petrol&rot=90" },
+  ],
+  muetze: [
+    { tag: "stoff-04-mustard", query: "muetze=stoff-04&futter=mustard" },
+    { tag: "stoff-15-sage", query: "muetze=stoff-15&futter=sage" },
+    { tag: "stoff-20-petrol-rot90", query: "muetze=stoff-20&futter=petrol&rot=90" },
+  ],
+  turban: [
+    { tag: "stoff-04-mustard", query: "turban=stoff-04&schleife=mustard" },
+    { tag: "stoff-15-sage", query: "turban=stoff-15&schleife=sage" },
+    { tag: "stoff-20-petrol-rot90", query: "turban=stoff-20&schleife=petrol&rot=90" },
+  ],
+  dreieckstuch: [
+    { tag: "stoff-04", query: "tuch=stoff-04" },
+    { tag: "stoff-15", query: "tuch=stoff-15" },
+    { tag: "stoff-20-rot90", query: "tuch=stoff-20&rot=90" },
+  ],
+};
+
+const CASES = CASES_BY_KONFIG[KONFIG];
+if (!CASES) throw new Error(`no shot cases for konfigurator ${KONFIG}`);
 const VIEWPORTS = [
   { name: "desktop", width: 1440, height: 1000 },
   { name: "mobile", width: 390, height: 844 },
@@ -114,15 +144,43 @@ async function shoot(ctx, url, file, { waitForCanvas, blockRelief = false }) {
   return md5(await readFile(file));
 }
 
+/**
+ * At 390x844 the sticky mobile palette sheet owns the bottom 503px, so only
+ * ~241px of usable band is left above it. The Mütze preview is 301px tall and
+ * the Turban 272px — they genuinely cannot be shown whole on that viewport, and
+ * no amount of scrolling changes that. (The Dreieckstuch fits by 4px, which is
+ * close enough to the edge to flip between runs.)
+ *
+ * Rather than crop the garment or screenshot the palette, those cases are
+ * retaken at the SAME 390px width on a taller viewport — the mobile layout is
+ * identical, only more of it is visible at once. Recorded per shot in
+ * shots.json so nobody has to take that on trust.
+ */
+const TALL = 1400;
+
 for (const vp of VIEWPORTS) {
   for (const c of CASES) {
     const url = `${BASE}/konfigurator/${KONFIG}?${c.query}`;
 
-    const ctx = await newContext(vp);
+    let used = vp;
+    let ctx = await newContext(used);
     const f1 = path.join(OUT, `${KONFIG}-${c.tag}-${vp.name}.png`);
     const f2 = path.join(OUT, `.jitter-${KONFIG}-${c.tag}-${vp.name}.png`);
-    const h1 = await shoot(ctx, url, f1, { waitForCanvas: true });
-    const h2 = await shoot(ctx, url, f2, { waitForCanvas: true });
+    let h1;
+    let h2;
+    try {
+      h1 = await shoot(ctx, url, f1, { waitForCanvas: true });
+      h2 = await shoot(ctx, url, f2, { waitForCanvas: true });
+    } catch (err) {
+      if (!/under the sticky sheet/.test(err.message)) throw err;
+      await ctx.close();
+      used = { ...vp, height: TALL };
+      ctx = await newContext(used);
+      console.log(`      ${c.tag}: preview does not fit above the palette sheet at ` +
+        `${vp.width}x${vp.height} — retaken at ${vp.width}x${TALL}`);
+      h1 = await shoot(ctx, url, f1, { waitForCanvas: true });
+      h2 = await shoot(ctx, url, f2, { waitForCanvas: true });
+    }
 
     // Fallback: block the relief map. That drives the real error path — decode
     // fails, the layer reports not-ready, and the CSS multiply zones stay
@@ -135,6 +193,8 @@ for (const vp of VIEWPORTS) {
     results.push({
       url,
       viewport: vp.name,
+      viewportPx: `${used.width}x${used.height}`,
+      retakenTaller: used.height !== vp.height,
       shot: path.basename(f1),
       jitterIdentical: h1 === h2,
       md5: h1,

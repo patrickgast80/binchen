@@ -39,6 +39,22 @@ const REFERENCE = {
   dreieckstuch: "scripts/sources/dreieckstuch-zoo-01.jpeg",
 };
 
+/**
+ * The zone that carries the chosen fabric on each piece.
+ *
+ * Explicit, because the obvious heuristic is wrong: "the second zone" picks
+ * `hose` correctly on both trousers but lands on the Mütze's *Futter* and the
+ * Turban's *Schleife* — so a whole set of evidence sheets showed the print on
+ * the lining and the bow while the garment itself stayed a flat uni colour.
+ */
+const MAIN_ZONE = {
+  hose: "hose",
+  "hose-kurz": "hose",
+  muetze: "muetze",
+  turban: "turban",
+  dreieckstuch: "tuch",
+};
+
 const escapeXml = (s) => s.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
 
 async function labelPng(text, w) {
@@ -122,13 +138,11 @@ if (process.argv[1]?.endsWith("bil2522-evidence.mjs")) {
   await mkdir(outDir, { recursive: true });
 
   const k = KONFIGS[konfigId];
-  const main = k.zones[k.zones.length === 1 ? 0 : 1] ?? k.zones[0];
-  const trim = k.zones[0] === main ? null : k.zones[0];
-  const trim2 = k.zones[2] ?? null;
+  const main = MAIN_ZONE[konfigId];
+  if (!main) throw new Error(`no main zone mapped for ${konfigId}`);
   const mk = (fabric, uni) => {
     const p = { [main]: fabric };
-    if (trim) p[trim] = uni;
-    if (trim2) p[trim2] = uni;
+    for (const z of k.zones) if (z !== main) p[z] = uni;
     return p;
   };
 
