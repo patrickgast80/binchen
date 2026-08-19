@@ -1,0 +1,50 @@
+[
+  {
+    "route": "hose",
+    "round": 1,
+    "cls": 0,
+    "perf": 74,
+    "tbt": 1258,
+    "culprit": ""
+  },
+  {
+    "route": "turban",
+    "round": 1,
+    "cls": 0,
+    "perf": 75,
+    "tbt": 953,
+    "culprit": ""
+  },
+  {
+    "route": "hose",
+    "round": 2,
+    "cls": 0,
+    "perf": 71,
+    "tbt": 1787,
+    "culprit": ""
+  },
+  {
+    "route": "turban",
+    "round": 2,
+    "cls": 0,
+    "perf": 71,
+    "tbt": 1339,
+    "culprit": ""
+  },
+  {
+    "route": "hose",
+    "round": 3,
+    "cls": 0,
+    "perf": 73,
+    "tbt": 1478,
+    "culprit": ""
+  },
+  {
+    "route": "turban",
+    "round": 3,
+    "cls": 0,
+    "perf": 75,
+    "tbt": 921,
+    "culprit": ""
+  }
+]
