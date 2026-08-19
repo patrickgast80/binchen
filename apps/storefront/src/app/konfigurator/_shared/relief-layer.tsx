@@ -104,6 +104,37 @@ async function loadTile(src: string, rotation: number, px: number) {
   return tile;
 }
 
+/**
+ * Height of one paint band, in rows.
+ *
+ * Painting a whole zone in one call is ~1.9s of unbroken main thread on a
+ * throttled mobile CPU — measured on the live Turban page against the same URL
+ * with a uni colour (where this layer paints nothing): total blocking time went
+ * 350ms -> 2210ms and Lighthouse performance 70 -> 50. The work itself is not
+ * the problem, its granularity is: Lighthouse counts everything a task spends
+ * beyond 50ms, so one 1.9s task is ~1.85s of blocking while forty 48ms tasks
+ * are none.
+ *
+ * 48 rows is ~40k pixels — comfortably under 50ms on the throttled profile with
+ * room to spare on slower hardware, and small enough that input stays
+ * responsive while the preview fills in.
+ */
+const BAND_ROWS = 48;
+
+/** Yield to the event loop so the browser can paint and handle input. */
+function yieldToBrowser() {
+  return new Promise((resolve) => {
+    // A message-channel tick is a macrotask, so it genuinely ends the current
+    // task; a resolved Promise would only queue a microtask and keep blocking.
+    const ch = new MessageChannel();
+    ch.port1.onmessage = () => {
+      ch.port1.close();
+      resolve(undefined);
+    };
+    ch.port2.postMessage(null);
+  });
+}
+
 /** Run `fn` once the browser is idle, without blocking first paint. */
 function whenIdle(fn: () => void): () => void {
   const w = window as Window & {
@@ -190,15 +221,21 @@ export function ReliefFabricLayer({
               tilePx(width, grain),
             );
             if (cancelled) return;
-            paintReliefZone(
-              layer.data,
-              relief.data,
-              maskAlpha,
-              tile,
-              width,
-              height,
-              grain,
-            );
+            for (let y = 0; y < height; y += BAND_ROWS) {
+              paintReliefZone(
+                layer.data,
+                relief.data,
+                maskAlpha,
+                tile,
+                width,
+                height,
+                grain,
+                y,
+                Math.min(height, y + BAND_ROWS),
+              );
+              await yieldToBrowser();
+              if (cancelled) return;
+            }
           }
           if (cancelled) return;
           const ctx = canvas.getContext("2d");

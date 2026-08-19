@@ -284,7 +284,7 @@ export function buildTile(src, sw, sh, stride, px, rotation) {
  * @param {ArrayLike<number>} maskAlpha  W*H alpha, 0..255
  * @param {{data: ArrayLike<number>, TW: number, TH: number, stride: number}} tile
  */
-export function paintReliefZone(dst, relief, maskAlpha, tile, W, H, grain) {
+export function paintReliefZone(dst, relief, maskAlpha, tile, W, H, grain, y0 = 0, y1 = H) {
   const { data, TW, TH, stride } = tile;
   // `background-position: center` in the shipped stack; the grain offset then
   // slides this zone's panel off the shared grid.
@@ -292,7 +292,11 @@ export function paintReliefZone(dst, relief, maskAlpha, tile, W, H, grain) {
   const offY = (H - TH) / 2 - grain.oy * TH;
   const smp = [0, 0, 0];
   const shaded = [0, 0, 0];
-  for (let p = 0; p < W * H; p++) {
+  // `y0`/`y1` let the browser paint the zone in horizontal bands and yield in
+  // between. Every pixel is independent here, so a band is exactly the same
+  // work as the full pass — no seams, and Node still calls it once for the
+  // whole image.
+  for (let p = y0 * W, end = y1 * W; p < end; p++) {
     const a = maskAlpha[p] / 255;
     if (a <= 0) continue;
     const x = p % W;
