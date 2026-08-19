@@ -99,29 +99,68 @@ export async function buildFor(konfigId, { debug = false, opts = {} } = {}) {
 
   const { relief, stats } = buildRelief(data, W, H, { ...(RELIEF_OPTS[konfigId] ?? {}), ...opts });
   const outFile = path.join(dir, "relief.webp");
+
+  // Flatten alpha to opaque before encoding. This is a correctness fix, not a
+  // size tweak, and it costs ~1% more bytes.
+  //
+  // buildRelief carries the garment silhouette in A, but relief-math never
+  // reads it: paintReliefZone takes R/G/B at pixel p and gates on the ZONE
+  // mask. So A was decoration — except libwebp defaults to `exact = 0`, which
+  // licenses it to rewrite the RGB of fully transparent pixels into whatever
+  // compresses best. Those pixels are not unused: the zone masks are feathered
+  // and their outermost ring reaches past the silhouette, so up to 3276 painted
+  // pixels per garment (hose 3276, turban 2489, dreieckstuch 2276, muetze 603,
+  // hose-kurz 0) were taking displacement and shade from encoder filler — as
+  // much as +-36px of warp, on the silhouette edge of all places.
+  //
+  // Measured against the UNENCODED buffer with bil2522-relief-encode-sweep,
+  // rendered through the shipped maths with a dense print (mean |D| per painted
+  // px): hose 3.165 -> 2.389, turban 4.073 -> 3.465, dreieckstuch 2.095 ->
+  // 1.007, muetze 2.981 -> 2.833. hose-kurz is the control — it has no such
+  // pixels and does not move (1.778 -> 1.779).
+  //
+  // Under `lossless` the round trip is then exactly 0 everywhere, where before
+  // it was 0 at every opaque pixel and up to 255 at every transparent one. The
+  // guard below therefore checks EVERY pixel; skipping the transparent ones is
+  // what let this sit here since the map was introduced.
+  for (let p = 0; p < W * H; p++) relief[p * 4 + 3] = 255;
+
   // Near-lossless, not lossy: R/G are texture coordinates and ordinary webp
   // chroma subsampling turns a smooth warp field into blocky tearing. At q60
   // the round trip costs at most 2/255 per channel (0.57px of displacement),
   // saves ~21% over strict lossless, and the renderer's procedural grain
   // dithers away any banding the encoder leaves in the shade channel.
   // Asserted below rather than assumed.
+  //
+  // Going further down is not on the table, and that is measured too: q10 buys
+  // 16% for 4.5px of warp error, and lossy q95 buys 70% for 17px — a print that
+  // tears off the fold it is supposed to follow.
   await sharp(relief, { raw: { width: W, height: H, channels: 4 } })
     .webp({ nearLossless: true, quality: 60, effort: 6 })
     .toFile(outFile);
 
   const decoded = await sharp(outFile).ensureAlpha().raw().toBuffer();
   let maxErr = 0;
+  let maxAlphaErr = 0;
   for (let p = 0; p < W * H; p++) {
-    if (relief[p * 4 + 3] === 0) continue;
     for (let c = 0; c < 3; c++) {
       const d = Math.abs(decoded[p * 4 + c] - relief[p * 4 + c]);
       if (d > maxErr) maxErr = d;
     }
+    const a = 255 - decoded[p * 4 + 3];
+    if (a > maxAlphaErr) maxAlphaErr = a;
   }
   if (maxErr > 2) {
     throw new Error(
       `${konfigId}: relief.webp round-trips with max |Δ|=${maxErr}/255 — the encoder is ` +
       `mangling the displacement field, drop back to { lossless: true }`,
+    );
+  }
+  if (maxAlphaErr > 0) {
+    throw new Error(
+      `${konfigId}: relief.webp came back with alpha < 255 (max drop ${maxAlphaErr}) — a ` +
+      `transparent relief pixel is one libwebp may fill with garbage, and the browser's ` +
+      `canvas would un-premultiply its RGB on top of that`,
     );
   }
   const { size } = await stat(outFile);
