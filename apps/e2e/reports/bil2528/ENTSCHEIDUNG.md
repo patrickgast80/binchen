@@ -130,7 +130,7 @@ Board-Direktive vom 19.08. gerichtet ist.
 Eindruck, und sie zielt auf die Malschleife, die gemessen **null** Long Tasks
 erzeugt. Weniger zu malen macht die drei Blöcke nicht kürzer.
 
-**Stattdessen abgegeben (BIL-2530, Frontend):** die vier ungeschnittenen
+**Stattdessen abgegeben (BIL-2531, Frontend):** die vier ungeschnittenen
 Schritte scheiben. Erwartung, direkt aus der Tabelle oben: keine Long Tasks nach
 ~3,5 s mehr, also **TTI von 6,98/8,27 s auf das `hose-default`-Niveau von
 ~3,6 s**, TBT −400 ms, Score des Deep-Links vom 73–75er ins 79–82er Band. Am
