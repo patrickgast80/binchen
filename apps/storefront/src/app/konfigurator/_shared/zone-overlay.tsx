@@ -24,6 +24,13 @@ interface ZoneOverlayProps {
    * never rotate unchanged.
    */
   ratio?: number;
+  /**
+   * Set once the BIL-2522 relief layer has painted this zone. The overlay
+   * stays mounted and merely stops drawing, so a relief failure at any later
+   * point (a new fabric whose texture fails to decode) falls straight back to
+   * this layer instead of leaving a hole in the garment.
+   */
+  hidden?: boolean;
 }
 
 /**
@@ -47,12 +54,13 @@ const TILE_PERCENT = 42;
  * size` is a percentage of that box, so the swapped case rescales by `ratio`
  * to keep the on-screen tile the same size in every orientation.
  */
-export function ZoneOverlay({ src, paint, ratio = 1 }: ZoneOverlayProps) {
+export function ZoneOverlay({ src, paint, ratio = 1, hidden = false }: ZoneOverlayProps) {
   const style: React.CSSProperties & Record<string, string | number> = {
     position: "absolute",
     inset: 0,
     backgroundColor: paint.hex,
     mixBlendMode: "multiply",
+    ...(hidden ? { visibility: "hidden" as const } : null),
     pointerEvents: "none",
     maskImage: `url(${src})`,
     WebkitMaskImage: `url(${src})`,

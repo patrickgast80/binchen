@@ -1,6 +1,9 @@
+"use client";
+
 import * as React from "react";
 
 import { LabelOverlay, SheenOverlay, ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
+import { ReliefFabricLayer, useReliefTakeover } from "../_shared/relief-layer";
 
 export interface ShortsPhotoPaints {
   bund: ZonePaint;
@@ -25,7 +28,14 @@ interface ShortsPhotoProps {
  * (Board-Auflage). Die Zonenmasken sparen das Schildchen ohnehin mit 3px Rand
  * aus — diese Ebene macht die Zusage unabhängig von den Masken.
  *
- * Assets: scripts/bil2499-build-dinoshorts-assets.mjs → /konfigurator/hose-kurz-foto/.
+ * BIL-2522 — auf einen gewählten Stoff kommt zusätzlich die Relief-Ebene, damit
+ * das Muster der Faltengeometrie folgt und um die Ballonbeine rollt, statt als
+ * flache Kachel darüberzuliegen. Sie liegt über dem Sheen und unter dem
+ * Schildchen: das Schildchen bleibt damit auch hier die oberste Ebene und in
+ * jeder Stoffkombination unverändert (Board-Auflage aus BIL-2499).
+ *
+ * Assets: scripts/bil2499-build-dinoshorts-assets.mjs → /konfigurator/hose-kurz-foto/,
+ * relief.webp aus scripts/bil2522-build-relief.mjs.
  */
 const ASSET_BASE = "/konfigurator/hose-kurz-foto";
 // Muss der realen Assetgröße folgen (siehe registry.ts) — sonst driften die
@@ -33,11 +43,28 @@ const ASSET_BASE = "/konfigurator/hose-kurz-foto";
 const ASSET_W = 900;
 const ASSET_H = 750;
 
+const ZONES = [
+  { zone: "bund", mask: `${ASSET_BASE}/mask-bund.webp` },
+  { zone: "hose", mask: `${ASSET_BASE}/mask-hose.webp` },
+  { zone: "buendchen", mask: `${ASSET_BASE}/mask-buendchen.webp` },
+] as const;
+
 export function ShortsPhoto({
   paints,
   title = "Vorschau der kurzen Hose",
   className,
 }: ShortsPhotoProps) {
+  const zoneSpecs = React.useMemo(
+    () =>
+      ZONES.map(({ zone, mask }) => ({
+        zone,
+        maskSrc: mask,
+        paint: paints[zone as keyof ShortsPhotoPaints],
+      })),
+    [paints],
+  );
+  const { takenOver, onReady } = useReliefTakeover(zoneSpecs);
+
   return (
     <div
       role="img"
@@ -70,14 +97,23 @@ export function ShortsPhoto({
           pointerEvents: "none",
         }}
       />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-bund.webp`} paint={paints.bund} ratio={ASSET_W / ASSET_H} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-hose.webp`} paint={paints.hose} ratio={ASSET_W / ASSET_H} />
-      <ZoneOverlay
-        src={`${ASSET_BASE}/mask-buendchen.webp`}
-        paint={paints.buendchen}
-        ratio={ASSET_W / ASSET_H}
-      />
+      {zoneSpecs.map((spec) => (
+        <ZoneOverlay
+          key={spec.zone}
+          src={spec.maskSrc}
+          paint={spec.paint}
+          ratio={ASSET_W / ASSET_H}
+          hidden={takenOver.has(spec.zone)}
+        />
+      ))}
       <SheenOverlay src={`${ASSET_BASE}/highlight.webp`} />
+      <ReliefFabricLayer
+        assetBase={ASSET_BASE}
+        width={ASSET_W}
+        height={ASSET_H}
+        zones={zoneSpecs}
+        onReady={onReady}
+      />
       <LabelOverlay src={`${ASSET_BASE}/label.webp`} />
     </div>
   );

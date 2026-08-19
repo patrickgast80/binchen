@@ -1,6 +1,9 @@
+"use client";
+
 import * as React from "react";
 
 import { ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
+import { ReliefFabricLayer, useReliefTakeover } from "../_shared/relief-layer";
 
 export interface TurbanPhotoPaints {
   turban: ZonePaint;
@@ -23,13 +26,34 @@ interface TurbanPhotoProps {
  *
  * Assets werden von scripts/bil2444-build-turban-assets.mjs aus dem Produktfoto
  * turban-rosen-01.jpeg erzeugt und liegen unter /konfigurator/turban-foto/.
+ *
+ * BIL-2522 — auf einem gewählten Stoff liegt zusätzlich die Relief-Ebene:
+ * die echten, kräftigen Falten dieses Fotos verschieben das Muster, statt es
+ * nur abzudunkeln. Die Schleife bekommt einen eigenen Rapport-Versatz, damit
+ * sie als zugeschnittenes Teil und nicht als Fortsetzung der Mütze liest.
  */
 const ASSET_BASE = "/konfigurator/turban-foto";
 // Kept in sync with the WebP output — locks aspect ratio for CLS ≈ 0.
 const ASSET_W = 900;
 const ASSET_H = 796;
 
+const ZONES = [
+  { zone: "turban", mask: `${ASSET_BASE}/mask-turban.webp` },
+  { zone: "schleife", mask: `${ASSET_BASE}/mask-schleife.webp` },
+] as const;
+
 export function TurbanPhoto({ paints, title = "Turban-Vorschau", className }: TurbanPhotoProps) {
+  const zoneSpecs = React.useMemo(
+    () =>
+      ZONES.map(({ zone, mask }) => ({
+        zone,
+        maskSrc: mask,
+        paint: paints[zone as keyof TurbanPhotoPaints],
+      })),
+    [paints],
+  );
+  const { takenOver, onReady } = useReliefTakeover(zoneSpecs);
+
   return (
     <div
       role="img"
@@ -64,8 +88,22 @@ export function TurbanPhoto({ paints, title = "Turban-Vorschau", className }: Tu
         }}
       />
 
-      <ZoneOverlay src={`${ASSET_BASE}/mask-turban.webp`} paint={paints.turban} ratio={ASSET_W / ASSET_H} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-schleife.webp`} paint={paints.schleife} ratio={ASSET_W / ASSET_H} />
+      {zoneSpecs.map((spec) => (
+        <ZoneOverlay
+          key={spec.zone}
+          src={spec.maskSrc}
+          paint={spec.paint}
+          ratio={ASSET_W / ASSET_H}
+          hidden={takenOver.has(spec.zone)}
+        />
+      ))}
+      <ReliefFabricLayer
+        assetBase={ASSET_BASE}
+        width={ASSET_W}
+        height={ASSET_H}
+        zones={zoneSpecs}
+        onReady={onReady}
+      />
     </div>
   );
 }

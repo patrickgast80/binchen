@@ -1,0 +1,101 @@
+[
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-04&bund=mustard&buendchen=mustard",
+    "jitterBytes": 0,
+    "comparedPixels": 432351,
+    "skippedLabelPixels": 0,
+    "meanChannelDiff": 0.005,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-15&bund=sage&buendchen=sage",
+    "jitterBytes": 0,
+    "comparedPixels": 432351,
+    "skippedLabelPixels": 0,
+    "meanChannelDiff": 0.005,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose?hose=stoff-20&bund=petrol&buendchen=petrol&rot=90",
+    "jitterBytes": 0,
+    "comparedPixels": 432351,
+    "skippedLabelPixels": 0,
+    "meanChannelDiff": 0.005,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose-kurz?hose=stoff-04&bund=mustard&buendchen=mustard",
+    "jitterBytes": 0,
+    "comparedPixels": 316949,
+    "skippedLabelPixels": 14,
+    "meanChannelDiff": 0.002,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/hose-kurz?hose=stoff-20&bund=petrol&buendchen=petrol&rot=90",
+    "jitterBytes": 0,
+    "comparedPixels": 316949,
+    "skippedLabelPixels": 14,
+    "meanChannelDiff": 0.002,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/muetze?muetze=stoff-04&futter=mustard",
+    "jitterBytes": 0,
+    "comparedPixels": 489921,
+    "skippedLabelPixels": 0,
+    "meanChannelDiff": 0.002,
+    "maxChannelDiff": 3,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/muetze?muetze=stoff-20&futter=petrol&rot=90",
+    "jitterBytes": 0,
+    "comparedPixels": 489921,
+    "skippedLabelPixels": 0,
+    "meanChannelDiff": 0.002,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/turban?turban=stoff-15&schleife=sage",
+    "jitterBytes": 0,
+    "comparedPixels": 374518,
+    "skippedLabelPixels": 0,
+    "meanChannelDiff": 0.007,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/turban?turban=stoff-20&schleife=petrol&rot=90",
+    "jitterBytes": 0,
+    "comparedPixels": 374518,
+    "skippedLabelPixels": 0,
+    "meanChannelDiff": 0.009,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/dreieckstuch?tuch=stoff-04",
+    "jitterBytes": 0,
+    "comparedPixels": 202578,
+    "skippedLabelPixels": 0,
+    "meanChannelDiff": 0.016,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/dreieckstuch?tuch=stoff-20&rot=90",
+    "jitterBytes": 0,
+    "comparedPixels": 202578,
+    "skippedLabelPixels": 0,
+    "meanChannelDiff": 0.016,
+    "maxChannelDiff": 4,
+    "verdict": "PASS"
+  }
+]

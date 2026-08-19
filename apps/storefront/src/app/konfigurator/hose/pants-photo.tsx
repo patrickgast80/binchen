@@ -1,6 +1,9 @@
+"use client";
+
 import * as React from "react";
 
 import { SheenOverlay, ZoneOverlay, type ZonePaint } from "../_shared/zone-overlay";
+import { ReliefFabricLayer, useReliefTakeover } from "../_shared/relief-layer";
 
 export interface PantsPhotoPaints {
   bund: ZonePaint;
@@ -22,8 +25,15 @@ interface PantsPhotoProps {
  * `mix-blend-mode: multiply` mit den Graustufen der Basis multipliziert
  * wird. Dadurch bleiben Stofftextur, Faltenwurf und Nähte sichtbar.
  *
+ * BIL-2522 — gewählte Stoffe rendert zusätzlich die Relief-Ebene: das Muster
+ * folgt der Faltengeometrie und reagiert auf Licht. Sie liegt bewusst ÜBER
+ * dem Sheen (der ist ein breiter weißer Screen-Fleck für dunkle Uni-Farben und
+ * würde einen Druck über eine halbe Hose entsättigen) und schaltet die
+ * CSS-Zone erst ab, wenn sie wirklich gemalt hat.
+ *
  * Assets werden von scripts/bil2417-build-assets.mjs aus dem Basisfoto
- * pumphose-05.jpg erzeugt und liegen unter /konfigurator/hose-foto/.
+ * pumphose-05.jpg erzeugt und liegen unter /konfigurator/hose-foto/;
+ * relief.webp kommt aus scripts/bil2522-build-relief.mjs.
  */
 const ASSET_BASE = "/konfigurator/hose-foto";
 const ASSET_W = 900;
@@ -33,7 +43,24 @@ const ASSET_W = 900;
 // disagree and the overlays drift off their zones.
 const ASSET_H = 1006;
 
+const ZONES = [
+  { zone: "bund", mask: `${ASSET_BASE}/mask-bund.webp` },
+  { zone: "hose", mask: `${ASSET_BASE}/mask-hose.webp` },
+  { zone: "buendchen", mask: `${ASSET_BASE}/mask-buendchen.webp` },
+] as const;
+
 export function PantsPhoto({ paints, title = "Hose-Vorschau", className }: PantsPhotoProps) {
+  const zoneSpecs = React.useMemo(
+    () =>
+      ZONES.map(({ zone, mask }) => ({
+        zone,
+        maskSrc: mask,
+        paint: paints[zone as keyof PantsPhotoPaints],
+      })),
+    [paints],
+  );
+  const { takenOver, onReady } = useReliefTakeover(zoneSpecs);
+
   return (
     <div
       role="img"
@@ -68,10 +95,23 @@ export function PantsPhoto({ paints, title = "Hose-Vorschau", className }: Pants
           pointerEvents: "none",
         }}
       />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-bund.webp`} paint={paints.bund} ratio={ASSET_W / ASSET_H} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-hose.webp`} paint={paints.hose} ratio={ASSET_W / ASSET_H} />
-      <ZoneOverlay src={`${ASSET_BASE}/mask-buendchen.webp`} paint={paints.buendchen} ratio={ASSET_W / ASSET_H} />
+      {zoneSpecs.map((spec) => (
+        <ZoneOverlay
+          key={spec.zone}
+          src={spec.maskSrc}
+          paint={spec.paint}
+          ratio={ASSET_W / ASSET_H}
+          hidden={takenOver.has(spec.zone)}
+        />
+      ))}
       <SheenOverlay src={`${ASSET_BASE}/highlight.webp`} />
+      <ReliefFabricLayer
+        assetBase={ASSET_BASE}
+        width={ASSET_W}
+        height={ASSET_H}
+        zones={zoneSpecs}
+        onReady={onReady}
+      />
     </div>
   );
 }

@@ -1,0 +1,68 @@
+[
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/dreieckstuch?tuch=stoff-04",
+    "viewport": "desktop",
+    "viewportPx": "1440x1000",
+    "retakenTaller": false,
+    "shot": "dreieckstuch-stoff-04-desktop.png",
+    "jitterIdentical": true,
+    "md5": "26797315ea37",
+    "fallbackMd5": "6933292e3a19",
+    "fallbackDiffers": true
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/dreieckstuch?tuch=stoff-15",
+    "viewport": "desktop",
+    "viewportPx": "1440x1000",
+    "retakenTaller": false,
+    "shot": "dreieckstuch-stoff-15-desktop.png",
+    "jitterIdentical": true,
+    "md5": "6dae19ab7b59",
+    "fallbackMd5": "7f7234b05515",
+    "fallbackDiffers": true
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/dreieckstuch?tuch=stoff-20&rot=90",
+    "viewport": "desktop",
+    "viewportPx": "1440x1000",
+    "retakenTaller": false,
+    "shot": "dreieckstuch-stoff-20-rot90-desktop.png",
+    "jitterIdentical": true,
+    "md5": "45689b414d0f",
+    "fallbackMd5": "78ced2800bdb",
+    "fallbackDiffers": true
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/dreieckstuch?tuch=stoff-04",
+    "viewport": "mobile",
+    "viewportPx": "390x1400",
+    "retakenTaller": true,
+    "shot": "dreieckstuch-stoff-04-mobile.png",
+    "jitterIdentical": true,
+    "md5": "4ee7c3711c5f",
+    "fallbackMd5": "5b79eed6c3cc",
+    "fallbackDiffers": true
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/dreieckstuch?tuch=stoff-15",
+    "viewport": "mobile",
+    "viewportPx": "390x1400",
+    "retakenTaller": true,
+    "shot": "dreieckstuch-stoff-15-mobile.png",
+    "jitterIdentical": true,
+    "md5": "4d0203aaf35a",
+    "fallbackMd5": "b20b2db3b92e",
+    "fallbackDiffers": true
+  },
+  {
+    "url": "http://127.0.0.1:3522/konfigurator/dreieckstuch?tuch=stoff-20&rot=90",
+    "viewport": "mobile",
+    "viewportPx": "390x1400",
+    "retakenTaller": true,
+    "shot": "dreieckstuch-stoff-20-rot90-mobile.png",
+    "jitterIdentical": true,
+    "md5": "775d59b66548",
+    "fallbackMd5": "d136cb667ee0",
+    "fallbackDiffers": true
+  }
+]
