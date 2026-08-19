@@ -1,0 +1,79 @@
+[
+  {
+    "name": "turban",
+    "perf": 78,
+    "fcp": 1388,
+    "lcp": 2621,
+    "si": 1315,
+    "tbt": 790,
+    "cls": 0,
+    "tti": 3854,
+    "docKiB": 18.3
+  },
+  {
+    "name": "turban-jitter",
+    "perf": 78,
+    "fcp": 1475,
+    "lcp": 2591,
+    "si": 1460,
+    "tbt": 769,
+    "cls": 0,
+    "tti": 3563,
+    "docKiB": 18.3
+  },
+  {
+    "name": "hose",
+    "perf": 75,
+    "fcp": 1390,
+    "lcp": 2040,
+    "si": 1453,
+    "tbt": 901,
+    "cls": 0.114,
+    "tti": 6828,
+    "docKiB": 17.9
+  },
+  {
+    "name": "hose-jitter",
+    "perf": 78,
+    "fcp": 1410,
+    "lcp": 2093,
+    "si": 1481,
+    "tbt": 938,
+    "cls": 0,
+    "tti": 6966,
+    "docKiB": 17.9
+  },
+  {
+    "name": "catalog",
+    "perf": 88,
+    "fcp": 1238,
+    "lcp": 1721,
+    "si": 1168,
+    "tbt": 477,
+    "cls": 0,
+    "tti": 2849,
+    "docKiB": 18.3
+  },
+  {
+    "name": "checkout",
+    "perf": 95,
+    "fcp": 1887,
+    "lcp": 1887,
+    "si": 1721,
+    "tbt": 215,
+    "cls": 0,
+    "tti": 3275,
+    "docKiB": 12.5
+  },
+  {
+    "name": "home",
+    "perf": 67,
+    "fcp": 1236,
+    "lcp": 3418,
+    "si": 1549,
+    "tbt": 1208,
+    "cls": 0,
+    "tti": 3854,
+    "docKiB": 18
+  }
+]

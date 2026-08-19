@@ -1,0 +1,74 @@
+[
+  {
+    "route": "turban",
+    "viewport": "mobile",
+    "rules": 427,
+    "bodyBg": "rgb(250, 247, 242)",
+    "cssInFlight": true,
+    "errors": [],
+    "file": "apps/e2e/reports/bil2527/live-shots/turban-mobile.png"
+  },
+  {
+    "route": "hose",
+    "viewport": "mobile",
+    "rules": 427,
+    "bodyBg": "rgb(250, 247, 242)",
+    "cssInFlight": true,
+    "errors": [],
+    "file": "apps/e2e/reports/bil2527/live-shots/hose-mobile.png"
+  },
+  {
+    "route": "catalog",
+    "viewport": "mobile",
+    "rules": 427,
+    "bodyBg": "rgb(250, 247, 242)",
+    "cssInFlight": true,
+    "errors": [],
+    "file": "apps/e2e/reports/bil2527/live-shots/catalog-mobile.png"
+  },
+  {
+    "route": "home",
+    "viewport": "mobile",
+    "rules": 427,
+    "bodyBg": "rgb(250, 247, 242)",
+    "cssInFlight": true,
+    "errors": [],
+    "file": "apps/e2e/reports/bil2527/live-shots/home-mobile.png"
+  },
+  {
+    "route": "turban",
+    "viewport": "desktop",
+    "rules": 427,
+    "bodyBg": "rgb(250, 247, 242)",
+    "cssInFlight": true,
+    "errors": [],
+    "file": "apps/e2e/reports/bil2527/live-shots/turban-desktop.png"
+  },
+  {
+    "route": "hose",
+    "viewport": "desktop",
+    "rules": 427,
+    "bodyBg": "rgb(250, 247, 242)",
+    "cssInFlight": true,
+    "errors": [],
+    "file": "apps/e2e/reports/bil2527/live-shots/hose-desktop.png"
+  },
+  {
+    "route": "catalog",
+    "viewport": "desktop",
+    "rules": 427,
+    "bodyBg": "rgb(250, 247, 242)",
+    "cssInFlight": true,
+    "errors": [],
+    "file": "apps/e2e/reports/bil2527/live-shots/catalog-desktop.png"
+  },
+  {
+    "route": "home",
+    "viewport": "desktop",
+    "rules": 427,
+    "bodyBg": "rgb(250, 247, 242)",
+    "cssInFlight": true,
+    "errors": [],
+    "file": "apps/e2e/reports/bil2527/live-shots/home-desktop.png"
+  }
+]
