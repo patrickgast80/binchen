@@ -317,6 +317,24 @@ export function buildTile(src, sw, sh, stride, px, rotation) {
  */
 export function paintReliefZone(dst, relief, maskAlpha, tile, W, H, grain, y0 = 0, y1 = H) {
   const { data, TW, TH, stride } = tile;
+  /**
+   * BIL-2533 — a uni zone arrives as a 1x1 tile, and for one texel the whole
+   * sampler is arithmetic with a known answer: the wrap is a modulo onto index
+   * 0 and the Catmull-Rom weights sum to 1, so all sixteen taps read the same
+   * pixel and the result is that pixel.
+   *
+   * This is not a micro-optimisation. Uni zones only started going through this
+   * function in this ticket, and measured live they added a tail of ~52ms
+   * slices ending at 7.4s, against 3.5s for the same page with a print — TTI is
+   * the end of the last long task, so that is a 2x regression on the very
+   * number BIL-2531 was about. Sixteen taps per pixel over three zones is where
+   * it came from.
+   *
+   * It lives HERE rather than in the browser layer because Node and the browser
+   * must take the same branch — an offline evidence sheet is only evidence if
+   * it ran the same code.
+   */
+  const flat = TW === 1 && TH === 1 ? [data[0], data[1], data[2]] : null;
   // `background-position: center` in the shipped stack; the grain offset then
   // slides this zone's panel off the shared grid.
   const offX = (W - TW) / 2 - grain.ox * TW;
@@ -332,11 +350,15 @@ export function paintReliefZone(dst, relief, maskAlpha, tile, W, H, grain, y0 = 
     if (a <= 0) continue;
     const x = p % W;
     const y = (p / W) | 0;
-    const dx = ((relief[p * 4] - 128) / 127) * WARP_RANGE;
-    const dy = ((relief[p * 4 + 1] - 128) / 127) * WARP_RANGE;
     const shade = relief[p * 4 + 2] / 255 + fabricGrain(x, y);
-    sampleTile(data, TW, TH, x + dx - offX, y + dy - offY, smp, stride);
-    shadeFabric(smp, shade, shaded);
+    if (flat) {
+      shadeFabric(flat, shade, shaded);
+    } else {
+      const dx = ((relief[p * 4] - 128) / 127) * WARP_RANGE;
+      const dy = ((relief[p * 4 + 1] - 128) / 127) * WARP_RANGE;
+      sampleTile(data, TW, TH, x + dx - offX, y + dy - offY, smp, stride);
+      shadeFabric(smp, shade, shaded);
+    }
     // Straight-alpha "over": zones are disjoint in practice, but the feathered
     // mask borders do overlap and must blend rather than punch each other out.
     const da = dst[p * 4 + 3] / 255;
