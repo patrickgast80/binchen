@@ -1,0 +1,265 @@
+{
+  "ranAt": "2026-08-20T07:00:18.001Z",
+  "base": "https://bilulu.de",
+  "assets": [
+    {
+      "name": "hose",
+      "status": 200,
+      "bytes": 225030,
+      "live": "9b4e9a3a6834a67471bef921afb58bc5",
+      "repo": "9b4e9a3a6834a67471bef921afb58bc5",
+      "same": true
+    },
+    {
+      "name": "hose-kurz",
+      "status": 200,
+      "bytes": 188316,
+      "live": "a21f86048c3a388730f5b0735c47a956",
+      "repo": "a21f86048c3a388730f5b0735c47a956",
+      "same": true
+    },
+    {
+      "name": "muetze",
+      "status": 200,
+      "bytes": 251328,
+      "live": "bff773fa7a790c5f440e5ed4a55e74b4",
+      "repo": "bff773fa7a790c5f440e5ed4a55e74b4",
+      "same": true
+    },
+    {
+      "name": "turban",
+      "status": 200,
+      "bytes": 257338,
+      "live": "ba342ecbd85aa3308cb0a755ba44443c",
+      "repo": "ba342ecbd85aa3308cb0a755ba44443c",
+      "same": true
+    },
+    {
+      "name": "dreieckstuch",
+      "status": 200,
+      "bytes": 70042,
+      "live": "bde2380b9fdf5c5770908cd1023c8888",
+      "repo": "bde2380b9fdf5c5770908cd1023c8888",
+      "same": true
+    }
+  ],
+  "assetsAllSame": true,
+  "shots": [
+    {
+      "case": "hose",
+      "viewport": "desktop",
+      "sha": "fb78bcb3fd7b",
+      "bytes": 958080
+    },
+    {
+      "case": "hose-kurz",
+      "viewport": "desktop",
+      "sha": "ef3f8070736e",
+      "bytes": 577312
+    },
+    {
+      "case": "muetze",
+      "viewport": "desktop",
+      "sha": "fbf62cb4075f",
+      "bytes": 1077589
+    },
+    {
+      "case": "turban",
+      "viewport": "desktop",
+      "sha": "0b9c6c4db2d3",
+      "bytes": 903310
+    },
+    {
+      "case": "dreieckstuch",
+      "viewport": "desktop",
+      "sha": "b25e2c0ad2f4",
+      "bytes": 441056
+    },
+    {
+      "case": "hose (jitter)",
+      "viewport": "desktop",
+      "sha": "fb78bcb3fd7b",
+      "bytes": 958080,
+      "jitterClean": true
+    },
+    {
+      "case": "hose",
+      "viewport": "mobile",
+      "sha": "cc076aac6db0",
+      "bytes": 594283
+    },
+    {
+      "case": "hose-kurz",
+      "viewport": "mobile",
+      "sha": "097bb401dc03",
+      "bytes": 412560
+    },
+    {
+      "case": "muetze",
+      "viewport": "mobile",
+      "sha": "d97a555992e5",
+      "bytes": 771613
+    },
+    {
+      "case": "turban",
+      "viewport": "mobile",
+      "sha": "110bd7ef832c",
+      "bytes": 689598
+    },
+    {
+      "case": "dreieckstuch",
+      "viewport": "mobile",
+      "sha": "f084edd02420",
+      "bytes": 456570
+    }
+  ],
+  "distinctShots": 10,
+  "totalShots": true,
+  "canvasStats": [
+    {
+      "case": "hose",
+      "viewport": "desktop",
+      "label": "",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 1006
+      },
+      "paintedPx": 441735,
+      "meanY": 118.93,
+      "sigmaY": 53.21
+    },
+    {
+      "case": "hose-kurz",
+      "viewport": "desktop",
+      "label": "",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 750
+      },
+      "paintedPx": 327169,
+      "meanY": 107.4,
+      "sigmaY": 41.18
+    },
+    {
+      "case": "muetze",
+      "viewport": "desktop",
+      "label": "",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 880
+      },
+      "paintedPx": 500312,
+      "meanY": 112.03,
+      "sigmaY": 34.41
+    },
+    {
+      "case": "turban",
+      "viewport": "desktop",
+      "label": "",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 796
+      },
+      "paintedPx": 386133,
+      "meanY": 122.73,
+      "sigmaY": 53.3
+    },
+    {
+      "case": "dreieckstuch",
+      "viewport": "desktop",
+      "label": "",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 482
+      },
+      "paintedPx": 207717,
+      "meanY": 113.81,
+      "sigmaY": 45.81
+    },
+    {
+      "case": "hose",
+      "viewport": "desktop",
+      "label": "jitter",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 1006
+      },
+      "paintedPx": 441735,
+      "meanY": 118.93,
+      "sigmaY": 53.21
+    },
+    {
+      "case": "hose",
+      "viewport": "mobile",
+      "label": "",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 1006
+      },
+      "paintedPx": 441735,
+      "meanY": 118.93,
+      "sigmaY": 53.21
+    },
+    {
+      "case": "hose-kurz",
+      "viewport": "mobile",
+      "label": "",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 750
+      },
+      "paintedPx": 327169,
+      "meanY": 107.4,
+      "sigmaY": 41.18
+    },
+    {
+      "case": "muetze",
+      "viewport": "mobile",
+      "label": "",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 880
+      },
+      "paintedPx": 500312,
+      "meanY": 112.03,
+      "sigmaY": 34.41
+    },
+    {
+      "case": "turban",
+      "viewport": "mobile",
+      "label": "",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 796
+      },
+      "paintedPx": 386133,
+      "meanY": 122.73,
+      "sigmaY": 53.3
+    },
+    {
+      "case": "dreieckstuch",
+      "viewport": "mobile",
+      "label": "",
+      "canvasVisible": true,
+      "canvasPx": {
+        "w": 900,
+        "h": 482
+      },
+      "paintedPx": 207717,
+      "meanY": 113.81,
+      "sigmaY": 45.81
+    }
+  ],
+  "jitterClean": true,
+  "consoleErrors": []
+}
