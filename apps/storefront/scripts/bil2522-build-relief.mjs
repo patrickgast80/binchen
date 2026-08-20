@@ -43,7 +43,27 @@ export const RELIEF_OPTS = {
   // The legs are short and wide, though: at the long-pants pitch of 210px a
   // 300px leg gets less than one and a half creases, which reads as a stain
   // rather than as drape. Halved along the limb, tightened across it.
-  "hose-kurz": { limbRadius: 120, drapeScaleX: 40, drapeScaleY: 118 },
+  //
+  // BIL-2533 — Pass 2's amplitude was measurably below the visible threshold on
+  // exactly this piece. The number that decides whether a stripe bends is not
+  // mean |D| but how much the displacement VARIES across one fold: a constant
+  // offset slides the whole print and nobody notices. Measured over an 80px
+  // window (bil2533-measure-warp.mjs) the shipped map gave 1.36px against a
+  // ~27px stripe — 5% of a stripe, i.e. nothing, which is precisely what the
+  // board reported. These values put it at 6.66px.
+  //
+  // The ceiling is NOT the stripes, it is the figurative motifs: at a local SD
+  // around 7.6px the horses' faces start to smear and the print reads as fabric
+  // damage rather than as drape (sweeps in .tmp/bil2533). So the pitch is
+  // widened along with the gain — a real pumphose folds broadly, not every
+  // 40px — which buys amplitude at the same local stretch.
+  "hose-kurz": {
+    limbRadius: 120,
+    drapeScaleX: 68,
+    drapeScaleY: 118,
+    drapeAmp: 0.095,
+    warpDrape: 240,
+  },
 
   // A hat is a real dome, so it takes the full roll. Its crown gathers ARE in
   // the photo (the radial creases), so the invented drape only has to cover the
@@ -88,6 +108,20 @@ export const RELIEF_OPTS = {
   },
 };
 
+/**
+ * BIL-2533 — which cut pieces are RIBBED, per Konfigurator.
+ *
+ * A Konfigurator only gets seams and ribs once it appears here; the others keep
+ * their approved maps untouched. Listing a zone with `rib: false` still cuts the
+ * seam at its border — that is a property of it being a separate panel, not of
+ * how it is knitted.
+ */
+export const ZONE_STRUCTURE = {
+  // The board's reference photo: the waistband and both leg cuffs stand in
+  // vertical ribs, the printed body panel does not.
+  "hose-kurz": { bund: true, buendchen: true, hose: false },
+};
+
 export async function buildFor(konfigId, { debug = false, opts = {} } = {}) {
   const k = KONFIGS[konfigId];
   if (!k) throw new Error(`unknown konfigurator ${konfigId}`);
@@ -97,7 +131,25 @@ export async function buildFor(konfigId, { debug = false, opts = {} } = {}) {
   const { width: W, height: H } = info;
   if (W !== k.w || H !== k.h) throw new Error(`${konfigId}: base ${W}x${H} != registry ${k.w}x${k.h}`);
 
-  const { relief, stats } = buildRelief(data, W, H, { ...(RELIEF_OPTS[konfigId] ?? {}), ...opts });
+  const structure = ZONE_STRUCTURE[konfigId];
+  let zones = null;
+  if (structure) {
+    zones = [];
+    for (const [name, rib] of Object.entries(structure)) {
+      const m = await sharp(path.join(dir, `mask-${name}.webp`))
+        .ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+      if (m.info.width !== W || m.info.height !== H) {
+        throw new Error(`${konfigId}: mask-${name} is ${m.info.width}x${m.info.height}, base is ${W}x${H}`);
+      }
+      zones.push({ name, alpha: m.data, rib });
+    }
+  }
+
+  const { relief, stats } = buildRelief(data, W, H, {
+    ...(RELIEF_OPTS[konfigId] ?? {}),
+    ...(zones ? { zones } : null),
+    ...opts,
+  });
   const outFile = path.join(dir, "relief.webp");
 
   // Flatten alpha to opaque before encoding. This is a correctness fix, not a

@@ -18,6 +18,7 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 
 import { KONFIGS } from "./bil2509-composite.mjs";
+import { ZONE_STRUCTURE } from "./bil2522-build-relief.mjs";
 import {
   buildTile,
   grainFor,
@@ -75,11 +76,16 @@ export async function renderRelief(konfigId, paints, rotation = 0) {
 
   // Pass 1 — uni zones, byte-for-byte the shipped multiply path so a uni colour
   // can never regress (BIL-2461's flat dark-navy silhouette lives here).
+  //
+  // BIL-2533: a Konfigurator whose relief map carries cut-piece structure sends
+  // its uni zones through the relief path instead, exactly as relief-layer.tsx
+  // now does — otherwise this renderer would keep producing "evidence" for a
+  // waistband the shop no longer draws.
   const fabricZones = [];
   for (const zone of k.zones) {
     const id = paints[zone];
     if (!id) continue;
-    if (id.startsWith("stoff-")) {
+    if (id.startsWith("stoff-") || ZONE_STRUCTURE[konfigId]?.[zone] !== undefined) {
       fabricZones.push(zone);
       continue;
     }
@@ -122,7 +128,12 @@ export async function renderRelief(konfigId, paints, rotation = 0) {
       const mask = await load(`mask-${MASK_FILE[zone] ?? zone}.webp`);
       for (let p = 0; p < N; p++) maskAlpha[p] = mask.data[p * 4 + 3];
       const grain = grainFor(zone);
-      const tile = await loadTile(paints[zone], rotation, tilePx(W, grain));
+      const id = paints[zone];
+      const tile = id.startsWith("stoff-")
+        ? await loadTile(id, rotation, tilePx(W, grain))
+        // Same 1x1 trick relief-layer.tsx uses: one paint path for both kinds
+        // of zone, so an offline sheet cannot drift from the browser.
+        : { data: Uint8ClampedArray.from(hexToRgb(UNI[id] ?? UNI.cream)), TW: 1, TH: 1, stride: 3 };
       paintReliefZone(layer, relief.data, maskAlpha, tile, W, H, grain);
     }
     for (let p = 0; p < N; p++) {

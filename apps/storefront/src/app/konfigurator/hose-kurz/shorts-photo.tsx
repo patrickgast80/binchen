@@ -63,7 +63,12 @@ export function ShortsPhoto({
       })),
     [paints],
   );
-  const { takenOver, onReady } = useReliefTakeover(zoneSpecs);
+  // BIL-2533 — hose-kurz ist der einzige Konfigurator, dessen relief.webp die
+  // Schnittteil-Struktur (Ripp + Nähte) trägt, also der einzige, dessen
+  // Uni-Zonen durch die Relief-Ebene laufen dürfen. Rollout auf die anderen
+  // vier erst nach der Board-Abnahme am Proof.
+  const RELIEF_UNI = true;
+  const { takenOver, onReady } = useReliefTakeover(zoneSpecs, RELIEF_UNI);
 
   return (
     <div
@@ -113,6 +118,7 @@ export function ShortsPhoto({
         width={ASSET_W}
         height={ASSET_H}
         zones={zoneSpecs}
+        uniZones={RELIEF_UNI}
         onReady={onReady}
       />
       <LabelOverlay src={`${ASSET_BASE}/label.webp`} />

@@ -64,6 +64,81 @@ function valueNoise(x, y, seed) {
 }
 
 /**
+ * BIL-2533 — connected components of a zone mask, with each one's long axis.
+ *
+ * A cut piece's rib runs ACROSS the band: a waistband lies horizontally and its
+ * ribs stand vertically, a leg cuff curves and its ribs fan out with it. So the
+ * rib direction has to come from the piece's own geometry, and it has to come
+ * per PIECE — the two leg cuffs share one mask file, and a single principal
+ * axis over both of them would average two opposite curves into a diagonal that
+ * matches neither.
+ *
+ * Returns, per component, the centroid and the unit long axis from the pixel
+ * covariance. The rib phase is then the projection onto that axis, which makes
+ * the rib lines perpendicular to it — straight, evenly spaced, and stable
+ * (unlike integrating a rotating local tangent, which drifts and tears).
+ */
+function maskComponents(inZone, W, H, minPx = 400) {
+  const seen = new Uint8Array(W * H);
+  const comps = [];
+  const stack = new Int32Array(W * H);
+  for (let start = 0; start < W * H; start++) {
+    if (seen[start] || !inZone[start]) continue;
+    let top = 0;
+    stack[top++] = start;
+    seen[start] = 1;
+    const px = [];
+    while (top > 0) {
+      const p = stack[--top];
+      px.push(p);
+      const x = p % W;
+      const y = (p / W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        const q = ny * W + nx;
+        if (seen[q] || !inZone[q]) continue;
+        seen[q] = 1;
+        stack[top++] = q;
+      }
+    }
+    if (px.length < minPx) continue;
+    let cx = 0;
+    let cy = 0;
+    for (const p of px) {
+      cx += p % W;
+      cy += (p / W) | 0;
+    }
+    cx /= px.length;
+    cy /= px.length;
+    let sxx = 0;
+    let syy = 0;
+    let sxy = 0;
+    for (const p of px) {
+      const dx = (p % W) - cx;
+      const dy = ((p / W) | 0) - cy;
+      sxx += dx * dx;
+      syy += dy * dy;
+      sxy += dx * dy;
+    }
+    // Larger eigenvector of the 2x2 covariance — the piece's long axis.
+    const tr = (sxx + syy) / px.length;
+    const det = (sxx * syy - sxy * sxy) / (px.length * px.length);
+    const lam = tr / 2 + Math.sqrt(Math.max(0, (tr * tr) / 4 - det));
+    let ux = sxy / px.length;
+    let uy = lam - sxx / px.length;
+    if (Math.hypot(ux, uy) < 1e-6) {
+      ux = 1;
+      uy = 0;
+    }
+    const len = Math.hypot(ux, uy);
+    comps.push({ pixels: px, cx, cy, ux: ux / len, uy: uy / len, n: px.length });
+  }
+  return comps;
+}
+
+/**
  * @param {Uint8Array|Buffer} rgba  base.webp as raw RGBA
  * @param {number} W
  * @param {number} H
@@ -122,6 +197,22 @@ export function buildRelief(rgba, W, H, opts = {}) {
     /** px of texture shift per unit of fold slope. */
     warpFold = 19,
     /**
+     * BIL-2533 — the same, but for the SYNTHESISED drape only.
+     *
+     * The two crease sources need different gains and pretending otherwise is
+     * what kept hose-kurz flat. The photo's own `detail` on that base is the
+     * waistband gathers and the cuff rib — a fine vertical comb — and turning
+     * `warpFold` up far enough to bend a stripe turns that comb into corduroy
+     * across the whole garment (the BIL-2522 trap, one gain further). The
+     * invented drape has no such passenger: it is smooth, low-frequency and
+     * lives only in the relief map, so it can be pushed until a stripe visibly
+     * follows a fold while the photo's contribution stays where it was tuned.
+     *
+     * Defaults to `warpFold`, so every Konfigurator that does not set it keeps
+     * its approved map byte-for-byte.
+     */
+    warpDrape = warpFold,
+    /**
      * How much of the PHOTO's fold band drives the displacement, relative to
      * the synthesised drape. 1 wherever `detail` is genuine cloth structure.
      * Turned down for a base whose remaining fine structure is de-print
@@ -140,6 +231,36 @@ export function buildRelief(rgba, W, H, opts = {}) {
     rollCap = 0.9,
     /** Blur applied to the finished warp field — kills single-pixel jitter. */
     warpSmooth = 3,
+    // ---- BIL-2533: cut-piece structure ----------------------------------
+    /**
+     * Zone masks, so the map can carry what belongs to the CUT rather than to
+     * the garment as a whole: `[{ name, alpha: Uint8Array|Buffer(W*H*4), rib }]`.
+     *
+     * Omit it and every line below is skipped, so the four Konfigurators that
+     * do not opt in keep their approved maps byte-for-byte.
+     */
+    zones = null,
+    /** Rib pitch in px, measured on the reference photo's waistband. */
+    ribPitch = 9,
+    /** How much darker a rib VALLEY is than the ridge beside it. */
+    ribAmp = 0.2,
+    /** px the print slides across a rib. Small: a rib is shallow, not a fold. */
+    ribWarp = 1.1,
+    /**
+     * Seam depth at a zone boundary that is NOT the silhouette.
+     *
+     * The board's third point: "die Übergänge sehen wie harte Ebenen-Kanten
+     * aus". They are exactly that — two masks meeting with nothing in between.
+     * A real seam has the two panels pulled together, so the cloth dips into a
+     * groove and the seam allowance underneath lifts the fabric just beside it.
+     */
+    seamDepth = 0.16,
+    /** Half-width of the groove in px. */
+    seamWidth = 3.2,
+    /** How much the allowance lifts the fabric next to the groove. */
+    seamLift = 0.05,
+    /** Where that lift peaks, as a multiple of seamWidth. */
+    seamLiftAt = 2.4,
   } = opts;
 
   const N = W * H;
@@ -256,6 +377,97 @@ export function buildRelief(rgba, W, H, opts = {}) {
     count++;
   }
 
+  // --- 3b. BIL-2533: rib and seams, from the CUT rather than the garment ---
+  //
+  // Everything above treats the piece as one continuous surface. A sewn
+  // garment is not: it is panels with edges, and two of the board's three
+  // complaints are about exactly that — a waistband that is a flat gradient
+  // where the real one has standing ribs, and zone borders that read as
+  // stacked layers because nothing marks the seam.
+  //
+  // Both live in the relief map rather than in the renderer, for the same
+  // reason the warp does: the geometry belongs to the garment, not to the
+  // colour someone picked. The renderer stays a pure function of the map.
+  const ribDx = new Float32Array(N);
+  const ribDy = new Float32Array(N);
+  if (zones) {
+    // A zone edge that is ALSO the silhouette is not a seam — it is the hem
+    // roll the rim term already handles, and darkening it twice makes the
+    // garment look bruised. `dist` is the distance from the background, so
+    // this fades the seam out wherever the two edges coincide.
+    const notSilhouette = new Float32Array(N);
+    for (let p = 0; p < N; p++) {
+      notSilhouette[p] = isBg[p] ? 0 : smoothstep((dist[p] - 2) / 7);
+    }
+
+    for (const zone of zones) {
+      const a = zone.alpha;
+      // Masks arrive as RGBA (that is how they ship); read the alpha channel.
+      const at = (p) => (a.length >= N * 4 ? a[p * 4 + 3] : a[p]);
+      const inZone = new Uint8Array(N);
+      for (let p = 0; p < N; p++) inZone[p] = at(p) >= 128 ? 1 : 0;
+
+      // Seam groove: distance from this zone's own boundary, on BOTH sides, so
+      // the two panels dip towards each other the way stitched cloth does.
+      const outside = new Uint8Array(N);
+      for (let p = 0; p < N; p++) outside[p] = inZone[p] ? 0 : 1;
+      const dIn = distanceFrom(outside, W, H, seamWidth * 6);
+      const dOut = distanceFrom(inZone, W, H, seamWidth * 6);
+      for (let p = 0; p < N; p++) {
+        if (isBg[p]) continue;
+        const d = inZone[p] ? dIn[p] : dOut[p];
+        if (d > seamWidth * 5) continue;
+        const g = notSilhouette[p];
+        if (g <= 0) continue;
+        const groove = Math.exp(-((d / seamWidth) ** 2));
+        const lift = Math.exp(-(((d - seamWidth * seamLiftAt) / seamWidth) ** 2));
+        const f = 1 - seamDepth * groove * g + seamLift * lift * g;
+        sum += (f - 1) * shade[p];
+        shade[p] *= f;
+      }
+
+      if (!zone.rib) continue;
+      // Rib: straight lines perpendicular to each cut piece's own long axis.
+      for (const comp of maskComponents(inZone, W, H)) {
+        for (const p of comp.pixels) {
+          if (isBg[p]) continue;
+          const x = p % W;
+          const y = (p / W) | 0;
+          const phase = ((x - comp.cx) * comp.ux + (y - comp.cy) * comp.uy) / ribPitch;
+          const th = phase * Math.PI * 2;
+          // A 2x2 rib is not a sine: the ridges are round and stand proud, the
+          // valleys between them are narrow and deep. `c*c` on the crest side
+          // keeps the ridge broad and flat, the exponent on the other side
+          // sharpens the valley.
+          //
+          // The rib only ever DARKENS, and that is not a stylistic choice. The
+          // shade channel is capped at `shadeCeil` (1.0) and the waistband
+          // already averages 0.91, so a rib that brightened its crests would
+          // have most of every ridge clipped flat against that ceiling. The
+          // first version did exactly that and produced mottling instead of
+          // ribs — the BIL-2522 ridge-clipping trap, one layer further down.
+          // Ridges therefore sit AT the ambient level and the valleys fall away
+          // from it; the global re-centring below hands the lost mean back.
+          const c = Math.cos(th);
+          const ridge = c > 0 ? c * c : -(Math.abs(c) ** 1.35);
+          const valley = (1 - ridge) / 2;
+          // Ribs stop at the seam — the groove is where the panel ends, and a
+          // rib running through it would undo the seam that was just cut in.
+          const fade = smoothstep((dIn[p] - seamWidth) / (seamWidth * 2));
+          const f = 1 - ribAmp * valley * fade;
+          sum += (f - 1) * shade[p];
+          shade[p] *= f;
+          // A standing rib also pushes the print sideways as it rolls over the
+          // ridge — small, but it is what keeps a printed Bündchen from
+          // looking like a flat photo of a rib.
+          const slope = -Math.sin(th) * fade * ribWarp;
+          ribDx[p] += comp.ux * slope;
+          ribDy[p] += comp.uy * slope;
+        }
+      }
+    }
+  }
+
   // Re-centre before clamping. The limb term only ever removes light, so
   // without this the realism pass would read as "someone turned the lights
   // down" — a shift the board would rightly reject as a regression.
@@ -283,11 +495,17 @@ export function buildRelief(rgba, W, H, opts = {}) {
   // shade. That coupling is the whole point of the ticket: a crease that
   // darkens the fabric but leaves the print running dead straight through it
   // reads worse than no crease at all. Same units as `detail` (luminance).
+  //
+  // The drape's share carries `warpDrape / warpFold` so it can be pushed
+  // independently of the photo's — see the note on `warpDrape` above. At the
+  // default the factor is 1 and this is the expression BIL-2522 shipped.
+  const drapeWarpRatio = warpDrape / warpFold;
   const foldField = new Float32Array(N);
   for (let p = 0; p < N; p++) {
     foldField[p] = isBg[p]
       ? 0
-      : detail[p] * foldPhotoWeight + drape[p] * drapeFade[p] * drapeAmp * litRef;
+      : detail[p] * foldPhotoWeight +
+        drape[p] * drapeFade[p] * drapeAmp * litRef * drapeWarpRatio;
   }
   const detailSmooth = boxBlurMasked(foldField, W, H, isBg, 8, 2);
   const dx = new Float32Array(N);
@@ -322,6 +540,15 @@ export function buildRelief(rgba, W, H, opts = {}) {
   }
   const dxS = boxBlurMasked(dx, W, H, isBg, warpSmooth, 2);
   const dyS = boxBlurMasked(dy, W, H, isBg, warpSmooth, 2);
+  // The rib joins AFTER the smoothing on purpose. `warpSmooth` exists to kill
+  // single-pixel jitter in a field built from image gradients; a 9px rib is
+  // signal at very nearly that scale, and blurring it would leave the ribs in
+  // the shading but not in the print — the waistband would go back to looking
+  // like a photo of a rib with a flat colour laid over it.
+  for (let p = 0; p < N; p++) {
+    dxS[p] += ribDx[p];
+    dyS[p] += ribDy[p];
+  }
 
   // --- 5. encode ---------------------------------------------------------
   const relief = Buffer.alloc(N * 4);

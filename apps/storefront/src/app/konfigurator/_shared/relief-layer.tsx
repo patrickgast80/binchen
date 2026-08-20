@@ -63,6 +63,17 @@ interface ReliefLayerProps {
   width: number;
   height: number;
   zones: ReliefZoneSpec[];
+  /**
+   * BIL-2533 — whether UNI zones are painted here too, not just printed ones.
+   *
+   * Opt-in per Konfigurator, and deliberately not a global switch: it is only
+   * correct where `relief.webp` was built with cut-piece structure (the rib and
+   * the seams — `ZONE_STRUCTURE` in scripts/bil2522-build-relief.mjs). On a map
+   * without it a uni zone would swap its shipped multiply for the relief shade
+   * and gain nothing for the change, which is exactly the silent five-way
+   * rollout the board asked not to happen before it has seen the proof.
+   */
+  uniZones?: boolean;
   onReady?: (ready: boolean) => void;
 }
 
@@ -296,6 +307,24 @@ async function loadTile(src: string, rotation: number, px: number, cancelled: Ca
   return tile;
 }
 
+/**
+ * A uni colour as a 1x1 tile (BIL-2533).
+ *
+ * `sampleTile` wraps with a modulo and its Catmull-Rom weights sum to 1, so a
+ * one-pixel tile returns that pixel for every coordinate — the displacement
+ * still runs, it just has nothing to move. That keeps ONE paint path for both
+ * kinds of zone instead of a second, subtly different one for uni colours,
+ * which is what let the waistband drift away from the rest of the garment in
+ * the first place.
+ */
+function uniTile(hex: string) {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  const data = new Uint8ClampedArray(3);
+  for (let c = 0; c < 3; c++) data[c] = parseInt(full.slice(c * 2, c * 2 + 2), 16) || 0;
+  return { data, TW: 1, TH: 1, stride: 3 };
+}
+
 /** Run `fn` once the browser is idle, without blocking first paint. */
 function whenIdle(fn: () => void): () => void {
   const w = window as Window & {
@@ -315,22 +344,31 @@ export function ReliefFabricLayer({
   width,
   height,
   zones,
+  uniZones = false,
   onReady,
 }: ReliefLayerProps) {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const [painted, setPainted] = React.useState(false);
 
-  // Only zones that actually carry a print can be relief-rendered; a uni colour
-  // has no geometry to displace and keeps the shipped multiply path.
+  // BIL-2533 — uni zones render through here as well now.
+  //
+  // Until Pass 3 this filtered on `textureSrc`, on the reasoning that a uni
+  // colour "has no geometry to displace". That was the wrong half of the
+  // sentence: it has no PRINT to displace, but it has exactly as much geometry
+  // as a printed one — and skipping it is why the board's waistband was a flat
+  // gradient next to a ribbed original. The relief map now carries the rib and
+  // the seams (BIL-2533 in bil2522-relief.mjs), so a uni zone painted through
+  // this layer gains the rib, the fold shading and the seam depth, while a uni
+  // zone that is NOT in the map's zone list looks exactly as it did.
   const fabricZones = React.useMemo(
-    () => zones.filter((z) => Boolean(z.paint.textureSrc)),
-    [zones],
+    () => (uniZones ? zones : zones.filter((z) => Boolean(z.paint.textureSrc))),
+    [uniZones, zones],
   );
   // A string key, not the array: the parent rebuilds `paints` on every render.
   const key = React.useMemo(
     () =>
       fabricZones
-        .map((z) => `${z.zone}:${z.paint.textureSrc}:${z.paint.rotation ?? 0}`)
+        .map((z) => `${z.zone}:${z.paint.textureSrc ?? z.paint.hex}:${z.paint.rotation ?? 0}`)
         .join("|"),
     [fabricZones],
   );
@@ -388,12 +426,14 @@ export function ReliefFabricLayer({
             if (!copied) return;
 
             const grain = grainFor(spec.zone);
-            const tile = await loadTile(
-              spec.paint.textureSrc as string,
-              spec.paint.rotation ?? 0,
-              tilePx(width, grain),
-              isCancelled,
-            );
+            const tile = spec.paint.textureSrc
+              ? await loadTile(
+                  spec.paint.textureSrc,
+                  spec.paint.rotation ?? 0,
+                  tilePx(width, grain),
+                  isCancelled,
+                )
+              : uniTile(spec.paint.hex);
             if (!tile) return;
 
             const drawn = await inSlices(
@@ -476,11 +516,16 @@ export function ReliefFabricLayer({
  * the matching CSS overlays. Hiding them before the canvas has painted would
  * flash an unpainted garment, so this is driven by the layer's `onReady`.
  */
-export function useReliefTakeover(zones: ReliefZoneSpec[]) {
+export function useReliefTakeover(zones: ReliefZoneSpec[], uniZones = false) {
   const [ready, setReady] = React.useState(false);
   const takenOver = React.useMemo(() => {
     if (!ready) return new Set<string>();
-    return new Set(zones.filter((z) => z.paint.textureSrc).map((z) => z.zone));
-  }, [ready, zones]);
+    // Must match the layer's own filter exactly. A zone hidden here but not
+    // painted there is a hole in the garment; painted but not hidden is the
+    // CSS multiply showing through the relief render.
+    return new Set(
+      zones.filter((z) => uniZones || z.paint.textureSrc).map((z) => z.zone),
+    );
+  }, [ready, uniZones, zones]);
   return { takenOver, onReady: setReady };
 }
